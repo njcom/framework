@@ -22,41 +22,38 @@ class Compiler extends ConfigurablePipe implements ICompiler {
      */
     private $backend;
 
-    public function conf(): array {
-        return $this->conf;
-    }
-
     public function current(): callable {
-        $index = $this->index;
-        if ($index === 0) {
-            return $this->frontend();
-        }
-        if ($index === 1) {
-            return $this->midend();
-        }
-        if ($index === 2) {
-            return $this->backend();
-        }
-        throw new UnexpectedValueException();
+        return match ($this->index) {
+            0 => $this->frontend(),
+            1 => $this->midend(),
+            2 => $this->backend(),
+            default => throw new UnexpectedValueException(),
+        };
     }
 
     public function frontend(): callable {
         if (null === $this->frontend) {
-            $this->frontend = $this->conf['frontend'];
+            $this->frontend = $this->conf['frontend'] ?? function ($context) {
+                    return $context;
+                };
         }
         return $this->frontend;
     }
 
     public function midend(): callable {
         if (null === $this->midend) {
-            $this->midend = $this->conf['midend'];
+            $this->midend = $this->conf['midend'] ?? function ($context) {
+                    return $context;
+                };;
         }
         return $this->midend;
     }
 
     public function backend(): callable {
         if (null === $this->backend) {
-            $this->backend = $this->conf['backend'];
+            $this->backend = $this->conf['backend'] ?? function ($context) {
+                    return $context;
+                };;
         }
         return $this->backend;
     }

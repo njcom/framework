@@ -115,7 +115,7 @@ class PhpFileHeaderFixer implements IFn {
                 return null;
             }
         };
-        visit($this->parse($context), [$visitor]);
+        traverse($this->parse($context), [$visitor]);
         $resultContext = array_merge(
             $context,
             [
@@ -296,7 +296,7 @@ class PhpFileHeaderFixer implements IFn {
                 return null;
             }
         };
-        return $this->visit(
+        return $this->change(
             $context,
             [$visitor],
             afterVisit: function ($nodes, $visitors) use ($fix) {
@@ -324,7 +324,7 @@ class PhpFileHeaderFixer implements IFn {
      * @param callable|null $afterVisit
      * @return array Modified $context.
      */
-    private function visit(
+    private function change(
         array $context,
         array $visitors,
         callable $beforeVisit = null,
@@ -334,7 +334,7 @@ class PhpFileHeaderFixer implements IFn {
         if ($beforeVisit) {
             $nodes = $beforeVisit($nodes, $visitors);
         }
-        visit($nodes, $visitors);
+        traverse($nodes, $visitors);
         if ($afterVisit) {
             $nodes = $afterVisit($nodes, $visitors);
         }
@@ -397,6 +397,6 @@ class PhpFileHeaderFixer implements IFn {
                 return $found;
             }
         };
-        return $this->visit($context, [$visitor]);
+        return $this->change($context, [$visitor]);
     }
 }

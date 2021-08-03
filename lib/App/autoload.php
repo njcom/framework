@@ -12,7 +12,7 @@ require __DIR__ . '/Cli/autoload.php';
 require __DIR__ . '/Web/autoload.php';
 //}
 
-const VENDOR = 'morpho';
+const VENDOR = 'morpho-os';
 
 const APP_DIR_NAME = 'app'; // used in frontend modules
 const BIN_DIR_NAME = 'bin';
@@ -24,6 +24,7 @@ const LOG_DIR_NAME = 'log';
 const RC_DIR_NAME = 'rc';
 const BACKEND_DIR_NAME = 'backend';
 const TEST_DIR_NAME = 'test';
+const TEST_DATA_DIR_NAME = 'test-data';
 const TMP_DIR_NAME = 'tmp';
 const VENDOR_DIR_NAME = 'vendor';
 const VIEW_DIR_NAME = 'view';

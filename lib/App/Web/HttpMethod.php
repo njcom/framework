@@ -8,9 +8,12 @@ namespace Morpho\App\Web;
 
 use Morpho\Base\Enum;
 
+/**
+ * Supported HTTP methods. See:
+ *     [Method definitions in RFC 7231](https://tools.ietf.org/html/rfc7231#section-4.3)
+ *     [PATCH method in RFC 5789](https://tools.ietf.org/html/rfc5789)
+ */
 abstract class HttpMethod extends Enum {
-    // [Method definitions in RFC 7231](https://tools.ietf.org/html/rfc7231#section-4.3)
-    // [PATCH method in RFC 5789](https://tools.ietf.org/html/rfc5789)
     public const GET = 'GET';
     public const POST = 'POST';
     public const DELETE = 'DELETE';

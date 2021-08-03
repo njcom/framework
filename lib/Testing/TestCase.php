@@ -41,9 +41,9 @@ use function trim;
 use function uniqid;
 use function unlink;
 
-abstract class TestCase extends BaseTestCase {
-    protected const TEST_DATA_DIR_NAME = 'test-data';
+use const Morpho\App\TEST_DATA_DIR_NAME;
 
+abstract class TestCase extends BaseTestCase {
     private array $tmpDirPaths = [];
     private array $tmpFilePaths = [];
     private string $classFilePath;
@@ -208,7 +208,7 @@ abstract class TestCase extends BaseTestCase {
      */
     protected function getTestDirPath(): string {
         $classFilePath = $this->classFilePath();
-        return dirname($classFilePath) . '/' . self::TEST_DATA_DIR_NAME . '/' . pathinfo($classFilePath, PATHINFO_FILENAME);
+        return dirname($classFilePath) . '/' . TEST_DATA_DIR_NAME . '/' . pathinfo($classFilePath, PATHINFO_FILENAME);
     }
 
     private function classFilePath(): string {

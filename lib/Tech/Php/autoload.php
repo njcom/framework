@@ -64,16 +64,25 @@ namespace Morpho\Tech\Php {
         return $parser->parse($text);
     }
 
+    function change(string $text, array $visitors) {
+        $nodes = parse($text);
+    }
+
+    function changeFile(string $filePath, array $visitors): string {
+        $nodes = visitFile($filePath, $visitors);
+        return pp($nodes);
+    }
+
     function visitFile(string $filePath, array $visitors): array {
         $nodes = parseFile($filePath);
         if (null === $nodes) {
             // non-throwing error handler is used and parser was unable to recover from an error.
             throw new UnexpectedValueException();
         }
-        return visit($nodes, $visitors);
+        return traverse($nodes, $visitors);
     }
 
-    function visit(array $nodes, array $visitors): array {
+    function traverse(array $nodes, array $visitors): array {
         $traverser = new NodeTraverser();
         foreach ($visitors as $visitor) {
             $traverser->addVisitor($visitor);
@@ -129,7 +138,7 @@ namespace Morpho\Tech\Php {
             }
         };
         $nodes = parse('<?php ' . var_export($var, true) . ';');
-        visit($nodes, [$visitor]);
+        traverse($nodes, [$visitor]);
 
         return rtrim(pp($nodes), ';');
     }

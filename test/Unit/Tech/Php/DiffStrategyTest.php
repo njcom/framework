@@ -10,12 +10,14 @@ use Morpho\Tech\Php\DiffStrategy;
 
 use function sort;
 
+use const Morpho\App\TEST_DATA_DIR_NAME;
+
 class DiffStrategyTest extends DiscoverStrategyTest {
     /**
      * @dataProvider dataClassTypesDefinedInFile
      */
     public function testClassTypesDefinedInFile(array $expected, string $relFilePath) {
-        $actual = $this->strategy->classTypesDefinedInFile(__DIR__ . '/' . self::TEST_DATA_DIR_NAME . '/DiscoverStrategyTest/' . $relFilePath);
+        $actual = $this->strategy->classTypesDefinedInFile(__DIR__ . '/' . TEST_DATA_DIR_NAME . '/DiscoverStrategyTest/' . $relFilePath);
         // @todo: fix sorting
         sort($expected);
         sort($actual);
