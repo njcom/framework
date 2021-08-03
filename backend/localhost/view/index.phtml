@@ -23,7 +23,7 @@
 <?php require __DIR__ . '/_main-menu.phtml' ?>
 <main class="container-fluid">
     <?php if (isset($this->pageTitle)) { ?>
-        <h1 id="page-title" class="mt-2 mb-5"><?= $this->pageTitle ?></h1>
+        <h1 id="page-title"><?= $this->pageTitle ?></h1>
     <?php } ?>
     <?php print $this->messenger()->renderPageMessages(); ?>
     <?php print $body; ?>

@@ -2,7 +2,7 @@
 
 import {App as BaseApp} from "../base/app";
 
-class App extends BaseApp {
+export class App extends BaseApp {
     protected bindEventHandlers(): void {
         this.bindMainMenuHandlers();
     }

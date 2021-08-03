@@ -12,6 +12,13 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/test">Tests</a>
                 </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Cache</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="<?= $this->uriWithRedirectToSelf('/localhost/cache/clean-routes') ?>">Rebuild routes</a></li>
+                        <li><a class="dropdown-item" href="<?= $this->uriWithRedirectToSelf('/localhost/cache/clean-all') ?>" title="Rebuilds routes as well">Clean global cache</a></li>
+                    </ul>
+                </li>
             </ul>
             <form class="d-flex">
                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">

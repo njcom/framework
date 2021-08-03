@@ -2,6 +2,9 @@
 
 use Morpho\App\Cli\ServiceManager as CliServiceManager;
 use Morpho\App\Web\ServiceManager as WebServiceManager;
+use Morpho\App\Web\View\GridWidget;
+use Morpho\App\Web\View\MessengerPlugin;
+
 use const Morpho\App\{FRONTEND_DIR_NAME, BACKEND_DIR_NAME, VENDOR, CACHE_DIR_NAME};
 
 $thisModuleDirPath = dirname(__DIR__);
@@ -105,6 +108,10 @@ return [
             ],
             'templateEngine'       => [
                 'forceCompile' => true,
+                'plugins' => [
+                    'Messenger' => MessengerPlugin::class,
+                    'Grid'      => GridWidget::class,
+                ],
                 /*            'forceCompileTs' => false,
                             'nodeBinDirPath' => getenv('NODE_BIN_DIR_PATH') ?: '/usr/bin',
                             'tsOptions' => [

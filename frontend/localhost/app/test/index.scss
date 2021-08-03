@@ -1,0 +1,87 @@
+@import "../../../node_modules/bootstrap/scss/functions";
+@import "../../../node_modules/bootstrap/scss/variables";
+
+$pass-color: $green-500;
+$fail-color: $red-500;
+
+#qunit {
+    ul, ol, li {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: block;
+    }
+    p {
+        margin: 0;
+        padding: 0;
+    }
+    .qunit-url-config {
+        display: inline-block;
+    }
+
+    .module-name {
+        background: #2c3034;
+        padding: $spacer / 4;
+    }
+
+    .test-name {
+        margin: $spacer / 4;
+    }
+
+    .pass, .fail {
+        border-radius: $border-radius-sm;
+        padding: $spacer / 4;
+        margin: $spacer 0;
+    }
+    .pass {
+        background: $pass-color;
+        .pass {
+            margin: 0;
+            padding: 0;
+        }
+    }
+    .fail {
+        background: $fail-color;
+        .fail {
+            margin: 0;
+            padding: 0;
+        }
+    }
+
+    table {
+        td, th {
+            vertical-align: middle;
+            padding: $spacer / 4;
+        }
+
+        pre {
+            margin: 0;
+            padding: 0;
+        }
+    }
+
+}
+
+#qunit-tests li:last-child {
+    margin-bottom: 0;
+}
+
+#qunit-userAgent {
+    display: none;
+}
+
+#qunit-testresult {
+    background: #212529;
+    margin-top: $spacer !important;
+    margin-bottom: $spacer !important;
+    padding: $spacer / 2 !important;
+    border-radius: $border-radius-sm;
+
+    .passed {
+        color: $pass-color;
+    }
+
+    .failed {
+        color: $fail-color;
+    }
+}

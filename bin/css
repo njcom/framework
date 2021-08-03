@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+set -eu
+
+readonly SCRIPT_FILE_NAME="$(basename "$0")"
+readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_FILE_PATH="$SCRIPT_DIR_PATH/$SCRIPT_FILE_NAME"
+
+# shellcheck source=./conf.sh
+source "$SCRIPT_DIR_PATH"/conf.sh
+
+build() {
+    sass "$frontendDirPath"/localhost
+}
+
+watch() {
+    sass --watch "$frontendDirPath"/localhost
+}
+
+###############################################################################
+
+usage() {
+    echo "Usage: $0 $(_cmdRe | perl -WpE 's/[|()]/\n/g' | perl -WpE 's/^/    /' | sort -u)"
+}
+
+_err() {
+    >&2 echo "$@"
+    exit 1
+}
+
+_cmdRe() {
+    grep -P '^[a-z].*\(\)\s+{' "$SCRIPT_FILE_PATH" | grep -vP '[A-Z]' | tr -d '() {' | tr '\n' '|' | sed 's/|$//' | sed 's/^/(/' | sed 's/$/)/'
+}
+
+if [[ $# -lt 1 ]]; then
+    usage
+    exit
+fi
+
+if [[ ! "$1" =~ ^$(_cmdRe)$ ]]; then
+    usage
+    exit 1
+fi
+
+"$@"

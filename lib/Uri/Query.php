@@ -32,7 +32,7 @@ class Query extends ArrayObject implements IUriComponent {
         if ($this->initialized) {
             return false;
         }
-        foreach ($this as $name => $value) {
+        foreach ($this as $_) {
             return false;
         }
         return true;

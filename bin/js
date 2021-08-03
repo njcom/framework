@@ -6,22 +6,23 @@ readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_FILE_NAME="$(basename "$0")"
 readonly SCRIPT_FILE_PATH="$SCRIPT_DIR_PATH/$SCRIPT_FILE_NAME"
 
-frontendDirPath=$(realpath -e $SCRIPT_DIR_PATH/../frontend)
+# shellcheck source=./conf.sh
+source "$SCRIPT_DIR_PATH"/conf.sh
 
 build() {
     #node $SCRIPT_DIR_PATH/ts.js build
-    while IFS= read -r -d '' tsConfigFilePath; do
-        echo -n "Transpiling '""$(dirname "$tsConfigFilePath")/**.ts'..."
-        tsc --build "$tsConfigFilePath"
-        echo ' OK'
+    while IFS= read -r -d '' tsConfFilePath; do
+        echo -n "Transpiling '""$(dirname "$tsConfFilePath")/**.ts'..."
+        tsc --build "$tsConfFilePath"
+        echo OK
     done < <(find "$frontendDirPath"/localhost -mindepth 2 -name tsconfig.json -type f -print0)
     find "$frontendDirPath"/localhost/lib/base -name '*.js' -not -name 'index.js' -delete
 }
 
 watch() {
     local cmds=()
-    while IFS= read -r -d '' tsConfigFilePath; do
-        cmds+=("tsc --build $tsConfigFilePath --watch --preserveWatchOutput")
+    while IFS= read -r -d '' tsConfFilePath; do
+        cmds+=("tsc --build $tsConfFilePath --watch --preserveWatchOutput")
     done < <(find "$frontendDirPath"/localhost -mindepth 2 -name tsconfig.json -type f -print0)
     # https://github.com/microsoft/TypeScript/issues/17611
     concurrently --raw -- "${cmds[@]}"
@@ -30,16 +31,16 @@ watch() {
 ###############################################################################
 
 usage() {
-    echo "Usage: $0 $(_cmdRe | sed 's/|/ | /g')"
+    echo "Usage: $0 $(_cmdRe | perl -WpE 's/[|()]/\n/g' | perl -WpE 's/^/    /' | sort -u)"
 }
 
 _err() {
-    "$@" >&2
+    >&2 echo "$@"
     exit 1
 }
 
 _cmdRe() {
-    grep -P '^[a-zA-Z].*\(\)\s+{' "$SCRIPT_FILE_PATH" | tr -d '() {' | tr '\n' '|' | sed 's/|$//' | sed 's/^/(/' | sed 's/$/)/'
+    grep -P '^[a-z].*\(\)\s+{' "$SCRIPT_FILE_PATH" | grep -vP '[A-Z]' | tr -d '() {' | tr '\n' '|' | sed 's/|$//' | sed 's/^/(/' | sed 's/$/)/'
 }
 
 if [[ $# -lt 1 ]]; then

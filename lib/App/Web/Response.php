@@ -9,6 +9,7 @@ namespace Morpho\App\Web;
 use ArrayObject;
 use Morpho\App\Response as BaseResponse;
 use RuntimeException;
+use Morpho\Uri\Uri;
 
 use function header;
 use function intval;
@@ -61,12 +62,7 @@ class Response extends BaseResponse implements IResponse {
         return $this->formats;
     }
 
-    /**
-     * @param string|Uri\Uri $uri
-     * @param int|null $statusCode
-     * @return Response
-     */
-    public function redirect($uri, int $statusCode = null): self {
+    public function redirect(string|Uri $uri, int $statusCode = null): self {
         $this->headers()->offsetSet('Location', is_string($uri) ? $uri : $uri->toStr(null, true));
         $this->setStatusCode($statusCode ?: self::FOUND_STATUS_CODE);
         return $this;

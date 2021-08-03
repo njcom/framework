@@ -8,6 +8,7 @@ namespace Morpho\App\Web;
 
 use ArrayObject;
 use Morpho\App\IResponse as IBaseResponse;
+use Morpho\Uri\Uri;
 
 interface IResponse extends IBaseResponse {
     public function allowAjax(bool $flag = null): bool|self;
@@ -16,7 +17,7 @@ interface IResponse extends IBaseResponse {
 
     public function formats(): array;
 
-    public function redirect($uri, int $statusCode = null): self;
+    public function redirect(string|Uri $uri, int $statusCode = null): self;
 
     public function headers(): ArrayObject;
 

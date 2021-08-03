@@ -5,9 +5,9 @@ use Morpho\Fs\Dir;
 use Morpho\App\Web\Controller;
 
 class CacheController extends Controller {
-    public function clearAll() {
+    public function cleanAll() {
         $cacheDirPath = $this->serviceManager['backendModuleIndex']->module($this->serviceManager['site']->moduleName())->cacheDirPath();
-        $gitignoreFileExists = \is_file($cacheDirPath . '/.gitignore');
+        $gitignoreFileExists = file_exists($cacheDirPath . '/.gitignore');
         Dir::delete($cacheDirPath, function (string $path, $isDir) use ($cacheDirPath, $gitignoreFileExists) {
             if ($isDir) {
                 return $path !== $cacheDirPath;
@@ -18,14 +18,14 @@ class CacheController extends Controller {
                 return $path !== $cacheDirPath . '/.gitignore';
             }
         });
-        return $this->mkRedirectResult($this->query('redirect') ?: '/')
-            ->withSuccessMessage("The cache has been cleared successfully");
+        $this->messenger()->addSuccessMessage('The cache has been cleared successfully');
+        return $this->redirect();
     }
 
-    public function clearRoutes() {
+    public function cleanRoutes() {
         $this->serviceManager['router']->rebuildRoutes();
-        return $this->mkRedirectResult($this->query('redirect') ?: '/')
-            ->withSuccessMessage("Routes have been rebuilt successfully");
+        $this->messenger()->addSuccessMessage('Routes have been rebuilt successfully');
+        return $this->redirect();
     }
     /**
     public function rebuildEvents() {

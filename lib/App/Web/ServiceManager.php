@@ -19,7 +19,6 @@ use Morpho\App\Web\View\FormProcessor;
 use Morpho\App\Web\View\HtmlResponseRenderer;
 use Morpho\App\Web\View\JsonResponseRenderer;
 use Morpho\App\Web\View\Messenger;
-use Morpho\App\Web\View\MessengerPlugin;
 use Morpho\App\Web\View\PhpProcessor;
 use Morpho\App\Web\View\PhpTemplateEngine;
 use Morpho\App\Web\View\ScriptProcessor;
@@ -96,11 +95,9 @@ class ServiceManager extends BaseServiceManager {
             if (class_exists($pluginClass)) {
                 $plugin = new $pluginClass();
             } else {
-                $knownPlugins = [
-                    'Messenger' => MessengerPlugin::class,
-                ];
-                if (isset($knownPlugins[$pluginName])) {
-                    $plugin = new $knownPlugins[$pluginName]();
+                $plugins = $this->conf['templateEngine']['plugins'];
+                if (isset($plugins[$pluginName])) {
+                    $plugin = new $plugins[$pluginName]();
                 } else {
                     throw new UnexpectedValueException("Unknown plugin: " . $pluginName . '. Candidates: ' . $pluginClass . '.');
                 }

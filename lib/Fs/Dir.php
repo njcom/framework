@@ -239,16 +239,16 @@ class Dir extends Entry {
     public static function delete(string|iterable $dirPath, bool|callable $predicateFnOrFlag = true): void {
         if (is_iterable($dirPath)) {
             foreach ($dirPath as $path) {
-                static::delete_($path, $predicateFnOrFlag);
+                static::_delete($path, $predicateFnOrFlag);
             }
         } else {
-            static::delete_($dirPath, $predicateFnOrFlag);
+            static::_delete($dirPath, $predicateFnOrFlag);
         }
     }
 
-    private static function delete_(string $dirPath, $predicateOrDeleteSelf) {
+    private static function _delete(string $dirPath, $predicateOrDeleteSelf) {
         if (is_callable($predicateOrDeleteSelf)) {
-            self::delete__($dirPath, $predicateOrDeleteSelf);
+            self::__delete($dirPath, $predicateOrDeleteSelf);
         } elseif (is_bool($predicateOrDeleteSelf)) {
             if ($predicateOrDeleteSelf) {
                 // Delete self
@@ -259,7 +259,7 @@ class Dir extends Entry {
                     return $path !== $dirPath;
                 };
             }
-            self::delete__($dirPath, $predicate);
+            self::__delete($dirPath, $predicate);
         } else {
             throw new InvalidArgumentException('The second argument must be either bool or callable');
         }
@@ -269,7 +269,7 @@ class Dir extends Entry {
      * @param string $dirPath
      * @param callable|null $predicate Predicate selects entries which will be deleted.
      */
-    private static function delete__(string $dirPath, ?callable $predicate): void {
+    private static function __delete(string $dirPath, ?callable $predicate): void {
         $absPath = Path::normalize(self::mustExist($dirPath));
         $it = new DirectoryIterator($absPath);
         foreach ($it as $entry) {
@@ -288,13 +288,13 @@ class Dir extends Entry {
                 if (null !== $predicate) {
                     if ($predicate($entryPath, true)) {
                         // If it is a directory and we need to delete this directory, delete contents regardless of the $predicate, so pass the `null` as the second argument.
-                        self::delete__($entryPath, null);
+                        self::__delete($entryPath, null);
                     } else {
                         // The $predicate can be used for the directory contents, so pass it as the argument.
-                        self::delete__($entryPath, $predicate);
+                        self::__delete($entryPath, $predicate);
                     }
                 } else {
-                    self::delete__($entryPath, null);
+                    self::__delete($entryPath, null);
                 }
             } else {
                 if (null === $predicate || $predicate($entryPath, false)) {
@@ -463,12 +463,12 @@ class Dir extends Entry {
         if (is_iterable($dirPath)) {
             foreach ($dirPath as $path) {
                 if (is_dir($path)) {
-                    self::delete_($path, $predicate);
+                    self::_delete($path, $predicate);
                 }
             }
         } else {
             if (is_dir($dirPath)) {
-                self::delete_($dirPath, $predicate);
+                self::_delete($dirPath, $predicate);
             }
         }
     }
@@ -537,7 +537,7 @@ class Dir extends Entry {
      * @param callable $fn
      * @return mixed
      */
-    public static function in(string $otherDirPath, callable $fn) {
+    public static function in(string $otherDirPath, callable $fn): mixed {
         $curDirPath = getcwd();
         try {
             chdir($otherDirPath);

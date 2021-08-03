@@ -4,8 +4,11 @@ namespace Morpho\Site\Localhost\App\Web;
 use Morpho\App\Web\Controller;
 
 class TestController extends Controller {
+    /**
+     * @GET /test
+     */
     public function index() {
-        $this->setParentViewResult('test/test');
+        //$this->setParentViewResult('test/test');
     }
 
     public function testStatus400() {

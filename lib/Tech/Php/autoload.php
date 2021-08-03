@@ -5,6 +5,7 @@
  * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
  */
 namespace {
+
     use Morpho\Tech\Php\Debugger;
 
     require_once __DIR__ . '/Trace.php';
@@ -30,6 +31,7 @@ namespace {
 }
 
 namespace Morpho\Tech\Php {
+
     require_once __DIR__ . '/PhpErrorException.php';
 
     const LICENSE_COMMENT = "/**\n * This file is part of morpho-os/framework\n * It is distributed under the 'Apache License Version 2.0' license.\n * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.\n */";
@@ -45,7 +47,6 @@ namespace Morpho\Tech\Php {
     use PhpParser\ParserFactory;
     use PhpParser\PrettyPrinter\Standard as PrettyPrinter;
     use RuntimeException;
-    use UnexpectedValueException;
 
     use function file_get_contents;
     use function is_array;
@@ -64,23 +65,21 @@ namespace Morpho\Tech\Php {
         return $parser->parse($text);
     }
 
-    function change(string $text, array $visitors) {
+    function change(string $text, array $visitors): string {
         $nodes = parse($text);
-    }
-
-    function changeFile(string $filePath, array $visitors): string {
-        $nodes = visitFile($filePath, $visitors);
+        $nodes = traverse($nodes, $visitors);
         return pp($nodes);
     }
 
-    function visitFile(string $filePath, array $visitors): array {
-        $nodes = parseFile($filePath);
-        if (null === $nodes) {
-            // non-throwing error handler is used and parser was unable to recover from an error.
-            throw new UnexpectedValueException();
-        }
-        return traverse($nodes, $visitors);
-    }
+    /*
+        function visitFile(string $filePath, array $visitors): array {
+            $nodes = parseFile($filePath);
+            if (null === $nodes) {
+                // non-throwing error handler is used and parser was unable to recover from an error.
+                throw new UnexpectedValueException();
+            }
+            return traverse($nodes, $visitors);
+        }*/
 
     function traverse(array $nodes, array $visitors): array {
         $traverser = new NodeTraverser();

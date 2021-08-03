@@ -13,6 +13,7 @@ use Morpho\Base\IHasServiceManager;
 use Morpho\Base\IServiceManager;
 use Morpho\Base\Ok;
 use Morpho\Base\Result;
+use Morpho\Uri\Uri;
 
 abstract class Controller extends BaseController implements IHasServiceManager {
     private IRequest $request;
@@ -38,7 +39,22 @@ abstract class Controller extends BaseController implements IHasServiceManager {
     }
 
     protected function redirect(string $uri = null, int $statusCode = null): IResponse {
-        return $this->request->response()->redirect($uri, $statusCode);
+        $request = $this->request;
+        if (null === $uri) {
+            $uri = $request->uri();
+            $query = $uri->query();
+            if (isset($query['redirect'])) {
+                $redirectUri = rawurldecode($query['redirect']);
+                if (null !== $redirectUri) {
+                    $uri = new Uri($redirectUri);
+                    $query = $uri->query();
+                    if (isset($query['redirect'])) {
+                        unset($query['redirect']);
+                    }
+                }
+            }
+        }
+        return $request->response()->redirect($uri, $statusCode);
     }
 
     protected function args($name = null, callable|bool $filter = true): mixed {

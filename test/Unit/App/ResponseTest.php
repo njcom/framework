@@ -6,14 +6,11 @@
  */
 namespace Morpho\Test\Unit\App;
 
+use Morpho\App\IResponse;
 use Morpho\App\Message;
-use Morpho\App\Response;
 
 class ResponseTest extends MessageTest {
-    /**
-     * @var Response
-     */
-    private $response;
+    private IResponse $response;
 
     public function setUp(): void {
         parent::setUp();

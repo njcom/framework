@@ -1,0 +1,1 @@
+readonly frontendDirPath=$(realpath -e $SCRIPT_DIR_PATH/../frontend)

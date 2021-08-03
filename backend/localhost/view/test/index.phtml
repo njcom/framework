@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var \Morpho\App\Web\View\PhpTemplateEngine $this
+ */
+?>
 <?php $this->pageTitle = 'Tests'; ?>
 <?php /*
 require __DIR__ . '/message-test.phtml';
@@ -5,3 +10,56 @@ require __DIR__ . '/form-test.phtml';
 ?>
 <script src="/localhost/test/bom-test.js"></script>
 */ ?>
+<link rel="stylesheet" href="/localhost/lib/app/test/index.css">
+<script src="/node_modules/qunit/qunit/qunit.js"></script>
+<script src="/localhost/test/base-test.js"></script>
+<script src="/localhost/test/grid-test.js"></script>
+<script>
+    QUnit.config.autostart = false;
+</script>
+<?php $this->addJs() ?>
+
+<div class="row">
+    <div class="col">
+        <div class="card my-4">
+            <div class="card-body">
+                <h5 class="card-title">Test results</h5>
+                <div id="qunit" class="mt-3"></div>
+                <div id="qunit-fixture"></div>
+            </div>
+        </div>
+
+        <div class="card my-4">
+            <div class="card-body">
+                <h5 class="card-title">Grid test</h5>
+                <?php
+                print $this->grid()->setDataSource(
+                    [
+                        [
+                            'id'        => 22,
+                            'title'     => 'backup',
+                            'lname'     => 'backup',
+                            'descr'     => 'Makes a backup',
+                            'ltype'     => 'task',
+                        ],
+                        [
+                            'id'        => 17,
+                            'title'     => 'clean',
+                            'lname'     => 'clean',
+                            'descr'     => 'Cleans artifacts',
+                            'ltype'     => 'task',
+                        ],
+                        [
+                            'id'        => 15,
+                            'title'     => 'test',
+                            'lname'     => 'test',
+                            'descr'     => 'Runs tests',
+                            'ltype'     => 'task',
+                        ],
+                    ],
+                )
+                ?>
+            </div>
+        </div>
+    </div>
+</div>

@@ -38,19 +38,19 @@ lint:
 assets: js css
 
 js:
-	bin/ts build
+	bin/js build
 
 watch-js:
-	bin/ts watch
+	bin/js watch
 
 css:
-	sass $(frontendDirPath)/localhost
+	bin/css build
 
 watch-css:
 	sass --watch $(frontendDirPath)/localhost
 
 clean-css:
-	find $(frontendDirPath)/localhost -mindepth 1 -name '*.css' -or -name '*.css.map' -not -path '*/node_modules/*' -print -delete
+	find $(frontendDirPath)/localhost -mindepth 1 \( -name '*.css' -or -name '*.css.map' -not -path '*/node_modules/*' \) -print -delete
 
 clean-js:
 	find $(frontendDirPath)/localhost -mindepth 1 -not -path '*/node_modules/*' -and \( -name '*.js' -or -name '*.js.map' -or -name '*.tsbuildinfo' -or -name '*.d.ts' \) -not -path '*/lib/base/index.d.ts' -print -delete
@@ -67,6 +67,9 @@ build:
 
 clean: clean-assets
 	sudo sh -c 'rm -rf test/Integration/*.log $(backendDirPath)/localhost/{log,cache}/*'
+
+clean-routes:
+	sudo sh -c 'rm -rfv $(backendDirPath)/localhost/cache/router'
 
 update:
 	composer update
@@ -89,7 +92,7 @@ help: ## this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST) | sort
 
 .SILENT:
-.PHONY: all test unit-test integration-test backend-test module-test frontend-test lint assets js watch-js css watch-css clean-css clean-js clean-assets build clean update init pull-peg help
+.PHONY: all test unit-test integration-test backend-test module-test frontend-test lint assets js watch-js css watch-css clean-css clean-js clean-assets build clean clean-routes update init pull-peg help
 
 define dl
 	curl -sSfL $(1) -o $(2)

@@ -11,18 +11,9 @@ use function strpos;
 use function substr;
 
 class Authority implements IUriComponent {
-    /**
-     * @var null|string
-     */
-    protected $userInfo;
-    /**
-     * @var null|string
-     */
-    protected $host;
-    /**
-     * @var int|null
-     */
-    protected $port;
+    protected ?string $userInfo = null;
+    protected ?string $host = null;
+    protected ?int $port = null;
 
     public function __construct(string $authority = null) {
         if (null !== $authority) {

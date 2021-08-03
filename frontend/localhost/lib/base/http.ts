@@ -1,7 +1,3 @@
-class Uri {
-
-}
-
 class Http {
     public get(uri: Uri | string) {
 
