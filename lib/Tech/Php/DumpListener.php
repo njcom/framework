@@ -16,7 +16,7 @@ class DumpListener {
 
     public function __invoke(Throwable $exception): void {
         $exAsString = $exception->__toString();
-        if (class_exists('Morpho\\Tech\\Php\\Debug\\Debugger')) {
+        if (class_exists(Debugger::class)) {
             Debugger::instance()
                 ->dumpWithExitCode($exAsString, self::FAILURE_EXIT_CODE);
         } else {

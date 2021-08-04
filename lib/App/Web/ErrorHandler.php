@@ -50,8 +50,4 @@ class ErrorHandler extends BaseErrorHandler {
             echo e($message) . '.';
         };
     }
-
-    public function handleException(Throwable $e): void {
-        parent::handleException($e);
-    }
 }

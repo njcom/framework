@@ -11,20 +11,20 @@ use Morpho\App\ISite;
 use Morpho\App\Web\IRequest;
 use Morpho\App\Web\Request;
 use Morpho\Uri\Uri;
-use Morpho\App\Web\View\ScriptProcessor;
+use Morpho\App\Web\View\RcProcessor;
 use Morpho\Testing\TestCase;
 use RuntimeException;
 
 use const Morpho\App\FRONTEND_DIR_NAME;
 
-class ScriptProcessorTest extends TestCase {
-    private ScriptProcessor $processor;
+class RcProcessorTest extends TestCase {
+    private RcProcessor $processor;
     private string $baseUriPath;
 
     public function setUp(): void {
         parent::setUp();
         $this->baseUriPath = '/base/path';
-        $this->processor = new ScriptProcessor($this->mkRequest('foo/bar'), $this->mkSiteStub('abc/efg'));
+        $this->processor = new RcProcessor($this->mkRequest('foo/bar'), $this->mkSiteStub('abc/efg'));
     }
 
     private function mkSiteStub(string $siteModuleName): ISite {
@@ -91,7 +91,7 @@ OUT;
         // processor should save child scripts
         $this->processor->__invoke($childPage);
 
-        $indexAttr = ScriptProcessor::INDEX_ATTR;
+        $indexAttr = RcProcessor::INDEX_ATTR;
         $parentPage = <<<OUT
 <body>
 This is a
@@ -130,7 +130,7 @@ OUT;
      * @dataProvider dataSkipAttribute
      */
     public function testSkipAttribute($tag) {
-        $processor = new class ($this->mkRequest('foo'), $this->mkSiteStub('abc/efg')) extends ScriptProcessor {
+        $processor = new class ($this->mkRequest('foo'), $this->mkSiteStub('abc/efg')) extends RcProcessor {
             protected function containerBody(array $tag): null|array|bool {
                 $res = parent::containerBody($tag);
                 if (isset($res['_skip'])) {
@@ -174,7 +174,7 @@ OUT;
         $request = $this->mkRequest('cat/tail');
         $request['jsConf'] = $jsConf;
 
-        $processor = new ScriptProcessor($request, $this->mkSiteStub('some/blog'));
+        $processor = new RcProcessor($request, $this->mkSiteStub('some/blog'));
 
         $childPageHtml = <<<OUT
 This
@@ -209,7 +209,7 @@ OUT;
     public function testAutoInclusionOfActionScripts_WithChildScripts() {
         $request = $this->mkRequest('cat/tail');
 
-        $processor = new ScriptProcessor($request, $this->mkSiteStub('some/blog'));
+        $processor = new RcProcessor($request, $this->mkSiteStub('some/blog'));
 
         $childPage = <<<OUT
 This

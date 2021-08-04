@@ -1,3 +1,3 @@
-class Uri {
+export class Uri {
 
 }

@@ -40,7 +40,6 @@ QUnit.module('grid',  hooks => {
         grid.uncheckAllCheckboxes();
 
         assert.ok(onChange2Triggered);
-
- */
+*/
     });
 });

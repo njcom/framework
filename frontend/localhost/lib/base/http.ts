@@ -1,3 +1,5 @@
+import {Uri} from "./uri";
+
 class Http {
     public get(uri: Uri | string) {
 

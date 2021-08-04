@@ -21,7 +21,7 @@ use Morpho\App\Web\View\JsonResponseRenderer;
 use Morpho\App\Web\View\Messenger;
 use Morpho\App\Web\View\PhpProcessor;
 use Morpho\App\Web\View\PhpTemplateEngine;
-use Morpho\App\Web\View\ScriptProcessor;
+use Morpho\App\Web\View\RcProcessor;
 use Morpho\App\Web\View\UriProcessor;
 use Morpho\Base\IHasServiceManager;
 use Morpho\Tech\Php\DumpListener;
@@ -80,10 +80,10 @@ class ServiceManager extends BaseServiceManager {
         $conf['request'] = $this['request'];
         $conf['site'] = $this['site'];
         $conf['steps'] = [
-            'phpProcessor'    => new PhpProcessor(),
-            'uriProcessor'    => new UriProcessor($conf['request']),
-            'formPersister'   => new FormProcessor($conf['request']),
-            'scriptProcessor' => new ScriptProcessor($conf['request'], $conf['site']),
+            'phpProcessor'  => new PhpProcessor(),
+            'uriProcessor'  => new UriProcessor($conf['request']),
+            'formPersister' => new FormProcessor($conf['request']),
+            'rcProcessor'   => new RcProcessor($conf['request'], $conf['site']),
         ];
         return new PhpTemplateEngine($conf);
     }

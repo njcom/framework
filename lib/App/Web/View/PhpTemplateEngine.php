@@ -516,7 +516,7 @@ class PhpTemplateEngine extends ArrPipe {
             throw new NotImplementedException('todo: append specified scripts');
         }
         // if null append actions scripts
-        $this->step('scriptProcessor')
+        $this->step('rcProcessor')
             ->on('beforeRenderScripts', function ($event) {
                 $event->args = array_merge(
                     $event->args,

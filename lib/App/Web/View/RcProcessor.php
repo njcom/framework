@@ -9,8 +9,6 @@ namespace Morpho\App\Web\View;
 use Morpho\App\ISite;
 use Morpho\Base\Event;
 
-use Morpho\Uri\Uri;
-
 use function file_exists;
 use function implode;
 use function json_encode;
@@ -19,7 +17,7 @@ use function usort;
 
 use const Morpho\App\LIB_DIR_NAME;
 
-class ScriptProcessor extends HtmlProcessor {
+class RcProcessor extends HtmlProcessor {
     public const INDEX_ATTR = '_index';
 
     protected array $scripts = [];

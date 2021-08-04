@@ -11,7 +11,7 @@ use Morpho\App\Web\IRequest;
 use Morpho\App\Web\View\FormProcessor;
 use Morpho\App\Web\View\PhpProcessor;
 use Morpho\App\Web\View\PhpTemplateEngine;
-use Morpho\App\Web\View\ScriptProcessor;
+use Morpho\App\Web\View\RcProcessor;
 use Morpho\App\Web\View\UriProcessor;
 use Morpho\Base\IPipe;
 use Morpho\Testing\TestCase;
@@ -38,7 +38,7 @@ class PhpTemplateEngineTest extends TestCase {
                 'phpProcessor'    => new PhpProcessor(),
                 'uriProcessor'    => new UriProcessor($request),
                 'formPersister'   => new FormProcessor($request),
-                'scriptProcessor' => new ScriptProcessor($request, $site),
+                'scriptProcessor' => new RcProcessor($request, $site),
             ],
         ];
     }

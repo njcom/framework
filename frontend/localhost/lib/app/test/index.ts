@@ -1,6 +1,6 @@
 ///<amd-module name="localhost/lib/app/test/index" />
 
-import {App} from "../../lib/app";
+import {App} from "../../base/app";
 
 /*describe("1 Suite", function() {
     it("1.1 Spec Abc", function() {

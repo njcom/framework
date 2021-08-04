@@ -34,7 +34,7 @@ class ErrorHandler extends ExceptionHandler implements IErrorHandler {
 
     private bool $fatalErrorHandlerActive = false;
 
-    private $oldIniSettings = null;
+    private ?array $oldIniSettings = null;
 
     public static function checkError(bool $pred, string $msg = null): void {
         if (!$pred) {
@@ -137,8 +137,7 @@ class ErrorHandler extends ExceptionHandler implements IErrorHandler {
 
     public function handleError($severity, $message, $filePath, $lineNo): void {
         if ($severity & error_reporting()) {
-            $exception = self::errorToException($severity, $message, $filePath, $lineNo);
-            throw $exception;
+            throw self::errorToException($severity, $message, $filePath, $lineNo);
         }
     }
 

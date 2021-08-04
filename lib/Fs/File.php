@@ -62,7 +62,8 @@ class File extends Entry {
     }
 
     /**
-     * Writes string to file.
+     * Writes string to a file.
+     * @return string File path of the written file.
      */
     public static function write(string $filePath, string $content, array $conf = null): string {
         if ($filePath === '') {
