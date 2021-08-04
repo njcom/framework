@@ -63,7 +63,7 @@ OUT;
         // And now render them for <body>
         $html = $this->processor->__invoke($parentPage);
 
-        $re = $this->quotedRe(
+        $re = $this->escapeRe(
             [
                 '<body>',
                 'This is a',
@@ -77,7 +77,7 @@ OUT;
         $this->assertMatchesRegularExpression($re, $html);
     }
 
-    private function quotedRe(array $parts): string {
+    private function escapeRe(array $parts): string {
         return '~^' . implode('\s*?', array_map(fn ($s) => preg_quote($s), $parts)) . '$~s';
     }
 
@@ -102,7 +102,7 @@ OUT;
         // And now render them for <body>
         $html = $this->processor->__invoke($parentPage);
 
-        $re = $this->quotedRe(
+        $re = $this->escapeRe(
             [
                 '<body>',
                 'This is a',
@@ -188,7 +188,7 @@ OUT;
 
         $html = $processor->__invoke('<body>' . $parentScripts . '</body>');
 
-        $re = $this->quotedRe(
+        $re = $this->escapeRe(
             [
                 '<body>',
                 '<script>before</script>',
@@ -231,7 +231,7 @@ OUT;
 
         $html = $processor->__invoke('<body>' . $parentScripts . '</body>');
 
-        $re = $this->quotedRe(
+        $re = $this->escapeRe(
             [
                 '<body>',
                 '<script>before</script>',

@@ -8,6 +8,7 @@ namespace Morpho\Test\Unit\App;
 
 use Morpho\App\IResponse;
 use Morpho\App\Message;
+use Morpho\App\Response;
 
 class ResponseTest extends MessageTest {
     private IResponse $response;
@@ -23,7 +24,6 @@ class ResponseTest extends MessageTest {
         $this->assertTrue($this->response->isBodyEmpty());
         $this->assertSame('', $this->response->body());
         $newBody = 'foo';
-        /** @noinspection PhpVoidFunctionResultUsedInspection */
         $this->assertNull($this->response->setBody($newBody));
         $this->assertSame($newBody, $this->response->body());
         $this->assertFalse($this->response->isBodyEmpty());

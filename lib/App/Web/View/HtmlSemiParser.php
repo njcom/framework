@@ -314,7 +314,8 @@ class HtmlSemiParser extends EventManager implements IFn {
     }
 
     /**
-     * @return mixed Handled tag.
+     * @param array $tag
+     * @return array|false|string|null Handled tag.
      */
     protected function runHandlersForTag(array $tag): array|false|null|string {
         $tagName = strtolower($tag['_tagName']);
