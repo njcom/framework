@@ -112,7 +112,7 @@ function stylize(string $text, $codes): string {
  * @param int|string|iterable $args
  * @return array
  */
-function escapeArg($args): array {
+function earg($args): array {
     if (!is_iterable($args)) {
         if (is_string($args) || is_int($args)) {
             return [escapeshellarg((string) $args)];
@@ -134,7 +134,7 @@ function arg($args): string {
     if ($args === '') {
         return '';
     }
-    $suffix = implode(' ', escapeArg($args));
+    $suffix = implode(' ', earg($args));
     return $suffix === '' ? '' : ' ' . $suffix;
 }
 

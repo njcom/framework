@@ -7,4 +7,7 @@
 namespace Morpho\Tech\Sql;
 
 interface IInsertQuery extends IQuery {
+    public function row(array $row): self;
+
+    public function lastId(): string;
 }

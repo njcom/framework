@@ -18,7 +18,7 @@ use function fclose;
 use function file_put_contents;
 use function fwrite;
 use function md5;
-use function Morpho\App\Cli\{arg, envVarsStr, escapeArg, sh, showOk, stylize};
+use function Morpho\App\Cli\{arg, envVarsStr, earg, sh, showOk, stylize};
 use function ob_get_clean;
 use function ob_start;
 use function proc_close;
@@ -75,10 +75,10 @@ OUT
         $this->assertEquals("\033[" . $magenta . "m$text\033[0m", stylize($text, $magenta));
     }
 
-    public function testEscapeArg() {
+    public function testEarg() {
         $this->assertEquals(
             ["'foo'\\''bar'", "'test/'"],
-            escapeArg(["foo'bar", 'test/'])
+            earg(["foo'bar", 'test/'])
         );
     }
 

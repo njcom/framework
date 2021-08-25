@@ -170,10 +170,13 @@ class Debugger {
 
     public function calledAt(): string {
         $frame = $this->findCallerFrame();
+        if (null === $frame) {
+            return '—';
+        }
         return $this->formatLine("Debugger called at [{$frame['filePath']}:{$frame['line']}]");
     }
 
-    protected function findCallerFrame(): Frame {
+    protected function findCallerFrame(): ?Frame {
         // @TODO: Move isIgnoredFrame to Trace::ignoreFrame(), then call Trace::toArr()
         $trace = (new Trace())->toArr();
         do {

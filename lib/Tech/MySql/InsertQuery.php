@@ -30,9 +30,6 @@ class InsertQuery extends Query implements IInsertQuery {
         return $args;
     }
 
-    /**
-     * @return string
-     */
     public function lastId(): string {
         return $this->db->lastInsertId();
     }
