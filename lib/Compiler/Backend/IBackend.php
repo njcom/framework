@@ -8,5 +8,8 @@ namespace Morpho\Compiler\Backend;
 
 use Morpho\Compiler\ICompilerStep;
 
+/**
+ * Translates an IR/Intermediate Representation into the output program.
+ */
 interface IBackend extends ICompilerStep {
 }
