@@ -18,6 +18,11 @@ class InsertQueryTest extends QueryTest {
         $this->assertInstanceOf(IInsertQuery::class, $this->query);
     }
 
+    public function testBuild() {
+        $sql = $this->query->build(['table' => 'pkg', 'row' => ['name' => 'foo']])->__toString();
+        $this->assertSame("INSERT INTO `pkg` (`name`) VALUES ('foo')", $sql);
+    }
+
     public function testQuery() {
         $insert = new InsertQuery($this->db);
 

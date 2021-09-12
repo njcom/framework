@@ -22,7 +22,7 @@ interface IQuery extends Stringable {
      * @param $args If not null will be casted to array
      * @return $this
      */
-    public function where($condition, null|array|string|int $args = null): self;
+    public function where(array|\Stringable|string $condition, null|array|string|int $args = null): self;
 
     public function eval(): Result;
 

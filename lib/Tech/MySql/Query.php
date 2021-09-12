@@ -42,7 +42,7 @@ abstract class Query implements IQuery {
         return $this->db->expr($expr);
     }
 
-    public function where($condition, $args = null): self {
+    public function where(array|\Stringable|string $condition, $args = null): self {
         if (null === $args) {
             // $args not specified => $condition contains arguments
             if (is_array($condition)) {

@@ -30,6 +30,20 @@ class InsertQuery extends Query implements IInsertQuery {
         return $args;
     }
 
+    /**
+     * @param array{table: string, row: array} $spec
+     * @return $this
+     */
+    public function build(array $spec): self {
+        if (isset($spec['table'])) {
+            $this->table($spec['table']);
+        }
+        if (isset($spec['row'])) {
+            $this->row($spec['row']);
+        }
+        return $this;
+    }
+
     public function lastId(): string {
         return $this->db->lastInsertId();
     }
