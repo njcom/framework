@@ -1,4 +1,4 @@
-# morpho-os/framework
+# njcom/framework
 
 Framework for building web-sites, web-applications, web-IDEs, command-line applications.
 
