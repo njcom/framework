@@ -1,5 +1,5 @@
 {
-    "name": "morpho-os/framework",
+    "name": "njcom/framework",
     "description": "Framework for building web-sites, web-applications, web-IDEs, command-line applications.",
     "type": "library",
     "license": [
@@ -66,6 +66,6 @@
         }
     },
     "support": {
-        "issues": "https://github.com/morpho-os/framework/issues"
+        "issues": "https://github.com/njcom/framework/issues"
     }
 }
