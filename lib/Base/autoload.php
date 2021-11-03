@@ -156,6 +156,10 @@ function showLn(...$messages): void {
     }
 }
 
+function showOk(string|Stringable $msg = null): void {
+    showLn('OK' . (null !== $msg ? ': ' . $msg : ''));
+}
+
 /**
  * @param IDisposable $disposable
  * @param mixed $val Will be passed to IFn::__invoke()
@@ -471,7 +475,10 @@ function normalizeEols(string $list): string {
 }
 
 function toJson(mixed $val, int $flags = null): string {
-    return json_encode($val, $flags ?: JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    if (null === $flags) {
+        $flags = -1;
+    }
+    return json_encode($val, $flags & JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 }
 
 function fromJson(string $json, bool $objectsToArrays = true): mixed {
@@ -786,6 +793,7 @@ function any(callable $predicate, iterable $list): bool {
 
 function apply(callable $fn, $iter): void {
     if (is_string($iter)) {
+        // todo: use mb_*
         if ($iter !== '') {
             throw new NotImplementedException();
         }
@@ -794,6 +802,20 @@ function apply(callable $fn, $iter): void {
             $fn($v, $k);
         }
     }
+}
+
+function pipe($iter, mixed $val): mixed {
+    if (is_string($iter)) {
+        // todo: use mb_*
+        if ($iter !== '') {
+            throw new NotImplementedException();
+        }
+    } else {
+        foreach ($iter as $v) {
+            $val = $v($val);
+        }
+    }
+    return $val;
 }
 
 /**

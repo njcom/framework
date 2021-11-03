@@ -48,10 +48,6 @@ function bootstrap(): void {
     (new ErrorHandler([new DumpListener()]))->register();
 }
 
-function showOk(): void {
-    showLn("OK");
-}
-
 function error(string $errMessage = null, int $exitCode = null): void {
     if ($errMessage) {
         showError($errMessage);
