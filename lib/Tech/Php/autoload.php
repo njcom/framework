@@ -71,6 +71,16 @@ namespace Morpho\Tech\Php {
         return pp($nodes);
     }
 
+    function changeFile(string $filePath, array $visitors, bool $write = false): ?string {
+        $nodes = parseFile($filePath);
+        $nodes = traverse($nodes, $visitors);
+        if ($write) {
+            file_put_contents($filePath, pp($nodes));
+            return null;
+        }
+        return pp($nodes);
+    }
+
     /*
         function visitFile(string $filePath, array $visitors): array {
             $nodes = parseFile($filePath);

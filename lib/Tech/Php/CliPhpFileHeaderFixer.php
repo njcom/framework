@@ -12,10 +12,10 @@ use Morpho\Base\Ok;
 use Morpho\Base\Result;
 
 use function Morpho\App\Cli\errorLn;
-use function Morpho\App\Cli\showOk;
 use function Morpho\Base\indent;
 use function Morpho\Base\q;
 use function Morpho\Base\showLn;
+use function Morpho\Base\showOk;
 
 class CliPhpFileHeaderFixer implements IFn {
     public function __invoke(mixed $conf): mixed {

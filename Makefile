@@ -88,7 +88,7 @@ pull-peg:
 	dl 'https://raw.githubusercontent.com/python/cpython/main/Tools/peg_generator/pegen/metagrammar.gram' 'lib/Compiler/Frontend/Peg/peg.peg'
 
 # `help` taken from [containerd](https://github.com/containerd/containerd/blob/master/Makefile)
-help: ## this help
+help: ## This help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST) | sort
 
 .SILENT:

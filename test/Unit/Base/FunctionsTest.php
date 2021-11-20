@@ -22,71 +22,10 @@ use function count;
 use function fclose;
 use function file_put_contents;
 use function get_class_methods;
-use function Morpho\Base\{all,
-    append,
-    appendFn,
-    camelize,
-    camelizeKeys,
-    capture,
-    cartesianProduct,
-    classify,
-    compose,
-    dasherize,
-    deleteDups,
-    formatBytes,
-    formatFloat,
-    fromJson,
-    humanize,
-    indent,
-    index,
-    isSubset,
-    isUtf8Text,
-    last,
-    lastPos,
-    lines,
-    memoize,
-    merge,
-    normalizeEols,
-    not,
-    op,
-    partial,
-    permutations,
-    prepend,
-    prependFn,
-    q,
-    qq,
-    sanitize,
-    setProps,
-    setsEqual,
-    shorten,
-    showLn,
-    subsets,
-    symDiff,
-    titleize,
-    toIt,
-    toJson,
-    tpl,
-    etrim,
-    ucfirst,
-    underscore,
-    underscoreKeys,
-    unindent,
-    union,
-    uniqueName,
-    unsetMany,
-    unsetOne,
-    unsetRecursive,
-    using,
-    waitUntilNumOfAttempts,
-    waitUntilTimeout,
-    words,
-    wrap,
-    wrapFn};
+use function Morpho\Base\{all, append, appendFn, camelize, camelizeKeys, capture, cartesianProduct, classify, compose, dasherize, deleteDups, formatBytes, formatFloat, fromJson, humanize, indent, index, isSubset, isUtf8Text, last, lastPos, lines, memoize, merge, normalizeEols, not, op, partial, permutations, pipe, prepend, prependFn, q, qq, sanitize, setProps, setsEqual, shorten, showLn, showOk, subsets, symDiff, titleize, toIt, toJson, tpl, etrim, ucfirst, underscore, underscoreKeys, unindent, union, uniqueName, unsetMany, unsetOne, unsetRecursive, using, waitUntilNumOfAttempts, waitUntilTimeout, words, wrap, wrapFn};
 use function ob_get_clean;
 use function ob_start;
 use function property_exists;
-
-use const Morpho\Base\INDENT;
 
 class FunctionsTest extends TestCase {
     private $tmpHandle;
@@ -324,6 +263,10 @@ class FunctionsTest extends TestCase {
         fromJson('S => {');
     }
 
+    public function testToJson() {
+        $this->assertSame('"UTF-8 не должен эскейпиться"', toJson("UTF-8 не должен эскейпиться"));
+    }
+
     public function testNormalizeEols() {
         $this->assertEquals("foo\nbar\nbaz\n", normalizeEols("foo\r\nbar\rbaz\r\n"));
         $this->assertEquals("", normalizeEols(""));
@@ -352,6 +295,18 @@ class FunctionsTest extends TestCase {
         ob_start();
         showLn($val);
         $this->assertEquals("foo\nbar\nbaz\n", ob_get_clean());
+    }
+
+    public function testShowOk_WithoutArgs() {
+        ob_start();
+        showOk();
+        $this->assertEquals("OK\n", ob_get_clean());
+    }
+
+    public function testShowOk_WithArgs() {
+        ob_start();
+        showOk("Test");
+        $this->assertSame("OK: Test\n", ob_get_clean());
     }
 
     public function testShorten() {
@@ -1573,5 +1528,25 @@ OUT;
         $this->assertFalse(isUtf8Text("\xc3\x28"));
         $this->assertTrue(isUtf8Text("\x00"));
         $this->assertTrue(isUtf8Text("\x40"));
+    }
+
+    public function testAny() {
+        $this->markTestIncomplete();
+    }
+
+    public function testOne() {
+        $this->marktestIncomplete();
+    }
+
+    public function testApply() {
+        $this->markTestIncomplete();
+    }
+
+    public function testPipe() {
+        $iter = [
+            fn ($v) => $v + 5,
+            fn ($v) => $v * 3,
+        ];
+        $this->assertSame(36, pipe($iter, 7));
     }
 }
