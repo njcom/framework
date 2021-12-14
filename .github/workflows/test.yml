@@ -1,4 +1,4 @@
-# Based on https://github.com/shivammathur/test-setup-php/blob/master/.github/workflows/workflow.yml
+# Based on https://github.com/shivammathur/test-setup-php/blob/master/.github/workflows/main.yml
 on:
   workflow_dispatch:
   push:
@@ -8,7 +8,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        #operating-system: [ubuntu-20.04, ubuntu-18.04, windows-latest, macos-10.15]
         operating-system: [ubuntu-latest]
+        #php-versions: ['8.0', '8.1', 'latest']
         php-version: ['8.0']
     name: ${{ matrix.operating-system }}, php-${{ matrix.php-version }}
     steps:
