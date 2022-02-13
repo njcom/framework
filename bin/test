@@ -14,5 +14,5 @@ readonly phpunitConfFilePath="$testDirPath/phpunit.xml"
 #readonly seleniumLogFilePath="$testDirPath/selenium.log"
 #export SELENIUM_VERSION=latest
 
-ciOptions="--debug --log-junit $testDirPath/result/test.xml"
+ciOptions="--log-junit $testDirPath/result/test.xml"
 php -f "$phpunitBinFilePath" -- -c "$phpunitConfFilePath"$([[ -n "${MORPHO_CI-}" ]] && echo " $ciOptions") "$@"
