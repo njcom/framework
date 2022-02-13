@@ -6,13 +6,14 @@ readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #readonly SCRIPT_FILE_NAME="$(basename "$0")"
 #readonly SCRIPT_FILE_PATH="$SCRIPT_DIR_PATH/$SCRIPT_FILE_NAME"
 
-readonly baseDirPath=$(realpath -e "$SCRIPT_DIR_PATH"/..)
-readonly testDirPath="$baseDirPath/test"
-readonly phpunitBinDirPath="$baseDirPath/vendor/phpunit/phpunit"
-readonly phpunitBinFilePath="$phpunitBinDirPath/phpunit"
-readonly phpunitConfFilePath="$testDirPath/phpunit.xml"
-#readonly seleniumLogFilePath="$testDirPath/selenium.log"
+readonly BASE_DIR_PATH=$(realpath -e "$SCRIPT_DIR_PATH"/..)
+readonly TEST_DIR_PATH="$BASE_DIR_PATH/test"
+readonly PHPUNIT_BIN_DIR_PATH="$BASE_DIR_PATH/vendor/phpunit/phpunit"
+readonly PHPUNIT_BIN_FILE_PATH="$PHPUNIT_BIN_DIR_PATH/phpunit"
+readonly PHPUNIT_CONF_FILE_PATH="$TEST_DIR_PATH/phpunit.xml"
+#readonly seleniumLogFilePath="$TEST_DIR_PATH/selenium.log"
 #export SELENIUM_VERSION=latest
 
-ciOptions="--log-junit $testDirPath/result/test.xml"
-php -f "$phpunitBinFilePath" -- -c "$phpunitConfFilePath"$([[ -n "${MORPHO_CI-}" ]] && echo " $ciOptions") "$@"
+readonly CI_OPTIONS="--log-junit $TEST_DIR_PATH/test-result.xml"
+# shellcheck disable=SC2046
+php -f "$PHPUNIT_BIN_FILE_PATH" -- -c "$PHPUNIT_CONF_FILE_PATH"$([[ -n "${MORPHO_CI-}" ]] && echo " $CI_OPTIONS") "$@"

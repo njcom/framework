@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
 
-# [GitHub Actions Documentation](https://help.github.com/en/actions)
-
 set -eu
 
 readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-readonly baseDirPath=$(realpath -e "$SCRIPT_DIR_PATH"/../..)
-readonly backendDirPath=$baseDirPath/backend
-readonly frontendDirPath=$baseDirPath/frontend
-readonly testDb=test
+readonly BASE_DIR_PATH=$(realpath -e "$SCRIPT_DIR_PATH"/../..)
+readonly BACKEND_DIR_PATH=$BASE_DIR_PATH/backend
+readonly FRONTEND_DIR_PATH=$BASE_DIR_PATH/frontend
+readonly TEST_DB=test
 
 showFacts() {
 #    env
     pwd
-    ls -al "$baseDirPath"
+    ls -al "$BASE_DIR_PATH"
     id
     cat /etc/os-release
     which -a php
@@ -41,7 +39,7 @@ prepareEnv() {
     /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16
 
     sudo npm install -g typescript@next sass
-    pushd "$frontendDirPath" > /dev/null
+    pushd "$FRONTEND_DIR_PATH" > /dev/null
     npm install
     popd > /dev/null
 
@@ -54,7 +52,7 @@ prepareEnv() {
     # Catch all
     server_name _;
 
-    root $frontendDirPath;
+    root $FRONTEND_DIR_PATH;
     index index.php;
     try_files \$uri /index.php?\$args;
 
@@ -63,13 +61,13 @@ prepareEnv() {
         fastcgi_pass unix:/run/php/php7.4-fpm.sock;
     }
 }" | sudo tee > /dev/null /etc/nginx/sites-enabled/default
-    sudo chown -R www-data:www-data "$frontendDirPath" "$backendDirPath"/localhost/{log,cache}
+    sudo chown -R www-data:www-data "$FRONTEND_DIR_PATH" "$BACKEND_DIR_PATH"/localhost/{log,cache}
     sudo systemctl restart nginx
 
     installComposerPackages
 
     sudo systemctl restart mysql
-    export MORPHO_TEST_DB_USER=root MORPHO_TEST_DB_PASSWORD=root MORPHO_TEST_DB_DB="$testDb"
+    export MORPHO_TEST_DB_USER=root MORPHO_TEST_DB_PASSWORD=root MORPHO_TEST_DB_DB="$TEST_DB"
     mysql -u"$MORPHO_TEST_DB_USER" -p"$MORPHO_TEST_DB_PASSWORD" -e "DROP DATABASE IF EXISTS $MORPHO_TEST_DB_DB; CREATE DATABASE $MORPHO_TEST_DB_DB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci"
     mysql -u"$MORPHO_TEST_DB_USER" -p"$MORPHO_TEST_DB_PASSWORD" -e "SHOW DATABASES"
 }
@@ -84,14 +82,14 @@ runTests() {
     local -r exitCode=$?
     set -e
     if [[ $exitCode -ne 0 ]]; then
-        if [[ -d $backendDirPath/localhost/log ]]; then
+        if [[ -d $BACKEND_DIR_PATH/localhost/log ]]; then
             showSep
-            echo "$backendDirPath/localhost/log/*"
-            sudo sh -c "cat $backendDirPath/localhost/log/*"
+            echo "$BACKEND_DIR_PATH/localhost/log/*"
+            sudo sh -c "cat $BACKEND_DIR_PATH/localhost/log/*"
         fi
         exit $exitCode
     fi
-    php "$baseDirPath"/bin/lint
+    php "$BASE_DIR_PATH"/bin/lint
 }
 
 deployResults() {
