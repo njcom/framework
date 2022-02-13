@@ -69,7 +69,7 @@ class XPathResult implements Iterator, Countable {
         return $res;
     }
 
-    public function current() {
+    public function current(): ?DOMNode {
         return $this->item($this->offset);
     }
 
@@ -77,7 +77,7 @@ class XPathResult implements Iterator, Countable {
         $this->offset++;
     }
 
-    public function key() {
+    public function key(): int {
         return $this->offset;
     }
 

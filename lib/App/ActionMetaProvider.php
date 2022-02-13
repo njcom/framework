@@ -112,7 +112,7 @@ abstract class ActionMetaProvider implements IFn {
                 }
                 $docComment = $rMethod->getDocComment();
                 if ($docComment) {
-                    if (false !== strpos($docComment, '@notAction')) {
+                    if (str_contains($docComment, '@notAction')) {
                         return false;
                     }
                 }
@@ -124,12 +124,12 @@ abstract class ActionMetaProvider implements IFn {
 
     abstract protected function baseControllerClasses(): array;
 
-    public function setControllerFilter(callable $controllerFilter) {
+    public function setControllerFilter(callable $controllerFilter): static {
         $this->controllerFilter = $controllerFilter;
         return $this;
     }
 
-    public function setActionFilter(callable $actionFilter) {
+    public function setActionFilter(callable $actionFilter): static {
         $this->actionFilter = $actionFilter;
         return $this;
     }

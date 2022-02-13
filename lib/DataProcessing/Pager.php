@@ -101,10 +101,7 @@ class Pager implements Iterator, Countable {
         return $this->isValid && $this->currentPageNumber() <= $this->totalPagesCount();
     }
 
-    /**
-     * @return string int float
-     */
-    public function key() {
+    public function key(): string|int {
         return $this->currentPageNumber();
     }
 

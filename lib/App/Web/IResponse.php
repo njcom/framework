@@ -11,13 +11,13 @@ use Morpho\App\IResponse as IBaseResponse;
 use Morpho\Uri\Uri;
 
 interface IResponse extends IBaseResponse {
-    public function allowAjax(bool $flag = null): bool|self;
+    public function allowAjax(bool $flag = null): bool|static;
 
-    public function setFormats(array $formats): self;
+    public function setFormats(array $formats): static;
 
     public function formats(): array;
 
-    public function redirect(string|Uri $uri, int $statusCode = null): self;
+    public function redirect(string|Uri $uri, int $statusCode = null): static;
 
     public function headers(): ArrayObject;
 

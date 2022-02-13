@@ -18,7 +18,7 @@ use function strpos;
 use function substr;
 
 abstract class Path {
-    public static function rel(string $path, string $basePath): string {
+    public static function rel(string $basePath, string $path): string {
         $path = static::normalize($path);
         $basePath = static::normalize($basePath);
 

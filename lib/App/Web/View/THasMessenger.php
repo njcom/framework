@@ -9,7 +9,7 @@ namespace Morpho\App\Web\View;
 trait THasMessenger {
     protected Messenger $messenger;
 
-    public function setMessenger(Messenger $messenger): self {
+    public function setMessenger(Messenger $messenger): static {
         $this->messenger = $messenger;
         return $this;
     }
@@ -22,22 +22,22 @@ trait THasMessenger {
         $this->messenger->clearMessages();
     }
 
-    public function addSuccessMessage(string $message, array $args = null): self {
+    public function addSuccessMessage(string $message, array $args = null): static {
         $this->messenger->addSuccessMessage($message, $args);
         return $this;
     }
 
-    public function addInfoMessage(string $text, array $args = null): self {
+    public function addInfoMessage(string $text, array $args = null): static {
         $this->messenger->addInfoMessage($text, $args);
         return $this;
     }
 
-    public function addWarningMessage(string $text, array $args = null): self {
+    public function addWarningMessage(string $text, array $args = null): static {
         $this->messenger->addWarningMessage($text, $args);
         return $this;
     }
 
-    public function addErrorMessage(string $text, array $args = null): self {
+    public function addErrorMessage(string $text, array $args = null): static {
         $this->messenger->addErrorMessage($text, $args);
         return $this;
     }

@@ -15,7 +15,7 @@ class Err extends Result {
         return false;
     }
 
-    public function jsonSerialize() {
+    public function jsonSerialize(): array {
         return ['err' => $this->val];
     }
 }

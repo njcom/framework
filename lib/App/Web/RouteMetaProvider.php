@@ -26,6 +26,7 @@ use const PREG_SET_ORDER;
 
 class RouteMetaProvider implements IFn {
     private const CONTROLLER_CLASS_RE = '~(?P<controllerNs>.*?\\\\Web)\\\\(?P<controller>.*?)$~s';
+
     protected array $restActions = [
         'index'  => ['GET', null],        // GET    $entityType
         'list'   => ['GET', 'list'],      // GET    $entityType/list
@@ -97,8 +98,8 @@ class RouteMetaProvider implements IFn {
 
     public static function parseDocComment(string $docComment): array {
         $parsed = [];
-        if (false !== strpos($docComment, '@')) {
-            $httpMethodsRegexpPart = '(?:' . implode('|', HttpMethod::vals()) . ')';
+        if (str_contains($docComment, '@')) {
+            $httpMethodsRegexpPart = '(?:' . implode('|', array_column(HttpMethod::cases(), 'value')) . ')';
             $routeRegExp = '~'
                 . '@(?<httpMethod>' . $httpMethodsRegexpPart . '(?:\|' . $httpMethodsRegexpPart . ')?)    # method (required)
                 (?:\s+(?<uri>[^*\s]+))?                                                                   # uri    (optional)

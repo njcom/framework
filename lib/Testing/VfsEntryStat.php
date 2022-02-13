@@ -12,7 +12,7 @@ use UnexpectedValueException;
 use function array_merge;
 
 class VfsEntryStat extends ArrayObject {
-    private $default = [
+    private array $default = [
         'dev'     => 0,
         'ino'     => 0,
         'mode'    => 0,
@@ -32,7 +32,7 @@ class VfsEntryStat extends ArrayObject {
         parent::__construct(array_merge($this->default, $values));
     }
 
-    public function offsetSet($name, $value) {
+    public function offsetSet(mixed $name, mixed $value): void {
         if (!isset($this->default[$name])) {
             throw new UnexpectedValueException();
         }

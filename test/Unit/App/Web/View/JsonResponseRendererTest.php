@@ -65,23 +65,23 @@ class JsonResponseRendererTest extends TestCase {
                 return $this->response;
             }
 
-            public function getIterator() {
+            public function getIterator(): \Traversable {
                 // TODO: Implement getIterator() method.
             }
 
-            public function offsetExists($offset) {
+            public function offsetExists(mixed $offset): bool {
                 // TODO: Implement offsetExists() method.
             }
 
-            public function offsetGet($offset) {
+            public function offsetGet(mixed $offset): mixed {
                 // TODO: Implement offsetGet() method.
             }
 
-            public function offsetSet($offset, $value) {
+            public function offsetSet(mixed $offset, mixed $value): void {
                 // TODO: Implement offsetSet() method.
             }
 
-            public function offsetUnset($offset) {
+            public function offsetUnset(mixed $offset): void {
                 // TODO: Implement offsetUnset() method.
             }
 
@@ -93,7 +93,7 @@ class JsonResponseRendererTest extends TestCase {
                 // TODO: Implement unserialize() method.
             }
 
-            public function count() {
+            public function count(): int {
                 // TODO: Implement count() method.
             }
 

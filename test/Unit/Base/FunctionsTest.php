@@ -11,6 +11,7 @@ use IteratorAggregate;
 use Morpho\Base\IDisposable;
 use Morpho\Base\IFn;
 use Morpho\Testing\TestCase;
+use ReturnTypeWillChange;
 use RuntimeException;
 use SplStack;
 use stdClass;
@@ -128,7 +129,7 @@ class FunctionsTest extends TestCase {
                 $this->it = $it;
             }
 
-            public function getIterator() {
+            public function getIterator(): \Traversable {
                 return $this->it;
             }
         };

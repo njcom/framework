@@ -8,6 +8,7 @@ namespace Morpho\App\Web\View;
 
 use Countable;
 use IteratorAggregate;
+use Traversable;
 use UnexpectedValueException;
 
 use function count;
@@ -21,7 +22,7 @@ class Messenger implements Countable, IteratorAggregate {
 
     protected ?IMessageStorage $messageStorage = null;
 
-    protected $allowedTypes = [
+    protected array $allowedTypes = [
         self::SUCCESS,
         self::INFO,
         self::WARNING,
@@ -88,7 +89,7 @@ class Messenger implements Countable, IteratorAggregate {
         return isset($this->messageStorage[self::ERROR]) && count($this->messageStorage[self::ERROR]) > 0;
     }
 
-    public function getIterator(): iterable {
+    public function getIterator(): Traversable {
         $this->initMessageStorage();
         return $this->messageStorage;
     }

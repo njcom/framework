@@ -34,7 +34,7 @@ class PhpFileHeaderFixer implements IFn {
     /**
      * @param null|string $licenseComment If null then license will not be checked and fixed.
      */
-    public function setLicenseComment(?string $licenseComment): self {
+    public function setLicenseComment(?string $licenseComment): static {
         $this->licenseComment = $licenseComment;
         return $this;
     }
@@ -115,7 +115,7 @@ class PhpFileHeaderFixer implements IFn {
                 return null;
             }
         };
-        traverse($this->parse($context), [$visitor]);
+        visit($this->parse($context), [$visitor]);
         $resultContext = array_merge(
             $context,
             [
@@ -136,7 +136,7 @@ class PhpFileHeaderFixer implements IFn {
     }
 
     private function checkNs(array $context): Result {
-        $relPath = Path::rel($context['filePath'], $context['baseDirPath']);
+        $relPath = Path::rel($context['baseDirPath'], $context['filePath']);
         $expectedNs = rtrim($context['ns'], '\\');
         $nsSuffix = init(str_replace('/', '\\', $relPath), '\\');
         if ($nsSuffix !== '') {
@@ -334,7 +334,7 @@ class PhpFileHeaderFixer implements IFn {
         if ($beforeVisit) {
             $nodes = $beforeVisit($nodes, $visitors);
         }
-        traverse($nodes, $visitors);
+        visit($nodes, $visitors);
         if ($afterVisit) {
             $nodes = $afterVisit($nodes, $visitors);
         }

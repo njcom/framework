@@ -120,7 +120,7 @@ class ServiceManager extends ArrayObject implements IServiceManager, IConfigurab
         return method_exists($this, $method);
     }
 
-    public function setConf(mixed $conf): self {
+    public function setConf(mixed $conf): static {
         $this->conf = $conf;
         return $this;
     }
@@ -129,7 +129,7 @@ class ServiceManager extends ArrayObject implements IServiceManager, IConfigurab
         return $this->conf;
     }
 
-    public function setAliases(array $aliases): self {
+    public function setAliases(array $aliases): static {
         $this->aliases = $aliases;
         return $this;
     }

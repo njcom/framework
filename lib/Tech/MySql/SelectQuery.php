@@ -19,7 +19,7 @@ class SelectQuery extends Query implements ISelectQuery {
     protected array $orderBy = [];
     protected ?array $limit = null;
 
-    public function columns(array|Expr|string $columns): self {
+    public function columns(array|Expr|string $columns): static {
         if (is_array($columns)) {
             $this->columns = array_merge($this->columns, $columns);
         } else {
@@ -71,41 +71,41 @@ class SelectQuery extends Query implements ISelectQuery {
         return implode("\n", $sql);
     }
 
-    public function into(): self {
+    public function into(): static {
         throw new NotImplementedException();
     }
 
-    public function union(): self {
+    public function union(): static {
         // https://dev.mysql.com/doc/refman/8.0/en/union.html
         throw new NotImplementedException();
     }
 
-    public function leftJoin(string|Expr $sql): self {
+    public function leftJoin(string|Expr $sql): static {
         $this->join[] = ['LEFT', $sql];
         return $this;
     }
 
-    public function innerJoin(string|Expr $sql): self {
+    public function innerJoin(string|Expr $sql): static {
         $this->join[] = ['INNER', $sql];
         return $this;
     }
 
-    public function rightJoin(string|Expr $sql): self {
+    public function rightJoin(string|Expr $sql): static {
         $this->join[] = ['RIGHT', $sql];
         return $this;
     }
 
-    public function groupBy(string|Expr $sql): self {
+    public function groupBy(string|Expr $sql): static {
         $this->groupBy[] = $sql;
         return $this;
     }
 
-    public function having(string|Expr $sql): self {
+    public function having(string|Expr $sql): static {
         $this->having[] = $sql;
         return $this;
     }
 
-    public function orderBy(string|Expr|array $orderBy): self {
+    public function orderBy(string|Expr|array $orderBy): static {
         if (is_array($orderBy)) {
             $this->orderBy = array_merge($this->orderBy, $orderBy);
         } else {
@@ -114,7 +114,7 @@ class SelectQuery extends Query implements ISelectQuery {
         return $this;
     }
 
-    public function limit(int $numOfRows, int $offset = null): self {
+    public function limit(int $numOfRows, int $offset = null): static {
         $this->limit = [$offset, $numOfRows];
         return $this;
     }

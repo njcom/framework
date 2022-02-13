@@ -45,7 +45,7 @@ class Response extends BaseResponse implements IResponse {
         ];
     }
 
-    public function allowAjax(bool $flag = null): bool|self {
+    public function allowAjax(bool $flag = null): bool|static {
         if ($flag !== null) {
             $this->allowAjax = $flag;
             return $this;
@@ -53,7 +53,7 @@ class Response extends BaseResponse implements IResponse {
         return $this->allowAjax;
     }
 
-    public function setFormats(array $formats): self {
+    public function setFormats(array $formats): static {
         $this->formats = $formats;
         return $this;
     }
@@ -62,7 +62,7 @@ class Response extends BaseResponse implements IResponse {
         return $this->formats;
     }
 
-    public function redirect(string|Uri $uri, int $statusCode = null): self {
+    public function redirect(string|Uri $uri, int $statusCode = null): static {
         $this->headers()->offsetSet('Location', is_string($uri) ? $uri : $uri->toStr(null, true));
         $this->setStatusCode($statusCode ?: self::FOUND_STATUS_CODE);
         return $this;

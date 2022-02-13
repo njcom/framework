@@ -51,7 +51,7 @@ class Conf extends ArrayObject implements IConf {
      * @param bool $recursive
      * @return Conf
      */
-    public function merge($conf, bool $recursive = true): self {
+    public function merge($conf, bool $recursive = true): static {
         if ($conf instanceof ArrayObject) {
             $conf = $conf->getArrayCopy();
         }

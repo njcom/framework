@@ -61,7 +61,7 @@ class DbClient extends BaseDbClient {
         return $this->eval('SELECT DATABASE()')->field();
     }
 
-    public function useDb(string $dbName): self {
+    public function useDb(string $dbName): static {
         $this->exec('USE ' . $this->quoteIdentifier($dbName));
         return $this;
     }

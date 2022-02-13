@@ -9,6 +9,7 @@
  * 1. https://medium.com/@gvanrossum_83706/peg-parsing-series-de5d41b2ed60
  * 2. https://www.python.org/dev/peps/pep-0617/
  * 3. https://www.youtube.com/watch?v=QppWTvh7_sI
+ *
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
@@ -17,7 +18,11 @@ use Morpho\Compiler\Frontend\IParserGen;
 class Peg implements IParserGen {
     public function frontend(): callable {
         return function (mixed $context): mixed {
-            $context = (new GrammarParser(new GrammarLexer()))($context);
+            $tokenGen = function () {
+                // todo
+                yield [];
+            };
+            $context = (new GrammarParser(new GrammarLexer($tokenGen())))($context);
             return (new GrammarChecker())($context);
         };
     }

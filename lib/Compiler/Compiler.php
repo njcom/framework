@@ -63,17 +63,17 @@ class Compiler extends ConfigurablePipe implements ICompiler {
         return 3;
     }
 
-    public function setFrontend(callable $frontend): self {
+    public function setFrontend(callable $frontend): static {
         $this->frontend = $frontend;
         return $this;
     }
 
-    public function setMidend(callable $midend): self {
+    public function setMidend(callable $midend): static {
         $this->midend = $midend;
         return $this;
     }
 
-    public function setBackend(callable $backend): self {
+    public function setBackend(callable $backend): static {
         $this->backend = $backend;
         return $this;
     }

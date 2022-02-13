@@ -15,7 +15,7 @@ use function implode;
 class InsertQuery extends Query implements IInsertQuery {
     protected array $rows = [];
 
-    public function row(array $row): self {
+    public function row(array $row): static {
         $this->rows[] = $row;
         //$args = \array_values($row);
         //return [$sql, $args];
@@ -34,7 +34,7 @@ class InsertQuery extends Query implements IInsertQuery {
      * @param array{table: string, row: array} $spec
      * @return $this
      */
-    public function build(array $spec): self {
+    public function build(array $spec): static {
         if (isset($spec['table'])) {
             $this->table($spec['table']);
         }
@@ -47,7 +47,7 @@ class InsertQuery extends Query implements IInsertQuery {
     public function lastId(): string {
         return $this->db->lastInsertId();
     }
-    // todo: public funciton rows(array $rows): self {
+    // todo: public funciton rows(array $rows): static {
     //}
     /*
         public function insertRows(string $tableName, array $rows, array $conf = null): void {

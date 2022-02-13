@@ -20,7 +20,7 @@ interface ICommandResult extends IteratorAggregate, Stringable {
 
     public function isError(): bool;
 
-    public function lines(): iterable;
+    public function lines(): \Traversable;
 
     public function __toString(): string;
 }

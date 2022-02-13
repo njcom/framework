@@ -9,6 +9,7 @@ namespace Morpho\App;
 use ArrayAccess;
 use IteratorAggregate;
 use RuntimeException;
+use Traversable;
 
 use function array_keys;
 
@@ -59,8 +60,8 @@ class ModuleIndex implements IteratorAggregate {
         $this->index = $this->loaded = null;
         $this->indexer->clear();
     }
+    public function getIterator(): Traversable {
 
-    public function getIterator() {
         $this->init();
         foreach ($this->index as $moduleName => $_) {
             yield $moduleName;

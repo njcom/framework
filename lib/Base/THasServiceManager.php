@@ -12,7 +12,7 @@ trait THasServiceManager {
     /**
      * @notCommand
      */
-    public function setServiceManager(IServiceManager $serviceManager): self {
+    public function setServiceManager(IServiceManager $serviceManager): static {
         $this->serviceManager = $serviceManager;
         return $this;
     }

@@ -116,13 +116,10 @@ class Dir extends Entry {
     }
 
     /**
-     * @param string|array $dirPath
-     * @param int|null $mode
-     * @param bool $recursive
      * @return string|array string if $dirPath is a string, an array if the $dirPath is an array
      * @TODO: Accept iterable
      */
-    public static function create($dirPath, ?int $mode = Stat::DIR_MODE, bool $recursive = true) {
+    public static function create(string|array $dirPath, ?int $mode = Stat::DIR_MODE, bool $recursive = true): string|array {
         if (null === $mode) {
             $mode = Stat::DIR_MODE;
         }
@@ -270,7 +267,10 @@ class Dir extends Entry {
      * @param callable|null $predicate Predicate selects entries which will be deleted.
      */
     private static function __delete(string $dirPath, ?callable $predicate): void {
-        $absPath = Path::normalize(self::mustExist($dirPath));
+        if (!file_exists($dirPath)) {
+            return;
+        }
+        $absPath = Path::normalize($dirPath);
         $it = new DirectoryIterator($absPath);
         foreach ($it as $entry) {
             if ($entry->isDot()) {
@@ -321,7 +321,7 @@ class Dir extends Entry {
                 continue;
             }
             $entryPath = $item->getPathname();
-            $relPath = Path::rel($entryPath, $sourceDirPath);
+            $relPath = Path::rel($sourceDirPath, $entryPath);
             Entry::copy($entryPath, $targetDirPath . '/' . $relPath);
         }
         return $targetDirPath;

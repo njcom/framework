@@ -6,36 +6,34 @@
  */
 namespace Morpho\Compiler\Frontend;
 
-use Morpho\Base\Enum;
-
 /**
  * https://en.wikipedia.org/wiki/Punctuation
  */
-class Lexeme extends Enum {
+enum Lexeme {
     // Double quote
-    public const DOUBLE_Q = '"';
+    public const DoubleQ = '"';
     // Back quote
-    public const BACK_Q = '`';
+    public const BackQ = '`';
     // Apostrophe
-    public const APOST = "'";
+    public const Apos = "'";
     // Opening parenthesis
-    public const OPEN_PAREN = '(';
+    public const OpenParen = '(';
     // Closing parenthesis
-    public const CLOSE_PAREN = ')';
+    public const CloseParen = ')';
     // Opening square bracket
-    public const OPEN_BRACKET = '[';
+    public const OpenBracket = '[';
     // Closing square bracket
-    public const CLOSE_BRACKET = ']';
+    public const CloseBracket = ']';
     // Opening curly brace
-    public const OPEN_BRACE = '{';
+    public const OpenBrace = '{';
     // Closing curly brace
-    public const CLOSE_BRACE = '}';
+    public const CloseBrace = '}';
     // Opening angle bracket
-    public const OPEN_ANGLE_BRACKET = '<';
+    public const OpenAngleBracket = '<';
     // Closing angle bracket
-    public const CLOSE_ANGLE_BRACKET = '>';
-    public const COMMA = ',';
-    public const DOT = '.';
-    public const HYPHEN = '-';
-    public const SEMICOLON = ';';
+    public const CloseAngleBracket = '>';
+    public const Comma = ',';
+    public const Dot = '.';
+    public const Hyphen = '-';
+    public const Semicolon = ';';
 }

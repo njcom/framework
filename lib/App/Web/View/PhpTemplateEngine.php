@@ -144,7 +144,7 @@ class PhpTemplateEngine extends ArrPipe {
         $this->targetDirPath = $dirPath;
     }
 
-    public function addBaseSourceDirPath(string $dirPath): self {
+    public function addBaseSourceDirPath(string $dirPath): static {
         $baseDirPaths = $this->baseSourceDirPaths;
         $key = array_search($dirPath, $baseDirPaths);
         if (false !== $key) {
@@ -277,7 +277,7 @@ class PhpTemplateEngine extends ArrPipe {
             }
         }
         $baseSourceDirPath = $candidateDirPaths[$max[0]];
-        $targetRelFilePath = Path::changeExt(Path::rel($sourceAbsFilePath, $baseSourceDirPath), 'php');
+        $targetRelFilePath = Path::changeExt(Path::rel($baseSourceDirPath, $sourceAbsFilePath), 'php');
         $targetAbsFilePath = $this->targetDirPath . '/' . $targetRelFilePath;
         $this->compileFile($sourceAbsFilePath, $targetAbsFilePath, []);
         return $this->evalPhpFile($targetAbsFilePath, (array) $context);

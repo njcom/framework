@@ -93,7 +93,7 @@ class ClassTypeDiscoverer {
         return $this->discoverStrategy()->classTypesDefinedInFile($filePath);
     }
 
-    public function setDiscoverStrategy(IDiscoverStrategy $strategy): self {
+    public function setDiscoverStrategy(IDiscoverStrategy $strategy): static {
         $this->discoverStrategy = $strategy;
         return $this;
     }

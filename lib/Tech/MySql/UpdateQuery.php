@@ -12,7 +12,7 @@ class UpdateQuery extends Query implements IUpdateQuery {
     protected array $tables = [];
     protected array $columns = [];
 
-    public function columns(array|string $columns): self {
+    public function columns(array|string $columns): static {
         if (is_array($columns)) {
             $this->columns = array_merge($this->columns, $columns);
         } else {

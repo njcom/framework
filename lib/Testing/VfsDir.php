@@ -23,9 +23,9 @@ use function reset;
 use function umask;
 
 class VfsDir extends VfsEntry implements Iterator, Countable {
-    private $index = 0;
+    //private $index = 0;
 
-    private $entries = [];
+    private array $entries = [];
 
     public function open(): void {
         $this->rewind();
@@ -38,7 +38,7 @@ class VfsDir extends VfsEntry implements Iterator, Countable {
 
     public function close(): void {
         parent::close();
-        $this->index = 0;
+        //$this->index = 0;
     }
 
     public function entry(string $name): IVfsEntry {
@@ -55,8 +55,8 @@ class VfsDir extends VfsEntry implements Iterator, Countable {
     /**
      * @return IVfsEntry|false
      */
-    public function entryOrNone(string $name) {
-        return isset($this->entries[$name]) ? $this->entries[$name] : false;
+    public function entryOrNone(string $name): IVfsEntry|bool {
+        return $this->entries[$name] ?? false;
     }
 
     public function dirExists(string $name): bool {
@@ -97,7 +97,7 @@ class VfsDir extends VfsEntry implements Iterator, Countable {
     /**
      * @return VfsDir|false
      */
-    public function dirOrNone(string $name) {
+    public function dirOrNone(string $name): bool|VfsDir {
         $dir = $this->entries[$name] ?? false;
         if ($dir && !$dir instanceof VfsDir) {
             throw new LogicException();
@@ -112,7 +112,7 @@ class VfsDir extends VfsEntry implements Iterator, Countable {
     /**
      * @return VfsFile|false
      */
-    public function fileOrNone(string $name) {
+    public function fileOrNone(string $name): bool|VfsFile {
         $file = $this->entries[$name] ?? false;
         if ($file && !$file instanceof VfsFile) {
             throw new LogicException();
@@ -148,7 +148,7 @@ class VfsDir extends VfsEntry implements Iterator, Countable {
         $this->entries[$entry->name()] = $entry;
     }
 
-    public function current() {
+    public function current(): mixed {
         return current($this->entries);
     }
 
@@ -156,7 +156,7 @@ class VfsDir extends VfsEntry implements Iterator, Countable {
         next($this->entries);
     }
 
-    public function key() {
+    public function key(): mixed {
         throw new NotImplementedException();
     }
 

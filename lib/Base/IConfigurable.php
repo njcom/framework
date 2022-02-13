@@ -7,6 +7,6 @@
 namespace Morpho\Base;
 
 interface IConfigurable {
-    public function setConf(mixed $conf) : self;
+    public function setConf(mixed $conf) : static;
     public function conf() : mixed;
 }

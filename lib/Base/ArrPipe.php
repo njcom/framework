@@ -24,12 +24,12 @@ class ArrPipe implements IPipe {
         $this->steps = $steps;
     }
 
-    public function prependStep($step): self {
+    public function prependStep($step): static {
         array_unshift($this->steps, $step);
         return $this;
     }
 
-    public function appendStep(callable $step): self {
+    public function appendStep(callable $step): static {
         $this->steps[] = $step;
         return $this;
     }
@@ -59,7 +59,7 @@ class ArrPipe implements IPipe {
         return isset($this->steps[$this->key()]);
     }
 
-    public function key() {
+    public function key(): int|string|null {
         return key($this->steps);
     }
 

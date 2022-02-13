@@ -45,7 +45,6 @@ class HandlerInstanceProvider implements IFn {
     protected function registerModuleClassLoader(Module $module): void {
         $moduleName = $module->name();
         if (!isset($this->registeredModules[$moduleName])) {
-            /** @noinspection PhpIncludeInspection */
             require_once $module->autoloadFilePath();
             $this->registeredModules[$moduleName] = true;
         }

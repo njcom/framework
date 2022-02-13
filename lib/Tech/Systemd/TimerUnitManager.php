@@ -11,7 +11,7 @@ class TimerUnitManager extends UnitManager {
         parent::__construct(UnitType::TIMER, $unitName, $unitFilePath);
     }
 
-    public function disable(bool $stop, bool $canFail): self {
+    public function disable(bool $stop, bool $canFail): static {
         // Clean due the `Persistent=true`
         $this->sh(
             'systemctl clean --what=state ' . escapeshellarg($this->unitName . '.' . $this->unitType),

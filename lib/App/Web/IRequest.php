@@ -21,9 +21,9 @@ interface IRequest extends IBaseRequest {
 
     public function response(): IResponse;
 
-    public function setMethod(string $method): void;
+    public function setMethod(HttpMethod $method): void;
 
-    public function method(): string;
+    public function method(): HttpMethod;
 
     public function isGetMethod(): bool;
 

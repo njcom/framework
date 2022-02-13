@@ -64,14 +64,11 @@ class Session implements Countable, Iterator, ArrayAccess {
         return count($_SESSION[self::KEY][$this->storageKey]);
     }
 
-    public function current() {
+    public function current(): mixed {
         return current($_SESSION[self::KEY][$this->storageKey]);
     }
 
-    /**
-     * @return string|int
-     */
-    public function key() {
+    public function key(): int|string|null {
         return key($_SESSION[self::KEY][$this->storageKey]);
     }
 
@@ -110,7 +107,7 @@ class Session implements Countable, Iterator, ArrayAccess {
         return isset($_SESSION[self::KEY][$this->storageKey][$name]);
     }
 
-    public function &offsetGet($key) {
+    public function &offsetGet($key): mixed {
         return $this->__get($key);
     }
 

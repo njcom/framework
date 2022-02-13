@@ -49,7 +49,7 @@ class Browser extends RemoteWebDriver {
         */
     }
 
-    public function setWaitTimeout(int $timeout): self {
+    public function setWaitTimeout(int $timeout): static {
         $this->waitTimeout = $timeout;
         return $this;
     }
@@ -58,7 +58,7 @@ class Browser extends RemoteWebDriver {
         return $this->waitTimeout;
     }
 
-    public function setWaitInterval(int $interval): self {
+    public function setWaitInterval(int $interval): static {
         $this->waitInterval = $interval;
         return $this;
     }

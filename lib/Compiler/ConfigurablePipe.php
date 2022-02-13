@@ -16,7 +16,7 @@ abstract class ConfigurablePipe extends Pipe implements IConfigurable {
         $this->conf = (array) $conf;
     }
 
-    public function setConf(mixed $conf): self {
+    public function setConf(mixed $conf): static {
         $this->conf = $conf;
         return $this;
     }

@@ -244,7 +244,7 @@ OUT;
             ->dump(...$args);
     }
 
-    public function setExitCode(int $exitCode): self {
+    public function setExitCode(int $exitCode): static {
         $this->exitCode = $exitCode;
         return $this;
     }
@@ -423,9 +423,8 @@ OUT;
         */
     }
 
-    public function ignoreCaller(string $filePath, int $lineNumber = null): self {
+    public function ignoreCaller(string $filePath, int $lineNumber = null): static {
         $this->ignoredFrames[] = ['filePath' => $filePath, 'line' => $lineNumber];
-
         return $this;
     }
 

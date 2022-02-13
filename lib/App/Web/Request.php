@@ -45,8 +45,8 @@ use function ucwords;
 class Request extends BaseRequest implements IRequest {
     protected array $knownMethods;
     protected ?ArrayObject $headers = null;
-    protected ?string $originalMethod = null;
-    protected string|bool|null $overwrittenMethod;
+    protected ?HttpMethod $originalMethod;
+    protected ?HttpMethod $overwrittenMethod;
     protected ?bool $isAjax = null;
     private ?array $serverVars;
     private ?Uri $uri = null;
@@ -54,11 +54,11 @@ class Request extends BaseRequest implements IRequest {
     private ?IResponse $response = null;
 
     public function __construct(array $vals = null, ?array $serverVars = null) {
-        $this->knownMethods = HttpMethod::vals();
+        $this->knownMethods = array_column(HttpMethod::cases(), 'value');
         parent::__construct((array) $vals);
         $this->serverVars = $serverVars;
         $method = $this->detectOriginalMethod();
-        $this->originalMethod = null !== $method ? $method : HttpMethod::GET;
+        $this->originalMethod = null !== $method ? $method : HttpMethod::Get;
         $this->overwrittenMethod = $this->detectOverwrittenMethod();
     }
 
@@ -98,41 +98,40 @@ class Request extends BaseRequest implements IRequest {
 
     /**
      * NB: $method must not be taken from user input.
-     * @param string $method
      */
-    public function setMethod(string $method): void {
-        $this->originalMethod = strtoupper($method);
+    public function setMethod(HttpMethod $method): void {
+        $this->originalMethod = $method;
         $this->overwrittenMethod = null;
     }
 
-    public function method(): string {
+    public function method(): HttpMethod {
         return null !== $this->overwrittenMethod
             ? $this->overwrittenMethod
             : $this->originalMethod;
     }
 
     public function isGetMethod(): bool {
-        return $this->method() === HttpMethod::GET;
+        return $this->method() === HttpMethod::Get;
     }
 
     public function isPostMethod(): bool {
-        return $this->method() === HttpMethod::POST;
+        return $this->method() === HttpMethod::Post;
     }
 
     public function isDeleteMethod(): bool {
-        return $this->method() === HttpMethod::DELETE;
+        return $this->method() === HttpMethod::Delete;
     }
 
     public function isPatchMethod(): bool {
-        return $this->method() === HttpMethod::PATCH;
+        return $this->method() === HttpMethod::Patch;
     }
 
     public function isPutMethod(): bool {
-        return $this->method() === HttpMethod::PUT;
+        return $this->method() === HttpMethod::Put;
     }
 
     public function isHeadMethod(): bool {
-        return $this->method() === HttpMethod::HEAD;
+        return $this->method() === HttpMethod::Head;
     }
 
     /*
@@ -174,9 +173,9 @@ class Request extends BaseRequest implements IRequest {
     public function args(string|array|null $names = null, callable|bool $filter = true): mixed {
         $method = $this->method();
         return match ($method) {
-            HttpMethod::GET => $this->query($names, $filter),
-            HttpMethod::POST => $this->post($names, $filter),
-            HttpMethod::PATCH => $this->patch($names, $filter),
+            HttpMethod::Get => $this->query($names, $filter),
+            HttpMethod::Post => $this->post($names, $filter),
+            HttpMethod::Patch => $this->patch($names, $filter),
             default => throw new BadRequestException(),
         };
     }
@@ -228,7 +227,7 @@ class Request extends BaseRequest implements IRequest {
     }
 
     public function patch($name = null, callable|bool $filter = true): mixed {
-        if ($this->overwrittenMethod === HttpMethod::PATCH) {
+        if ($this->overwrittenMethod === HttpMethod::Patch) {
             return $this->post($name, $filter);
         }
         // @TODO: read from php://input using resource up to 'post_max_size' and 'max_input_vars' php.ini values, check PHP sources for possible handling of the php://input and applying these settings already on PHP core level.
@@ -509,7 +508,7 @@ class Request extends BaseRequest implements IRequest {
         return new Response();
     }
 
-    protected function detectOverwrittenMethod(): ?string {
+    protected function detectOverwrittenMethod(): ?HttpMethod {
         $overwrittenMethod = null;
         $httpMethod = $this->serverVar('HTTP_X_HTTP_METHOD_OVERRIDE');
         if (null !== $httpMethod) {
@@ -525,18 +524,18 @@ class Request extends BaseRequest implements IRequest {
         if (null !== $overwrittenMethod) {
             $overwrittenMethod = strtoupper($overwrittenMethod);
             if ($this->isKnownMethod($overwrittenMethod)) {
-                return $overwrittenMethod;
+                return HttpMethod::from($overwrittenMethod);
             }
         }
         return null;
     }
 
-    protected function detectOriginalMethod(): ?string {
+    protected function detectOriginalMethod(): ?HttpMethod {
         $httpMethod = $this->serverVar('REQUEST_METHOD');
         if (null !== $httpMethod) {
             $httpMethod = strtoupper((string) $httpMethod);
             if ($this->isKnownMethod($httpMethod)) {
-                return $httpMethod;
+                return HttpMethod::from($httpMethod);
             }
         }
         return null;

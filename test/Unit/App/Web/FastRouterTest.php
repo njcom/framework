@@ -9,6 +9,7 @@ namespace Morpho\Test\Unit\App\Web;
 use ArrayObject;
 use FastRoute\Dispatcher as IDispatcher;
 use Morpho\App\Web\FastRouter;
+use Morpho\App\Web\HttpMethod;
 use Morpho\App\Web\IRequest;
 use Morpho\App\Web\IResponse;
 use Morpho\Uri\Path;
@@ -22,7 +23,7 @@ class FastRouterTest extends TestCase {
     public function dataRoute() {
         // valid HTTP method and path
         yield [
-            'GET',
+            HttpMethod::Get,
             '/foo/bar',
             [
                 IDispatcher::FOUND,
@@ -36,7 +37,7 @@ class FastRouterTest extends TestCase {
         ];
         // valid HTTP method, invalid path
         yield [
-            'GET',
+            HttpMethod::Get,
             '/foo',
             [
                 IDispatcher::NOT_FOUND,
@@ -48,7 +49,7 @@ class FastRouterTest extends TestCase {
         ];
         // invalid HTTP method, valid path
         yield [
-            'PATCH',
+            HttpMethod::Patch,
             '/foo/bar',
             [
                 IDispatcher::METHOD_NOT_ALLOWED,
@@ -63,11 +64,11 @@ class FastRouterTest extends TestCase {
     /**
      * @dataProvider dataRoute
      */
-    public function testRoute(string $httpMethod, string $requestPath, array $routeInfo, array $expectedHandler) {
+    public function testRoute(HttpMethod $httpMethod, string $requestPath, array $routeInfo, array $expectedHandler) {
         $dispatcher = $this->createMock(IDispatcher::class);
         $dispatcher->expects($this->once())
             ->method('dispatch')
-            ->with($this->identicalTo($httpMethod), $this->identicalTo($requestPath))
+            ->with($this->identicalTo($httpMethod->value), $this->identicalTo($requestPath))
             ->willReturn($routeInfo);
 
         $uri = $this->createMock(Uri::class);
@@ -112,34 +113,34 @@ class FastRouterTest extends TestCase {
         $this->assertSame($expectedHandler, $request->handler());
     }
 
-    protected function mkRequest(Uri $uri, string $httpMethod) {
+    protected function mkRequest(Uri $uri, HttpMethod $httpMethod): IRequest {
         return new class ($uri, $httpMethod) implements IRequest {
             private array $handler;
 
-            public function __construct(private Uri $uri, private string $method) {
+            public function __construct(private Uri $uri, private HttpMethod $method) {
             }
 
-            public function getIterator() {
+            public function getIterator(): \Traversable {
                 throw new NotImplementedException();
             }
 
-            public function offsetExists($offset) {
+            public function offsetExists(mixed $offset): bool {
                 throw new NotImplementedException();
             }
 
-            public function offsetGet($offset) {
+            public function offsetGet(mixed $offset): mixed {
                 throw new NotImplementedException();
             }
 
-            public function offsetSet($offset, $value) {
+            public function offsetSet(mixed $offset, mixed $value): void {
                 throw new NotImplementedException();
             }
 
-            public function offsetUnset($offset) {
+            public function offsetUnset(mixed $offset): void {
                 throw new NotImplementedException();
             }
 
-            public function count() {
+            public function count(): int {
                 throw new NotImplementedException();
             }
 
@@ -215,11 +216,11 @@ class FastRouterTest extends TestCase {
                 throw new NotImplementedException();
             }
 
-            public function setMethod(string $method): void {
+            public function setMethod(HttpMethod $method): void {
                 throw new NotImplementedException();
             }
 
-            public function method(): string {
+            public function method(): HttpMethod {
                 return $this->method;
             }
 

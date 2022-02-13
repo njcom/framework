@@ -39,7 +39,7 @@ class UnitManager {
         return sh($cmd, $conf);
     }
 
-    public function disable(bool $stop, bool $canFail): self {
+    public function disable(bool $stop, bool $canFail): static {
         $this->sh(
             'systemctl disable' . ($stop ? ' --now' : '') . ' ' . escapeshellarg(
                 $this->unitName . '.' . $this->unitType
@@ -49,7 +49,7 @@ class UnitManager {
         return $this;
     }
 
-    public function stop(bool $canFail): self {
+    public function stop(bool $canFail): static {
         $this->sh('systemctl stop ' . escapeshellarg($this->unitName . '.' . $this->unitType), ['check' => !$canFail]);
         return $this;
     }

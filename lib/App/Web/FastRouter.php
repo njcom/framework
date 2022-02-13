@@ -14,7 +14,6 @@ use FastRoute\RouteParser\Std as StdRouteParser;
 use Morpho\Base\IHasServiceManager;
 use Morpho\Base\IServiceManager;
 use Morpho\Caching\ICache;
-
 use UnexpectedValueException;
 
 use function Morpho\Base\compose;
@@ -32,7 +31,7 @@ class FastRouter implements IHasServiceManager, IRouter {
         $this->cacheKey = cacheKey($this, __FUNCTION__);
     }
 
-    public function setServiceManager(IServiceManager $serviceManager): self {
+    public function setServiceManager(IServiceManager $serviceManager): static {
         $this->serviceManager = $serviceManager;
         $this->cache = $serviceManager['routerCache'];
         return $this;
@@ -40,7 +39,7 @@ class FastRouter implements IHasServiceManager, IRouter {
 
     public function route(IRequest $request): void {
         $routeInfo = $this->mkDispatcher()
-            ->dispatch($request->method(), $request->uri()->path()->toStr(false));
+            ->dispatch($request->method()->value, $request->uri()->path()->toStr(false));
         switch ($routeInfo[0]) {
             case IDispatcher::NOT_FOUND: // 404 Not Found
                 $handler = $this->conf()['handlers']['notFound'];

@@ -11,6 +11,7 @@ use Morpho\Tech\Sql\Expr;
 use Morpho\Tech\Sql\IDbClient;
 use Morpho\Tech\Sql\IQuery;
 use Morpho\Tech\Sql\Result;
+use Stringable;
 
 abstract class Query implements IQuery {
     protected IDbClient $db;
@@ -25,7 +26,7 @@ abstract class Query implements IQuery {
         }
     }
 
-    public function build(array $spec): self {
+    public function build(array $spec): static {
         throw new NotImplementedException(__METHOD__);
     }
 
@@ -33,7 +34,7 @@ abstract class Query implements IQuery {
      * @param string|array|Expr $tableName For alias use: ['myTableName' => 'myAlias']
      * @return $this
      */
-    public function table(string|array|Expr $tableName): self {
+    public function table(string|array|Expr $tableName): static {
         $this->tables[] = $tableName;
         return $this;
     }
@@ -42,7 +43,7 @@ abstract class Query implements IQuery {
         return $this->db->expr($expr);
     }
 
-    public function where(array|\Stringable|string $condition, $args = null): self {
+    public function where(array|Stringable|string $condition, $args = null): static {
         if (null === $args) {
             // $args not specified => $condition contains arguments
             if (is_array($condition)) {

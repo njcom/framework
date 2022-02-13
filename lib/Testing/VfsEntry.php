@@ -11,15 +11,9 @@ use LogicException;
 use function time;
 
 abstract class VfsEntry implements IVfsEntry {
-    /**
-     * @var bool
-     */
-    protected $isOpen = false;
-    /**
-     * @var string
-     */
-    private $uri;
-    private $stat;
+    protected bool $isOpen = false;
+    private string $uri;
+    private VfsEntryStat $stat;
 
     public function __construct(string $uri, VfsEntryStat $stat) {
         $this->uri = $uri;

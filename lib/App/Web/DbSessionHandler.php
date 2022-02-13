@@ -10,27 +10,27 @@ use Morpho\Base\NotImplementedException;
 use SessionHandlerInterface;
 
 class DbSessionHandler implements SessionHandlerInterface {
-    public function close() {
+    public function close(): bool {
         throw new NotImplementedException();
     }
 
-    public function destroy($sessionId) {
+    public function destroy(string $sessionId): bool {
         throw new NotImplementedException();
     }
 
-    public function gc($maxlifetime) {
+    public function gc(int $maxlifetime): false|int {
         throw new NotImplementedException();
     }
 
-    public function open($savePath, $name) {
+    public function open(string $savePath, string $name): bool {
         throw new NotImplementedException();
     }
 
-    public function read($sessionId) {
+    public function read(string $sessionId): false|string {
         throw new NotImplementedException();
     }
 
-    public function write($sessionId, $sessionData) {
+    public function write(string $sessionId, string $sessionData): bool {
         throw new NotImplementedException();
     }
 }

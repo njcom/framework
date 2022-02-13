@@ -184,7 +184,9 @@ class NamespaceReflection {
     }
 
     /**
+     * @param callable|null $filter
      * @return iterable Iterable over \ReflectionClass
+     * @throws \ReflectionException
      */
     public function classTypes(callable $filter = null): iterable {
         $this->requireFile($this->filePath);
@@ -205,16 +207,15 @@ class NamespaceReflection {
             $php = file_get_contents($filePath);
             eval('?>' . $php);
         } else {
-            /** @noinspection PhpIncludeInspection */
             require_once $filePath;
         }
     }
 
     /**
      * @return iterable Iterable over \ReflectionFunction
+     * @throws \ReflectionException
      */
     public function functions(): iterable {
-        /** @noinspection PhpIncludeInspection */
         require_once $this->filePath;
         foreach ($this->functions as $function) {
             yield new ReflectionFunction($function);

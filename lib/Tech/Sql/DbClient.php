@@ -51,7 +51,7 @@ abstract class DbClient implements IDbClient {
         $this->connect();
     }
 
-    public function setConf(array $conf): self {
+    public function setConf(array $conf): static {
         $this->conf = $this->checkConf($conf);
         return $this;
     }

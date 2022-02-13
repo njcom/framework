@@ -9,7 +9,7 @@ namespace Morpho\Base;
 use ArrayObject;
 
 class ArrObj extends ArrayObject {
-    public function append($val): self {
+    public function append($val): static {
         parent::append($val);
         return $this;
     }

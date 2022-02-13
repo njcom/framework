@@ -7,6 +7,7 @@
 namespace Morpho\App;
 
 use IteratorAggregate;
+use Traversable;
 use Morpho\Fs\File;
 
 use function is_file;
@@ -19,7 +20,7 @@ class BackendModuleIterator implements IteratorAggregate {
         $this->site = $site;
     }
 
-    public function getIterator() {
+    public function getIterator(): Traversable {
         foreach ($this->site->backendModuleDirPath() as $moduleDirPath) {
             $metaFilePath = $moduleDirPath . '/' . META_FILE_NAME;
             if (!is_file($metaFilePath)) {

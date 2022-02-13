@@ -46,7 +46,7 @@ class ClassTypeAutoloader extends Autoloader {
         return $this->classToFileMap;
     }
 
-    public function addClassToFilePathMap(array $classToFilePathMap): self {
+    public function addClassToFilePathMap(array $classToFilePathMap): static {
         if ($this->classToFileMap) {
             $this->classToFileMap = array_merge($this->classToFileMap, $classToFilePathMap);
         } else {
@@ -88,7 +88,7 @@ class ClassTypeAutoloader extends Autoloader {
             : [];
     }
 
-    public function addPrefixToDirPathMappingPsr0(string $prefix, $paths, bool $prepend = false): self {
+    public function addPrefixToDirPathMappingPsr0(string $prefix, $paths, bool $prepend = false): static {
         $first = $prefix[0];
         if (!isset($this->prefixesPsr0[$first][$prefix])) {
             $this->prefixesPsr0[$first][$prefix] = (array) $paths;
@@ -100,7 +100,7 @@ class ClassTypeAutoloader extends Autoloader {
         return $this;
     }
 
-    public function setPrefixToDirPathMappingPsr0(string $prefix, $paths): self {
+    public function setPrefixToDirPathMappingPsr0(string $prefix, $paths): static {
         $first = $prefix[0];
         $this->prefixesPsr0[$first][$prefix] = (array) $paths;
         return $this;
@@ -113,7 +113,7 @@ class ClassTypeAutoloader extends Autoloader {
         return $this->prefixDirsPsr4;
     }
 
-    public function addPrefixToDirPathMappingPsr4(string $prefix, $paths, $prepend = false): self {
+    public function addPrefixToDirPathMappingPsr4(string $prefix, $paths, $prepend = false): static {
         if (!isset($this->prefixDirsPsr4[$prefix])) {
             $this->setPrefixToDirPathMappingPsr4($prefix, $paths);
         } else {
@@ -124,7 +124,7 @@ class ClassTypeAutoloader extends Autoloader {
         return $this;
     }
 
-    public function setPrefixToDirPathMappingPsr4(string $prefix, $paths): self {
+    public function setPrefixToDirPathMappingPsr4(string $prefix, $paths): static {
         $length = strlen($prefix);
         if ('\\' !== $prefix[$length - 1]) {
             throw new InvalidArgumentException("A non-empty PSR-4 prefix must end with a namespace separator.");

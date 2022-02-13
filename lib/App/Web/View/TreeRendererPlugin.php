@@ -75,12 +75,12 @@ class TreeRendererPlugin extends Plugin {
         return $this->leafNodeRenderer;
     }
 
-    public function setInternalNodeRenderer(callable $renderer): self {
+    public function setInternalNodeRenderer(callable $renderer): static {
         $this->internalNodeRenderer = $renderer;
         return $this;
     }
 
-    public function setLeafNodeRenderer(callable $renderer): self {
+    public function setLeafNodeRenderer(callable $renderer): static {
         $this->leafNodeRenderer = $renderer;
         return $this;
     }

@@ -199,7 +199,7 @@ class Uri {
         return $targetUri;
     }
 
-    public static function parse(string|Uri $uri): self {
+    public static function parse(string|Uri $uri): static {
         if ($uri instanceof self) {
             return $uri;
         }

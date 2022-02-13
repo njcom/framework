@@ -37,10 +37,10 @@ class PathTest extends TestCase {
 
     public function testRel() {
         $baseDirPath = __DIR__ . '/../../..';
-        $this->assertEquals(Path::rel($baseDirPath . '/module/foo/bar', $baseDirPath), 'module/foo/bar');
+        $this->assertEquals(Path::rel($baseDirPath, $baseDirPath . '/module/foo/bar'), 'module/foo/bar');
         $this->assertSame(Path::rel($baseDirPath, $baseDirPath), '');
-        $this->assertSame(Path::rel($baseDirPath . '/', $baseDirPath), '');
-        $this->assertSame(Path::rel($baseDirPath . '/index.php', $baseDirPath), 'index.php');
+        $this->assertSame(Path::rel($baseDirPath, $baseDirPath . '/'), '');
+        $this->assertSame(Path::rel($baseDirPath, $baseDirPath . '/index.php'), 'index.php');
     }
 
     public function testRel_ThrowsExceptionWhenBasePathNotContainedWithinPath() {
@@ -50,7 +50,7 @@ class PathTest extends TestCase {
             RuntimeException::class,
             "The path '" . str_replace('\\', '/', $path) . "' does not contain the base path '/foo/bar/baz'"
         );
-        Path::rel($path, $baseDirPath);
+        Path::rel($baseDirPath, $path);
     }
 
     public function dataCombine() {

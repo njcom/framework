@@ -7,7 +7,7 @@
 namespace Morpho\Tech\Sql;
 
 interface IDbClient {
-    public function setConf(array $conf): self;
+    public function setConf(array $conf): static;
 
     public function conf(): array;
 
@@ -53,7 +53,7 @@ interface IDbClient {
      */
     public function dbName(): ?string;
 
-    public function useDb(string $dbName): self;
+    public function useDb(string $dbName): static;
 
     public function driverName(): string;
 

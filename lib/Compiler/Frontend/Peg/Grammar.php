@@ -15,7 +15,7 @@ namespace Morpho\Compiler\Frontend\Peg;
 use Morpho\Compiler\Frontend\IGrammar;
 
 class Grammar implements IGrammar {
-    public function __construct(private $rules, private $metas) {
+    public function __construct(private $rules = null, private $metas = null) {
     }
 
     public function rules(): iterable {

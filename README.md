@@ -4,7 +4,7 @@ Framework for building web-sites, web-applications, web-IDEs, command-line appli
 
 ## Current status
 
-Not ready. API is not stable.
+Not ready (WIP). API is not stable.
 
 ## Used technologies
 

@@ -9,7 +9,7 @@ namespace Morpho\Tech\Sql;
 use Stringable;
 
 interface IQuery extends Stringable {
-    public function table(string|array|Expr $tableName): self;
+    public function table(string|array|Expr $tableName): static;
 
     public function expr($expr): Expr;
 
@@ -22,12 +22,12 @@ interface IQuery extends Stringable {
      * @param $args If not null will be casted to array
      * @return $this
      */
-    public function where(array|\Stringable|string $condition, null|array|string|int $args = null): self;
+    public function where(array|\Stringable|string $condition, null|array|string|int $args = null): static;
 
     public function eval(): Result;
 
     /**
      * Builds (configures) query from the specification.
      */
-    public function build(array $spec): self;
+    public function build(array $spec): static;
 }

@@ -12,6 +12,8 @@ use Morpho\App\Web\Request;
 use Morpho\Uri\Uri;
 use Morpho\Testing\TestCase;
 
+use Traversable;
+
 use function array_merge;
 use function rawurlencode;
 
@@ -70,7 +72,7 @@ class RequestTest extends TestCase {
             "SCRIPT_NAME"                    => "/test.php",
             "CONTENT_LENGTH"                 => "4521",
             "CONTENT_TYPE"                   => "",
-            "REQUEST_METHOD"                 => HttpMethod::POST,
+            "REQUEST_METHOD"                 => HttpMethod::Post->value,
             "CONTENT_MD5"                    => "Q2hlY2sgSW50ZWdyaXR5IQ==",
         ];
         $expectedHeaders = [
@@ -136,8 +138,8 @@ class RequestTest extends TestCase {
         $this->assertEquals('https://blog.example.com:8042/top.htm?page=news&skip=10', $uri->toStr(null, true));
     }
 
-    public function dataIsHttpMethod() {
-        foreach (HttpMethod::vals() as $httpMethod) {
+    public function dataIsHttpMethod(): Traversable {
+        foreach (HttpMethod::cases() as $httpMethod) {
             yield [$httpMethod];
         }
     }
@@ -145,15 +147,15 @@ class RequestTest extends TestCase {
     /**
      * @dataProvider dataIsHttpMethod
      */
-    public function testIsHttpMethod($httpMethod) {
+    public function testIsHttpMethod(HttpMethod $httpMethod) {
         $_SERVER['REQUEST_METHOD'] = 'unknown';
-        if ($httpMethod === HttpMethod::GET) {
+        if ($httpMethod === HttpMethod::Get) {
             $this->assertTrue($this->request->isGetMethod());
         } else {
-            $this->assertFalse($this->request->{'is' . $httpMethod . 'Method'}());
+            $this->assertFalse($this->request->{'is' . $httpMethod->value . 'Method'}());
         }
         $this->request->setMethod($httpMethod);
-        $this->assertTrue($this->request->{'is' . $httpMethod . 'Method'}());
+        $this->assertTrue($this->request->{'is' . $httpMethod->value . 'Method'}());
     }
 
     public function testIsHandled() {
@@ -189,19 +191,19 @@ class RequestTest extends TestCase {
     }
 
     public function dataGetArgs() {
-        yield [HttpMethod::GET];
-        yield [HttpMethod::POST];
+        yield [HttpMethod::Get];
+        yield [HttpMethod::Post];
     }
 
     /**
      * @dataProvider dataGetArgs
      */
-    public function testArgs($httpMethod) {
+    public function testArgs(HttpMethod $httpMethod) {
         // @TODO: Test patch, put
         $this->request->setMethod($httpMethod);
 
         // Write to $_GET | $_POST
-        $GLOBALS['_' . $httpMethod]['foo']['bar'] = 'baz';
+        $GLOBALS['_' . $httpMethod->value]['foo']['bar'] = 'baz';
 
         $this->assertEquals(
             ['non' => null, 'foo' => ['bar' => 'baz']],
@@ -355,7 +357,7 @@ class RequestTest extends TestCase {
 
     public function testMappingPostToPatch() {
         $data = ['foo' => 'bar', 'baz' => 'abc'];
-        $_POST = array_merge($data, ['_method' => HttpMethod::PATCH]);
+        $_POST = array_merge($data, ['_method' => HttpMethod::Patch->value]);
         $request = new Request();
         $this->assertTrue($request->isPatchMethod());
         $this->assertSame($data, $request->patch());
@@ -368,8 +370,8 @@ class RequestTest extends TestCase {
         $this->assertFalse($this->request->isKnownMethod('unknown'));
     }
 
-    public function dataMethod() {
-        foreach (HttpMethod::vals() as $httpMethod) {
+    public function dataMethod(): Traversable {
+        foreach (HttpMethod::cases() as $httpMethod) {
             yield [$httpMethod];
         }
     }
@@ -377,25 +379,25 @@ class RequestTest extends TestCase {
     /**
      * @dataProvider dataMethod
      */
-    public function testMethod_OverwritingHttpMethod_ThroughMethodArg($httpMethod) {
-        $_GET['_method'] = $httpMethod;
-        $this->checkHttpMethod(['REQUEST_METHOD' => HttpMethod::POST], $httpMethod);
+    public function testMethod_OverwritingHttpMethod_ThroughMethodArg(HttpMethod $httpMethod) {
+        $_GET['_method'] = $httpMethod->value;
+        $this->checkHttpMethod(['REQUEST_METHOD' => HttpMethod::Post->value], $httpMethod);
     }
 
-    private function checkHttpMethod(array $serverVars, string $httpMethod): void {
+    private function checkHttpMethod(array $serverVars, HttpMethod $httpMethod): void {
         $request = new Request(null, $serverVars);
         $this->assertSame($httpMethod, $request->method());
-        $this->assertTrue($request->{'is' . $httpMethod . 'Method'}());
+        $this->assertTrue($request->{'is' . $httpMethod->value . 'Method'}());
     }
 
     /**
      * @dataProvider dataMethod
      */
-    public function testMethod_OverwritingHttpMethod_ThroughHeader($httpMethod) {
+    public function testMethod_OverwritingHttpMethod_ThroughHeader(HttpMethod $httpMethod) {
         $this->checkHttpMethod(
             [
-                'REQUEST_METHOD'              => HttpMethod::POST,
-                'HTTP_X_HTTP_METHOD_OVERRIDE' => $httpMethod,
+                'REQUEST_METHOD'              => HttpMethod::Post->value,
+                'HTTP_X_HTTP_METHOD_OVERRIDE' => $httpMethod->value,
             ],
             $httpMethod
         );
@@ -404,11 +406,11 @@ class RequestTest extends TestCase {
     /**
      * @dataProvider dataMethod
      */
-    public function testMethod_Default($httpMethod) {
-        $this->checkHttpMethod(['REQUEST_METHOD' => $httpMethod], $httpMethod);
+    public function testMethod_Default(HttpMethod $httpMethod) {
+        $this->checkHttpMethod(['REQUEST_METHOD' => $httpMethod->value], $httpMethod);
     }
 
-    private function mkRequest($serverVars): IRequest {
+    private function mkRequest(array $serverVars): IRequest {
         return new Request(null, $serverVars);
     }
 }

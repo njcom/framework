@@ -43,7 +43,7 @@ class GridWidget extends Plugin implements Stringable, IHasServiceManager, IConf
         ];
     }
 
-    public function setConf(mixed $conf): self {
+    public function setConf(mixed $conf): static {
         $this->conf = $conf;
         return $this;
     }
@@ -52,22 +52,22 @@ class GridWidget extends Plugin implements Stringable, IHasServiceManager, IConf
         return $this->conf;
     }
 
-    public function setServiceManager(IServiceManager $serviceManager): self {
+    public function setServiceManager(IServiceManager $serviceManager): static {
         $this->templateEngine = $serviceManager['templateEngine'];
         return $this;
     }
 
-    public function setDataSource(iterable $dataSource): self {
+    public function setDataSource(iterable $dataSource): static {
         $this->dataSource = $dataSource;
         return $this;
     }
 
-    public function appendColumns(array $columns): self {
+    public function appendColumns(array $columns): static {
         $this->columns = array_merge($this->columns, $columns);
         return $this;
     }
 
-    public function setColumns(array $columns): self {
+    public function setColumns(array $columns): static {
         $this->columns = $columns;
         return $this;
     }
@@ -76,12 +76,12 @@ class GridWidget extends Plugin implements Stringable, IHasServiceManager, IConf
         return $this->columns;
     }
 
-    public function setBtns(array $btns): self {
+    public function setBtns(array $btns): static {
         $this->btns = $btns;
         return $this;
     }
 
-    public function prependActions(array $actions): self {
+    public function prependActions(array $actions): static {
         $this->actions = array_merge($actions, $this->actions);
         return $this;
     }
@@ -118,12 +118,12 @@ class GridWidget extends Plugin implements Stringable, IHasServiceManager, IConf
         return ob_get_clean();
     }
 
-    public function setRowRenderer(Closure $fn): self {
+    public function setRowRenderer(Closure $fn): static {
         $this->rowRenderer = $fn;
         return $this;
     }
 
-    public function setCellType(string $cellType): self {
+    public function setCellType(string $cellType): static {
         $this->cellType = $cellType;
         return $this;
     }

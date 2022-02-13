@@ -52,10 +52,6 @@ namespace Morpho\Tech\Php {
     use function is_array;
     use function spl_autoload_functions;
 
-    function parseFile(string $filePath): ?array {
-        return parse(file_get_contents($filePath));
-    }
-
     /**
      * @param string $text Text to parse.
      * @return Node\Stmt[]|null Array of statements, representing the text.
@@ -65,33 +61,11 @@ namespace Morpho\Tech\Php {
         return $parser->parse($text);
     }
 
-    function change(string $text, array $visitors): string {
-        $nodes = parse($text);
-        $nodes = traverse($nodes, $visitors);
-        return pp($nodes);
+    function parseFile(string $filePath): ?array {
+        return parse(file_get_contents($filePath));
     }
 
-    function changeFile(string $filePath, array $visitors, bool $write = false): ?string {
-        $nodes = parseFile($filePath);
-        $nodes = traverse($nodes, $visitors);
-        if ($write) {
-            file_put_contents($filePath, pp($nodes));
-            return null;
-        }
-        return pp($nodes);
-    }
-
-    /*
-        function visitFile(string $filePath, array $visitors): array {
-            $nodes = parseFile($filePath);
-            if (null === $nodes) {
-                // non-throwing error handler is used and parser was unable to recover from an error.
-                throw new UnexpectedValueException();
-            }
-            return traverse($nodes, $visitors);
-        }*/
-
-    function traverse(array $nodes, array $visitors): array {
+    function visit(array $nodes, array $visitors): array {
         $traverser = new NodeTraverser();
         foreach ($visitors as $visitor) {
             $traverser->addVisitor($visitor);
@@ -108,6 +82,22 @@ namespace Morpho\Tech\Php {
     function ppFile(array $nodes): string {
         $pp = new PrettyPrinter();
         return $pp->prettyPrintFile($nodes);
+    }
+
+    function process(string $text, array $visitors): string {
+        $nodes = parse($text);
+        $nodes = visit($nodes, $visitors);
+        return pp($nodes);
+    }
+
+    function processFile(string $filePath, array $visitors): ?string {
+        $nodes = parseFile($filePath);
+        /*            if (null === $nodes) {
+                        // non-throwing error handler is used and parser was unable to recover from an error.
+                        throw new UnexpectedValueException();
+                    }*/
+        $nodes = visit($nodes, $visitors);
+        return pp($nodes);
     }
 
     function isClassType(Node $node): bool {
@@ -147,7 +137,7 @@ namespace Morpho\Tech\Php {
             }
         };
         $nodes = parse('<?php ' . var_export($var, true) . ';');
-        traverse($nodes, [$visitor]);
+        visit($nodes, [$visitor]);
 
         return rtrim(pp($nodes), ';');
     }

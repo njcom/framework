@@ -48,7 +48,7 @@ class DateTime extends DateTimeImmutable {
      * @param null|string|DateTimeZone $timeZone
      * @return DateTimeImmutable|false|DateTime
      */
-    public static function createFromFormat($format, $value, $timeZone = null): self {
+    public static function createFromFormat($format, $value, $timeZone = null): static {
         return new static(
             parent::createFromFormat($format, $value, $timeZone)->format(self::ISO8601)
         );
@@ -63,7 +63,7 @@ class DateTime extends DateTimeImmutable {
         return is_numeric($value) && preg_match('~^\d+$~s', $value) && strlen($value) === 10;
     }
 
-    public static function mkFromTimestamp($timestamp): self {
+    public static function mkFromTimestamp($timestamp): static {
         return (new static())->setTimestamp($timestamp);
     }
 
