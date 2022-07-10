@@ -24,10 +24,6 @@ class AsciiStringReaderTest extends TestCase {
         $this->assertInstanceOf(IStringReader::class, $reader);
     }
 
-    protected function mkReader(string $input, bool $anchored = true, string $encoding = null): IStringReader {
-        return new AsciiStringReader($input, $anchored);
-    }
-
     public function testInputAccessors() {
         $input = 'test string';
         $reader = $this->mkReader($input);
@@ -47,12 +43,6 @@ class AsciiStringReaderTest extends TestCase {
         $reader->read('/a/');
         $reader->setInput('b');
         $this->checkState($reader, 0, null, null);
-    }
-
-    protected function checkState(IStringReader $reader, int $offset, ?string $matched, ?array $subgroups): void {
-        $this->assertSame($offset, $reader->offset());
-        $this->assertSame($matched, $reader->matched());
-        $this->assertSame($subgroups, $reader->subgroups());
     }
 
     public function testConcat() {
@@ -690,5 +680,15 @@ class AsciiStringReaderTest extends TestCase {
 
         $reader = $this->mkReader('', false);
         $this->assertFalse($reader->isAnchored());
+    }
+
+    protected function mkReader(string $input, bool $anchored = true, string $encoding = null): IStringReader {
+        return new AsciiStringReader($input, $anchored);
+    }
+
+    protected function checkState(IStringReader $reader, int $offset, ?string $matched, ?array $subgroups): void {
+        $this->assertSame($offset, $reader->offset());
+        $this->assertSame($matched, $reader->matched());
+        $this->assertSame($subgroups, $reader->subgroups());
     }
 }

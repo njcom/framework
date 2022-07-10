@@ -74,19 +74,8 @@ class AsciiStringReader implements IStringReader {
         return $matched === null ? null : $this->strlen($matched);
     }
 
-    protected function re(string $re, bool $anchored = null): string {
-        if (null === $anchored) {
-            return $this->anchored ? $re . 'A' : $re;
-        }
-        return $anchored ? $re . 'A' : $re;
-    }
-
     public function offsetInBytes(): int {
         return $this->offset;
-    }
-
-    protected function strlen(mixed $s): int {
-        return strlen($s);
     }
 
     public function skip(string $re): ?int {
@@ -121,10 +110,6 @@ class AsciiStringReader implements IStringReader {
         }
         $this->subgroups = null;
         return $this->matched = null;
-    }
-
-    protected function substr(string $s, int $offset, ?int $length): string {
-        return substr($s, $offset, $length);
     }
 
     public function skipUntil(string $re): ?int {
@@ -226,5 +211,20 @@ class AsciiStringReader implements IStringReader {
 
     public function isAnchored(): bool {
         return $this->anchored;
+    }
+
+    protected function substr(string $s, int $offset, ?int $length): string {
+        return substr($s, $offset, $length);
+    }
+
+    protected function strlen(mixed $s): int {
+        return strlen($s);
+    }
+
+    protected function re(string $re, bool $anchored = null): string {
+        if (null === $anchored) {
+            return $this->anchored ? $re . 'A' : $re;
+        }
+        return $anchored ? $re . 'A' : $re;
     }
 }
