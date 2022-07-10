@@ -68,7 +68,6 @@ class HandlerManager {
             return set_exception_handler($callback);
         }
         self::invalidHandlerTypeException($handlerType);
-        return null;
     }
 
     /**

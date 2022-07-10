@@ -12,13 +12,9 @@ use Morpho\Tech\Php\TokenStrategy;
 use Morpho\Testing\TestCase;
 
 use function get_class;
-use function str_replace;
 
 class ClassTypeDiscovererTest extends TestCase {
-    /**
-     * @var ClassTypeDiscoverer
-     */
-    private $classTypeDiscoverer;
+    private ClassTypeDiscoverer $classTypeDiscoverer;
 
     public function setUp(): void {
         parent::setUp();
@@ -26,10 +22,24 @@ class ClassTypeDiscovererTest extends TestCase {
     }
 
     public function testClassTypesDefinedInDir_UsingDefaultStrategy() {
-        $classTypes = $this->classTypeDiscoverer->classTypesDefinedInDir(__DIR__);
-        $this->assertEquals(
-            str_replace('\\', '/', __FILE__),
-            $classTypes[__CLASS__]
+        $testDirPath = $this->getTestDirPath();
+        $ns = __CLASS__;
+        $this->assertSame(
+            [
+                "$ns\\TMyTrait"             => "$testDirPath/Test.php",
+                "$ns\\IMyInterface"         => "$testDirPath/Test.php",
+                "$ns\\MyClass"              => "$testDirPath/Test.php",
+                "$ns\\MyEnum"               => "$testDirPath/Test.php",
+                "$ns\\TestMe"               => "$testDirPath/ClassTypeDepsWithStdClasses.php",
+                "$ns\\TFourth"              => "$testDirPath/ClassTypeDeps.php",
+                "$ns\\IThird"               => "$testDirPath/ClassTypeDeps.php",
+                "$ns\\Some"                 => "$testDirPath/ClassTypeDeps.php",
+                "$ns\\DefinedInTheSameFile" => "$testDirPath/ClassTypeDeps.php",
+                "$ns\\Service"              => "$testDirPath/ClassTypeDeps.php",
+                "$ns\\First"                => "$testDirPath/ClassTypeDeps.php",
+                "$ns\\Second"               => "$testDirPath/ClassTypeDeps.php",
+            ],
+            $this->classTypeDiscoverer->classTypesDefinedInDir($testDirPath)
         );
     }
 
@@ -60,6 +70,9 @@ class ClassTypeDiscovererTest extends TestCase {
             [
                 self::class . '\\TMyTrait',
             ],
+            [
+                self::class . '\\MyEnum',
+            ],
         ];
     }
 
@@ -72,41 +85,46 @@ class ClassTypeDiscovererTest extends TestCase {
         $this->assertEquals($filePath, ClassTypeDiscoverer::classTypeFilePath($class));
     }
 
-    public function testTypeFilePath_ThrowsExceptionOnNonExistingType() {
+    public function testClassTypeFilePath_ThrowsExceptionOnNonExistingType() {
         $class = self::class . 'NonExisting';
         $this->expectException('ReflectionException', "Class \"$class\" does not exist");
         ClassTypeDiscoverer::classTypeFilePath($class);
     }
 
     public function testFileDependsFromClassTypes() {
-        $classTypes = ClassTypeDiscoverer::fileDependsFromClassTypes($this->getTestDirPath() . '/ClassTypeDeps.php');
+        $classTypes = $this->classTypeDiscoverer->fileDependsFromClassTypes($this->getTestDirPath() . '/ClassTypeDeps.php');
         $this->assertEquals(
             [
-                self::class . '\A_ClassExtends',
-                self::class . '\B_ClassImplementsA',
-                self::class . '\B_ClassImplementsB',
-                self::class . '\C_ClassUsesTrait',
-                self::class . '\D_InstantiatesNewObject',
-                self::class . '\E_CallsMethodStatically',
-                self::class . '\F_ReadsStaticProperty',
-                self::class . '\G_WritesStaticProperty',
-                self::class . '\H_CatchesExceptionA',
-                self::class . '\H_CatchesExceptionB',
-                self::class . '\I_AppliesInstanceOfOperator',
-                self::class . '\J_ReadsClassConstant',
-                self::class . '\K_MethodDefinitionHasParameterWithType',
-                self::class . '\L_MethodDefinitionHasReturnType',
-                self::class . '\M_FunctionDefinitionHasParameterWithType',
-                self::class . '\N_FunctionDefinitionHasReturnType',
-                self::class . '\O_ConstructorDefinitionHasParameterWithType',
-                self::class . '\P_ExtendsInterfaceA',
-                self::class . '\P_ExtendsInterfaceB',
-                self::class . '\Q_TraitUsesTrait',
-                self::class . '\R_AnonymousClassExtends',
-                self::class . '\S_AnonymousClassImplementsA',
-                self::class . '\S_AnonymousClassImplementsB',
-                self::class . '\T_AnonymousFunctionDefinitionHasParameterWithType',
-                self::class . '\U_AnonymousFunctionDefinitionHasReturnType',
+                self::class . '\\TraitUsesTrait',
+                self::class . '\\FunctionDefinitionHasReturnType',
+                self::class . '\\FunctionDefinitionHasParameterWithType',
+                self::class . '\\ExtendsInterfaceA',
+                self::class . '\\ExtendsInterfaceB',
+                self::class . '\\Logger',
+                self::class . '\\NullLogger',
+                self::class . '\\ClassExtends',
+                self::class . '\\ClassImplementsA',
+                self::class . '\\ClassImplementsB',
+                self::class . '\\ClassUsesTrait',
+                self::class . '\\ClassHasPublicProperty',
+                self::class . '\\ClassHasProtectedProperty',
+                self::class . '\\ClassHasPrivateProperty',
+                self::class . '\\InstantiatesNewObject',
+                self::class . '\\CallsMethodStatically',
+                self::class . '\\ReadsStaticProperty',
+                self::class . '\\WritesStaticProperty',
+                self::class . '\\CatchesExceptionA',
+                self::class . '\\CatchesExceptionB',
+                self::class . '\\AppliesInstanceOfOperator',
+                self::class . '\\ReadsClassConstant',
+                self::class . '\\AnonymousClassExtends',
+                self::class . '\\AnonymousClassImplementsA',
+                self::class . '\\AnonymousClassImplementsB',
+                self::class . '\\AnonymousFunctionDefinitionHasReturnType',
+                self::class . '\\AnonymousFunctionDefinitionHasParameterWithType',
+                self::class . '\\MethodDefinitionHasReturnType',
+                self::class . '\\MethodDefinitionHasParameterWithType',
+                self::class . '\\ConstructorDefinitionHasParameterWithType',
             ],
             $classTypes
         );
@@ -115,15 +133,15 @@ class ClassTypeDiscovererTest extends TestCase {
     public function testFileDependsFromClassTypes_WithoutStdClassesArg() {
         $this->assertEquals(
             [self::class . '\ISome'],
-            ClassTypeDiscoverer::fileDependsFromClassTypes(
+            $this->classTypeDiscoverer->fileDependsFromClassTypes(
                 $this->getTestDirPath() . '/ClassTypeDepsWithStdClasses.php'
             )
         );
         $this->assertEquals(
             ['ArrayObject', self::class . '\ISome'],
-            ClassTypeDiscoverer::fileDependsFromClassTypes(
+            $this->classTypeDiscoverer->fileDependsFromClassTypes(
                 $this->getTestDirPath() . '/ClassTypeDepsWithStdClasses.php',
-                false
+                false,
             )
         );
     }

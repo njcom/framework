@@ -9,15 +9,39 @@ namespace Morpho\Tech\Php;
 use function array_diff;
 use function array_values;
 use function Morpho\Base\requireFile;
+use function array_filter;
+use function array_merge;
+use function get_declared_classes;
+use function get_declared_interfaces;
+use function get_declared_traits;
+use function substr;
 
 class DiffStrategy implements IDiscoverStrategy {
     /**
      * @todo: fix breakage of the order, use some heuristic like regular expressions to find out the actual order and then fix the result
      */
     public function classTypesDefinedInFile(string $filePath): array {
-        $pre = ClassTypeDiscoverer::definedClassTypes();
+        $pre = self::definedClassTypes();
         requireFile($filePath);
-        $post = ClassTypeDiscoverer::definedClassTypes();
+        $post = self::definedClassTypes();
         return array_values(array_diff($post, $pre));
+    }
+
+    public static function definedClassTypes(): array {
+        return array_merge(
+            self::definedClasses(),
+            get_declared_interfaces(),
+            get_declared_traits()
+        );
+    }
+
+    public static function definedClasses(): array {
+        return array_filter(
+            get_declared_classes(),
+            function ($class) {
+                // Skip anonymous classes.
+                return 'class@anonymous' !== substr($class, 0, 15);
+            }
+        );
     }
 }

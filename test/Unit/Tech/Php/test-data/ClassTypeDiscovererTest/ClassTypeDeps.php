@@ -2,49 +2,69 @@
 namespace Morpho\Test\Unit\Tech\Php\ClassTypeDiscovererTest;
 
 trait TFourth {
-    use Q_TraitUsesTrait;
+    use TraitUsesTrait;
 }
 
-function test(int $a, M_FunctionDefinitionHasParameterWithType $b): N_FunctionDefinitionHasReturnType {
+function test(int $a, FunctionDefinitionHasParameterWithType $b): FunctionDefinitionHasReturnType {
 }
 
-interface IThird extends P_ExtendsInterfaceA, P_ExtendsInterfaceB {
+interface IThird extends ExtendsInterfaceA, ExtendsInterfaceB {
 }
 
-class First extends A_ClassExtends implements B_ClassImplementsA, B_ClassImplementsB {
-    use C_ClassUsesTrait;
+enum Some {
+
+}
+
+class DefinedInTheSameFile {}
+
+class Service extends DefinedInTheSameFile {
+    private $logger;
+
+    public function __construct(
+        Logger $logger = new NullLogger(), // [New in initializer](https://www.php.net/releases/8.1/en.php#new_in_initializers)
+    ) {
+        $this->logger = $logger;
+    }
+}
+
+class First extends ClassExtends implements ClassImplementsA, ClassImplementsB {
+    use ClassUsesTrait;
+    
+    public ClassHasPublicProperty $pub;
+    protected ClassHasProtectedProperty $prot;
+    private ClassHasPrivateProperty $priv;
 
     const PING_PONG = 123;
     private static $pingPong;
 
     public function __construct() {
-        new D_InstantiatesNewObject();
+        new InstantiatesNewObject();
 
-        E_CallsMethodStatically::some();
+        CallsMethodStatically::some();
 
-        if (F_ReadsStaticProperty::$foo) {
+        if (ReadsStaticProperty::$foo) {
         }
-        G_WritesStaticProperty::$foo = 'bar';
+        WritesStaticProperty::$foo = 'bar';
 
         try {
-        } catch (H_CatchesExceptionA $e) {
-        } catch (H_CatchesExceptionB $e) {
+        } catch (CatchesExceptionA $e) {
+        } catch (CatchesExceptionB $e) {
         }
 
         $v = '123';
-        if ($v instanceof I_AppliesInstanceOfOperator) {
+        if ($v instanceof AppliesInstanceOfOperator) {
         }
 
-        if (J_ReadsClassConstant::SOME) {
+        if (ReadsClassConstant::SOME) {
         }
 
-        new class extends R_AnonymousClassExtends implements S_AnonymousClassImplementsA, S_AnonymousClassImplementsB {
+        new class extends AnonymousClassExtends implements AnonymousClassImplementsA, AnonymousClassImplementsB {
         };
 
         function (
             $a,
-            T_AnonymousFunctionDefinitionHasParameterWithType $b
-        ): U_AnonymousFunctionDefinitionHasReturnType {
+            AnonymousFunctionDefinitionHasParameterWithType $b
+        ): AnonymousFunctionDefinitionHasReturnType {
         }
 
         ;
@@ -75,10 +95,10 @@ class First extends A_ClassExtends implements B_ClassImplementsA, B_ClassImpleme
 
     public function foo(
         int $a,
-        K_MethodDefinitionHasParameterWithType $b,
+        MethodDefinitionHasParameterWithType $b,
         self $c,
         $d = self::PING_PONG
-    ): L_MethodDefinitionHasReturnType {
+    ): MethodDefinitionHasReturnType {
     }
 
     public function bar(): string {
@@ -87,6 +107,6 @@ class First extends A_ClassExtends implements B_ClassImplementsA, B_ClassImpleme
 }
 
 class Second {
-    public function __construct(string $a, O_ConstructorDefinitionHasParameterWithType $b) {
+    public function __construct(string $a, ConstructorDefinitionHasParameterWithType $b) {
     }
 }

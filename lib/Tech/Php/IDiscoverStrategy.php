@@ -8,7 +8,7 @@ namespace Morpho\Tech\Php;
 
 interface IDiscoverStrategy {
     /**
-     * @return array An array of classes|interfaces|traits from file with $filePath.
+     * @return array An array of classes, interfaces, traits, unions defined in the file $filePath.
      */
     public function classTypesDefinedInFile(string $filePath): array;
 }

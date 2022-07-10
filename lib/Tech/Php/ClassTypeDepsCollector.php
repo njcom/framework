@@ -15,12 +15,14 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Param;
-use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Stmt\Function_;
-use PhpParser\Node\Stmt\Interface_;
-use PhpParser\Node\Stmt\TraitUse;
-use PhpParser\Node\Stmt\TryCatch;
+use PhpParser\Node\Stmt\Class_ as ClassStmt;
+use PhpParser\Node\Stmt\ClassMethod as ClassMethodStmt;
+use PhpParser\Node\Stmt\Function_ as FunctionStmt;
+use PhpParser\Node\Stmt\Interface_ as InterfaceStmt;
+use PhpParser\Node\Stmt\Trait_ as TraitStmt;
+use PhpParser\Node\Stmt\TraitUse as TraitUseStmt;
+use PhpParser\Node\Stmt\TryCatch as TryCatchStmt;
+use PhpParser\Node\Stmt\Property as PropertyStmt;
 use PhpParser\NodeVisitorAbstract;
 
 use RuntimeException;
@@ -28,7 +30,6 @@ use RuntimeException;
 use function array_unique;
 use function implode;
 use function in_array;
-use function sort;
 
 class ClassTypeDepsCollector extends NodeVisitorAbstract {
     protected array $classTypes = [];
@@ -42,15 +43,15 @@ class ClassTypeDepsCollector extends NodeVisitorAbstract {
     }
 
     public function enterNode(Node $node) {
-        if ($node instanceof Function_ || $node instanceof Closure) {
+        if ($node instanceof FunctionStmt || $node instanceof Closure) {
             if ($node->returnType && $node->returnType instanceof FullyQualified) {
                 $this->classTypes[] = implode('\\', $node->returnType->parts);
             }
-        } elseif ($node instanceof ClassMethod) {
+        } elseif ($node instanceof ClassMethodStmt) {
             if ($node->returnType && $node->returnType instanceof FullyQualified) {
                 $this->classTypes[] = implode('\\', $node->returnType->parts);
             }
-        } elseif ($node instanceof Class_) {
+        } elseif ($node instanceof ClassStmt) {
             if (isset($node->extends)) {
                 $this->classTypes[] = $node->extends->toString();
             }
@@ -59,20 +60,20 @@ class ClassTypeDepsCollector extends NodeVisitorAbstract {
                     $this->classTypes[] = $nodeName->toString();
                 }
             }
-        } elseif ($node instanceof Interface_) {
+        } elseif ($node instanceof InterfaceStmt) {
             foreach ($node->extends as $nodeName) {
                 $this->classTypes[] = $nodeName->toString();
             }
-        } elseif ($node instanceof Node\Stmt\Trait_) {
+        } elseif ($node instanceof TraitStmt) {
             // @TODO: Skip here??
             //$this->curNode = $node->namespacedName->toString();
-        } elseif ($node instanceof TryCatch) {
+        } elseif ($node instanceof TryCatchStmt) {
             foreach ($node->catches as $catchStmt) {
                 foreach ($catchStmt->types as $classType) {
                     $this->classTypes[] = implode('\\', $classType->parts);
                 }
             }
-        } elseif ($node instanceof TraitUse) {
+        } elseif ($node instanceof TraitUseStmt) {
             foreach ($node->traits as $nodeName) {
                 $this->classTypes[] = $nodeName->toString();
             }
@@ -89,6 +90,8 @@ class ClassTypeDepsCollector extends NodeVisitorAbstract {
             }
         } elseif ($node instanceof StaticCall && $node->class instanceof FullyQualified) {
             $this->classTypes[] = $node->class->toString();
+        } elseif ($node instanceof PropertyStmt && $node->type !== null) {
+            $this->classTypes[] = $node->type->toString();
         }
     }
 
@@ -99,7 +102,6 @@ class ClassTypeDepsCollector extends NodeVisitorAbstract {
 
     public function afterTraverse(array $nodes) {
         parent::afterTraverse($nodes);
-        sort($this->classTypes);
-        $this->classTypes = array_unique($this->classTypes);
+        $this->classTypes = array_values(array_unique($this->classTypes));
     }
 }

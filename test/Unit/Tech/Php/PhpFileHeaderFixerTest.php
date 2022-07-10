@@ -442,4 +442,41 @@ OUT
             $resultContext
         );
     }
+
+    public function testFix_Enum() {
+        $filePath = $this->getTestDirPath() . '/Enum.php';
+        $context = [
+            'filePath'    => $filePath,
+            'baseDirPath' => dirname($filePath),
+            'ns'          => self::class,
+        ];
+        $checkResult = $this->fixer->check($context);
+
+        $this->assertInstanceOf(Err::class, $checkResult);
+        $resultContext = $checkResult->val();
+        $this->checkContext(
+            array_merge(
+                $context,
+                [
+                    'hasStmts'             => true,
+                    'hasDeclare'           => true,
+                    'hasValidDeclare'      => true,
+                    'hasLicenseComment'    => false,
+                    'nsCheckResult'        => new Ok(
+                        [
+                            'expected' => self::class,
+                            'actual'   => self::class,
+                        ],
+                    ),
+                    'classTypeCheckResult' => new Err(
+                        [
+                            'expected' => 'Enum',
+                            'actual' => 'InvalidEnumName'
+                        ]
+                    ),
+                ]
+            ),
+            $resultContext
+        );
+    }
 }

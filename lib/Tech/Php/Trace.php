@@ -37,8 +37,8 @@ class Trace implements Stringable {
         return new Frame(
             [
                 'function' => $function,
-                'filePath' => isset($frame['file']) ? $frame['file'] : null,
-                'line'     => isset($frame['line']) ? $frame['line'] : null,
+                'filePath' => $frame['file'] ?? null,
+                'line'     => $frame['line'] ?? null,
             ]
         );
     }

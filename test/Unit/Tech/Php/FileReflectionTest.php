@@ -23,6 +23,10 @@ class FileReflectionTest extends TestCase {
         $filePath = $this->getTestDirPath() . '/empty-file.php';
         $rFile = new FileReflection($filePath);
         $this->assertEquals($filePath, $rFile->filePath());
+        $this->assertSame([], iterator_to_array($rFile->namespaces(), false));
+        $this->assertSame([], iterator_to_array($rFile->classes(), false));
+        $this->assertSame([], iterator_to_array($rFile->traits(), false));
+        $this->assertSame([], iterator_to_array($rFile->enums(), false));
     }
 
     public function testClasses() {
@@ -107,7 +111,12 @@ class FileReflectionTest extends TestCase {
             $this->assertTrue($rNamespace->isGlobal());
             $this->assertEquals($filePath, $rNamespace->filePath());
             $this->checkClassTypes(
-                ['Bar4f978258c3d87c0711d6f17c6b4ecfcd', 'TMoon4f978258c3d87c0711d6f17c6b4ecfcd'],
+                [
+                    'Bar4f978258c3d87c0711d6f17c6b4ecfcd',
+                    'TMoon4f978258c3d87c0711d6f17c6b4ecfcd',
+                    'Morpho_Test_Unit_Tech_Php_FileReflectionTest_MyIface',
+                    'Morpho_Test_Unit_Tech_Php_FileReflectionTest_MyEnum',
+                ],
                 $filePath,
                 $rNamespace
             );

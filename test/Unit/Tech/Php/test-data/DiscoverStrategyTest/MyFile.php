@@ -22,3 +22,7 @@ namespace Morpho\Test\Unit\Tech\Php\StrategyTest2;
 
 interface BazInterface {
 }
+
+enum SomeEnum {
+
+}

@@ -9,3 +9,7 @@ interface IMyInterface {
 
 class MyClass {
 }
+
+enum MyEnum {
+
+}

@@ -39,9 +39,11 @@ namespace Morpho\Tech\Php {
 
     use Composer\Autoload\ClassLoader;
     use PhpParser\Node;
-    use PhpParser\Node\Stmt\Class_ as ClassStmt;
-    use PhpParser\Node\Stmt\Interface_ as InterfaceStmt;
-    use PhpParser\Node\Stmt\Trait_ as TraitStmt;
+
+    /*    use PhpParser\Node\Stmt\Class_ as ClassStmt;
+        use PhpParser\Node\Stmt\Interface_ as InterfaceStmt;
+        use PhpParser\Node\Stmt\Trait_ as TraitStmt;
+        use PhpParser\Node\Stmt\Enum_ as EnumStmt;*/
     use PhpParser\NodeTraverser;
     use PhpParser\NodeVisitorAbstract;
     use PhpParser\ParserFactory;
@@ -100,9 +102,9 @@ namespace Morpho\Tech\Php {
         return pp($nodes);
     }
 
-    function isClassType(Node $node): bool {
-        return $node instanceof ClassStmt || $node instanceof InterfaceStmt || $node instanceof TraitStmt;
-    }
+/*    function isClassTypeNode(Node $node): bool {
+        return $node instanceof ClassStmt || $node instanceof InterfaceStmt || $node instanceof TraitStmt || $node instanceof EnumStmt;
+    }*/
 
     /**
      * Returns the first found Composer's autoloader - an instance of the \Composer\Autoloader\ClassLoader.

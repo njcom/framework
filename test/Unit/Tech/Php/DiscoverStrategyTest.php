@@ -27,13 +27,17 @@ abstract class DiscoverStrategyTest extends TestCase {
                 __NAMESPACE__ . '\\StrategyTest1\\FooTrait',
                 __NAMESPACE__ . '\\StrategyTest1\\BarClass',
                 __NAMESPACE__ . '\\StrategyTest2\\BazInterface',
+                __NAMESPACE__ . '\\StrategyTest2\\SomeEnum',
             ],
             'MyFile.php',
         ]);
         (yield [
             [
                 'Morpho_Test_Unit_Tech_Php_ReflectionStrategyTest1_Foo',
+                'Morpho_Test_Unit_Tech_Php_ReflectionStrategyTest1_One',
                 'Morpho_Test_Unit_Tech_Php_ReflectionStrategyTest1\\Bar',
+                'Morpho_Test_Unit_Tech_Php_ReflectionStrategyTest1\\Two',
+                __NAMESPACE__ . '\\StrategyTest1\\Three',
                 __NAMESPACE__ . '\\StrategyTest1\\Baz',
             ],
             'mixed-nss.php',

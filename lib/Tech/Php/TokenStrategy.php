@@ -16,7 +16,7 @@ use function preg_match;
 class TokenStrategy implements IDiscoverStrategy {
     public function classTypesDefinedInFile(string $filePath): array {
         $contents = file_get_contents($filePath);
-        if (!preg_match('{\b(?:class|interface|trait)\b}i', $contents)) {
+        if (!preg_match('{\b(?:class|interface|trait|enum)\b}i', $contents)) {
             return [];
         }
 
@@ -38,7 +38,7 @@ class TokenStrategy implements IDiscoverStrategy {
 
             if (in_array(
                     $token->id,
-                    [T_CLASS, T_INTERFACE, T_TRAIT]
+                    [T_CLASS, T_INTERFACE, T_TRAIT, T_ENUM]
                 ) && isset($tokens[$i + 1]) && $tokens[$i + 1]->id == T_STRING) {
                 $classTypes[] = (strlen($namespace) ? $namespace . '\\' : '') . $tokens[$i + 1]->text;
             }

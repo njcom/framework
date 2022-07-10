@@ -13,11 +13,11 @@ use PhpParser\Node\Stmt\Class_ as ClassStmt;
 use PhpParser\Node\Stmt\Function_ as FunctionStmt;
 use PhpParser\Node\Stmt\Interface_ as InterfaceStmt;
 use PhpParser\Node\Stmt\Namespace_ as NamespaceStmt;
+use PhpParser\Node\Stmt\Enum_ as EnumStmt;
 use PhpParser\Node\Stmt\Trait_ as TraitStmt;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use ReflectionFunction;
-use ReflectionMethod;
 
 use function count;
 use function file_get_contents;
@@ -30,27 +30,6 @@ class FileReflection {
         $this->filePath = $filePath;
     }
 
-    /**
-     * @return iterable|ClassTypeReflection[]
-     */
-    public function classes(): iterable {
-        return $this->filterClassTypes(
-            function (ClassTypeReflection $rClass) {
-                return !$rClass->isTrait() && !$rClass->isInterface();
-            }
-        );
-    }
-
-    private function filterClassTypes(Closure $filter): iterable {
-        foreach ($this->namespaces() as $rNamespace) {
-            /** @var $rNamespace NamespaceReflection */
-            yield from $rNamespace->classTypes($filter);
-        }
-    }
-
-    /**
-     * @return iterable|NamespaceReflection[]
-     */
     public function namespaces(): iterable {
         $stmts = parseFile($this->filePath);
 
@@ -81,13 +60,34 @@ class FileReflection {
         }
     }
 
+    public function interfaces(): iterable {
+        return $this->filterClassTypes(function (ClassTypeReflection $rClass) {
+            return $rClass->isInterface();
+        });
+    }
+
+    public function classes(): iterable {
+        return $this->filterClassTypes(function (ClassTypeReflection $rClass) {
+            return !$rClass->isTrait() && !$rClass->isInterface();
+        });
+    }
+
+    public function traits(): iterable {
+        return $this->filterClassTypes(function (ClassTypeReflection $rClass) {
+            return $rClass->isTrait();
+        });
+    }
+
+    public function enums(): iterable {
+        return $this->filterClassTypes(function (ClassTypeReflection $rClass) {
+            return $rClass->isEnum();
+        });
+    }
+
     public function filePath(): string {
         return $this->filePath;
     }
 
-    /**
-     * @return iterable|ClassTypeReflection[]
-     */
     private function classTypes(NamespaceStmt $nsNode): iterable {
         foreach ($nsNode->stmts as $node) {
             if ($this->isClassType($node)) {
@@ -99,12 +99,10 @@ class FileReflection {
     private function isClassType(Node $node): bool {
         return $node instanceof ClassStmt
             || $node instanceof TraitStmt
-            || $node instanceof InterfaceStmt;
+            || $node instanceof InterfaceStmt
+            || $node instanceof EnumStmt;
     }
 
-    /**
-     * @return iterable|ReflectionMethod[]
-     */
     private function functions(NamespaceStmt $nsNode): iterable {
         foreach ($nsNode->stmts as $node) {
             if ($this->isFunction($node)) {
@@ -124,26 +122,11 @@ class FileReflection {
         return $node->name;
     }
 
-    /**
-     * @return iterable|ClassTypeReflection[]
-     */
-    public function traits(): iterable {
-        return $this->filterClassTypes(
-            function (ClassTypeReflection $rClass) {
-                return $rClass->isTrait();
-            }
-        );
-    }
-
-    /**
-     * @return iterable|ClassTypeReflection[]
-     */
-    public function interfaces(): iterable {
-        return $this->filterClassTypes(
-            function (ClassTypeReflection $rClass) {
-                return $rClass->isInterface();
-            }
-        );
+    private function filterClassTypes(Closure $filter): iterable {
+        foreach ($this->namespaces() as $rNamespace) {
+            /** @var $rNamespace NamespaceReflection */
+            yield from $rNamespace->classTypes($filter);
+        }
     }
 }
 
