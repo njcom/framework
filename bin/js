@@ -6,8 +6,7 @@ readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_FILE_NAME="$(basename "$0")"
 readonly SCRIPT_FILE_PATH="$SCRIPT_DIR_PATH/$SCRIPT_FILE_NAME"
 
-# shellcheck source=./../conf/app.conf.sh
-source "$SCRIPT_DIR_PATH"/../conf/app.conf.sh
+readonly FRONTEND_DIR_PATH=$(realpath -e $SCRIPT_DIR_PATH/../frontend)
 
 build() {
     #node $SCRIPT_DIR_PATH/ts.js build
@@ -15,15 +14,15 @@ build() {
         echo -n "Transpiling '""$(dirname "$tsConfFilePath")/**.ts'..."
         tsc --build "$tsConfFilePath"
         echo OK
-    done < <(find "$frontendDirPath"/localhost -mindepth 2 -name tsconfig.json -type f -print0)
-    find "$frontendDirPath"/localhost/lib/base -name '*.js' -not -name 'index.js' -delete
+    done < <(find "$FRONTEND_DIR_PATH"/localhost -mindepth 2 -name tsconfig.json -type f -print0)
+    find "$FRONTEND_DIR_PATH"/localhost/lib/base -name '*.js' -not -name 'index.js' -delete
 }
 
 watch() {
     local cmds=()
     while IFS= read -r -d '' tsConfFilePath; do
         cmds+=("tsc --build $tsConfFilePath --watch --preserveWatchOutput")
-    done < <(find "$frontendDirPath"/localhost -mindepth 2 -name tsconfig.json -type f -print0)
+    done < <(find "$FRONTEND_DIR_PATH"/localhost -mindepth 2 -name tsconfig.json -type f -print0)
     # https://github.com/microsoft/TypeScript/issues/17611
     concurrently --raw -- "${cmds[@]}"
 }

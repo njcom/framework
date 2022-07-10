@@ -6,15 +6,14 @@ readonly SCRIPT_FILE_NAME="$(basename "$0")"
 readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_FILE_PATH="$SCRIPT_DIR_PATH/$SCRIPT_FILE_NAME"
 
-# shellcheck source=./../conf/app.conf.sh
-source "$SCRIPT_DIR_PATH"/../conf/app.conf.sh
+readonly FRONTEND_DIR_PATH=$(realpath -e $SCRIPT_DIR_PATH/../frontend)
 
 build() {
-    sass "$frontendDirPath"/localhost
+    sass "$FRONTEND_DIR_PATH"/localhost
 }
 
 watch() {
-    sass --watch "$frontendDirPath"/localhost
+    sass --watch "$FRONTEND_DIR_PATH"/localhost
 }
 
 ###############################################################################

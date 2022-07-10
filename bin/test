@@ -14,6 +14,9 @@ readonly PHPUNIT_CONF_FILE_PATH="$TEST_DIR_PATH/phpunit.xml"
 #readonly seleniumLogFilePath="$TEST_DIR_PATH/selenium.log"
 #export SELENIUM_VERSION=latest
 
+if [[ ! -b /dev/loop0 ]]; then
+    sudo losetup -f
+fi
 readonly CI_OPTIONS="--log-junit $TEST_DIR_PATH/test-result.xml"
 # shellcheck disable=SC2046
 php -f "$PHPUNIT_BIN_FILE_PATH" -- -c "$PHPUNIT_CONF_FILE_PATH"$([[ -n "${MORPHO_CI-}" ]] && echo " $CI_OPTIONS") "$@"
