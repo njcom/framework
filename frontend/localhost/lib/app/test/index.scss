@@ -60,6 +60,15 @@ $fail-color: $red-500;
         }
     }
 
+    .qunit-pass {
+        background: $pass-color;
+    }
+    .qunit-fail {
+        background: $fail-color;
+    }
+    .qunit-fail, .qunit-pass {
+        height: 2rem;
+    }
 }
 
 #qunit-tests li:last-child {

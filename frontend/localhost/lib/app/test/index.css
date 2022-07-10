@@ -45,6 +45,15 @@
   margin: 0;
   padding: 0;
 }
+#qunit .qunit-pass {
+  background: #198754;
+}
+#qunit .qunit-fail {
+  background: #dc3545;
+}
+#qunit .qunit-fail, #qunit .qunit-pass {
+  height: 2rem;
+}
 
 #qunit-tests li:last-child {
   margin-bottom: 0;

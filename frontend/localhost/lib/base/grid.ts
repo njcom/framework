@@ -17,13 +17,6 @@ type RowAndEntityIdResult = [JQuery, EntityId];*/
 import {Widget} from "./widget";
 
 export class Grid extends Widget {
-    protected bindHandlers(): void {
-        super.bindHandlers();
-        this.el.find('.grid__chk').on('change', function () {
-            console.log(this);
-        });
-    }
-
     public checkAllCheckboxes(): void {
         this.checkboxes().prop('checked', true).trigger('change');
     }
@@ -40,25 +33,67 @@ export class Grid extends Widget {
         return this.el.find('.grid__chk' + (selector || ''));
     }
 
-    public isActionButtonsDisabled(): boolean {
-        const actionsButtons = this.actionButtons();
-        if (!actionsButtons.length) {
+    public isActionButtonDisabled(): boolean {
+        const actionButtons = this.actionButtons();
+        if (!actionButtons.length) {
             throw new Error("Empty action buttons");
         }
-        return actionsButtons.filter(':not(.disabled)').length === 0;
+        return actionButtons.filter(':not(.disabled)').length === 0;
     }
 
-    /*private enableActionBtns() {
+    /*private enableActionButtons() {
         this.el.find('.action-btn').removeAttr('disabled').removeClass('disabled');
     }
 
-    private disableActionBtns() {
+    private disableActionButtons() {
         this.el.find('.action-btn').prop('disabled', true).addClass('disabled')
     }*/
     public actionButtons(): JQuery {
         return this.el.find('.grid__action-btn');
     }
+
+    protected init(): void {
+        super.init();
+        this.initCheckboxes();
+        this.initActionButtons();
+    }
+
+    protected bindHandlers(): void {
+        super.bindHandlers();
+        /*
+        this.el.find('.grid__chk').on('change', function () {
+            console.log(this);
+        });
+        */
+    }
+
+    protected unbindHandlers() {
+        super.unbindHandlers();
+
+    }
+
+    protected initCheckboxes(): void {
+        const selectAllCheckbox = this.selectAllCheckbox();
+        const checkboxes = this.checkboxes();
+        if (selectAllCheckbox.is(':checked') || (checkboxes.length && !checkboxes.not(selectAllCheckbox).not(':checked').length)) {
+            this.checkAllCheckboxes();
+        }
+    }
+
+    protected initActionButtons(): void {
+        //     const $checked = this.el.find('.select-one:checked');
+        //     if ($checked.length) {
+        //         this.enableActionButtons();
+        //     } else {
+        //     }
+        //         this.disableActionButtons();
+    }
+
+    protected selectAllCheckbox(): JQuery {
+        return this.el.find('.grid__chk-all');
+    }
 }
+
 
 /*
 type EntityType = string

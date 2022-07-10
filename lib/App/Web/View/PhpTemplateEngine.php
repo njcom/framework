@@ -497,7 +497,7 @@ class PhpTemplateEngine extends ArrPipe {
 
     public function __call(string $pluginName, array $args) {
         $plugin = $this->plugin($pluginName);
-        return $plugin($args);
+        return $plugin(...$args);
     }
 
     public function plugin(string $name): mixed {

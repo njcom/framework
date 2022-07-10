@@ -10,14 +10,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="/localhost/rc/favicon.ico">
     <meta name="description" content="">
-    <?php if (isset($this->pageTitle)) { ?>
+    <?php if (isset($this->headTitle)) { ?>
+        <title><?= $this->headTitle ?></title>
+    <?php } elseif (isset($this->pageTitle)) { ?>
         <title><?= $this->pageTitle ?></title>
     <?php } ?>
     <link rel="stylesheet" href="/node_modules/toastify-js/src/toastify.css">
     <link href="/localhost/lib/base/index.css" rel="stylesheet">
-    <?php /*
-    <link href="/localhost/rc/css/offcanvas.css" rel="stylesheet">
- */ ?>
 </head>
 <body id="<?= $this->pageHtmlId() ?>">
 <?php require __DIR__ . '/_main-menu.phtml' ?>

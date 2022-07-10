@@ -27,7 +27,7 @@ export abstract class Widget<TConf extends WidgetConf = WidgetConf> extends Even
     }
 
     public dispose(): void {
-
+        this.unbindHandlers();
     }
 
     protected init(): void {
@@ -37,6 +37,9 @@ export abstract class Widget<TConf extends WidgetConf = WidgetConf> extends Even
     }
 
     protected bindHandlers(): void {
+    }
+
+    protected unbindHandlers(): void {
     }
 
     protected normalizeConf(conf: TConf | JQuery): TConf {

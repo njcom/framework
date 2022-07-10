@@ -89,24 +89,19 @@ class ServiceManager extends BaseServiceManager {
     }
 
     protected function mkTemplateEnginePluginFactoryService() {
-        return function ($pluginName) {
-            $instanceNs = init(get_class($this['request']->handler()['instance']), '\\');
-            $pluginClass = $instanceNs . '\\View\\' . classify($pluginName) . 'Plugin';
-            if (class_exists($pluginClass)) {
-                $plugin = new $pluginClass();
-            } else {
-                $plugins = $this->conf['templateEngine']['plugins'];
-                if (isset($plugins[$pluginName])) {
-                    $plugin = new $plugins[$pluginName]();
-                } else {
-                    throw new UnexpectedValueException("Unknown plugin: " . $pluginName . '. Candidates: ' . $pluginClass . '.');
+        if (isset($this->conf['templateEngine']['pluginFactory'])) {
+            $factory = $this->conf['templateEngine']['pluginFactory'];
+        } else {
+            $factory = function ($pluginName) {
+                $class = init(__NAMESPACE__, '\\') . '\\Web\\View\\' . classify($pluginName) . 'Plugin';
+                $plugin = new $class();
+                if ($plugin instanceof IHasServiceManager) {
+                    $plugin->setServiceManager($this);
                 }
-            }
-            if ($plugin instanceof IHasServiceManager) {
-                $plugin->setServiceManager($this);
-            }
-            return $plugin;
-        };
+                return $plugin;
+            };
+        }
+        return $factory;
     }
 
     /*    protected function mkAutoloaderService() {

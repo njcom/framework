@@ -4,18 +4,43 @@ QUnit.module('grid',  hooks => {
     let grid: Grid,
         $grid: JQuery;
 
+    function mkGrid(): [JQuery, Grid] {
+        const $grid = $('#grid'),
+            grid = new Grid($grid);
+        return [$grid, grid];
+    }
+
+    function findCheckedCheckboxes($grid: JQuery): JQuery {
+        return $grid.find(':checked');
+    }
+
+    function checkAllCheckbox(): JQuery {
+        return $('.grid__chk-all');
+    }
+
     hooks.beforeEach(() => {
-        $grid = $('#grid');
-        grid = new Grid($grid);
+        [$grid, grid] = mkGrid();
     });
 
     hooks.afterEach(() => {
-        //router.destroy();
         grid.dispose();
+        $grid.find('.grid__chk').prop('checked', false);
+    });
+
+    QUnit.test('Checkboxes are checked if check all checkbox is initially checked', assert => {
+        const $checkAll = checkAllCheckbox();
+        assert.true($checkAll.length == 1);
+
+        $checkAll.prop('checked', true);
+
+        assert.true(findCheckedCheckboxes($grid).length == 1);
+
+        [$grid, grid] = mkGrid(); // this should initialize checkboxes
+        assert.true(findCheckedCheckboxes($grid).length == 4);
     });
 
     QUnit.test('checkAllCheckboxes() and uncheckAllCheckboxes()', assert => {
-        assert.ok(grid.isActionButtonsDisabled());
+        assert.ok(grid.isActionButtonDisabled());
 
         const $checkedCheckboxes = () => $grid.find('.grid__chk:checked');
         const bindHandler = (handler: () => void) => $grid.find('.grid__chk:first').on('change', handler);
