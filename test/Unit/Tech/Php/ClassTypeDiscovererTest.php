@@ -24,23 +24,24 @@ class ClassTypeDiscovererTest extends TestCase {
     public function testClassTypesDefinedInDir_UsingDefaultStrategy() {
         $testDirPath = $this->getTestDirPath();
         $ns = __CLASS__;
-        $this->assertSame(
-            [
-                "$ns\\TMyTrait"             => "$testDirPath/Test.php",
-                "$ns\\IMyInterface"         => "$testDirPath/Test.php",
-                "$ns\\MyClass"              => "$testDirPath/Test.php",
-                "$ns\\MyEnum"               => "$testDirPath/Test.php",
-                "$ns\\TestMe"               => "$testDirPath/ClassTypeDepsWithStdClasses.php",
-                "$ns\\TFourth"              => "$testDirPath/ClassTypeDeps.php",
-                "$ns\\IThird"               => "$testDirPath/ClassTypeDeps.php",
-                "$ns\\Some"                 => "$testDirPath/ClassTypeDeps.php",
-                "$ns\\DefinedInTheSameFile" => "$testDirPath/ClassTypeDeps.php",
-                "$ns\\Service"              => "$testDirPath/ClassTypeDeps.php",
-                "$ns\\First"                => "$testDirPath/ClassTypeDeps.php",
-                "$ns\\Second"               => "$testDirPath/ClassTypeDeps.php",
-            ],
-            $this->classTypeDiscoverer->classTypesDefinedInDir($testDirPath)
-        );
+        $expected = [
+            "$ns\\TMyTrait"             => "$testDirPath/Test.php",
+            "$ns\\IMyInterface"         => "$testDirPath/Test.php",
+            "$ns\\MyClass"              => "$testDirPath/Test.php",
+            "$ns\\MyEnum"               => "$testDirPath/Test.php",
+            "$ns\\TestMe"               => "$testDirPath/ClassTypeDepsWithStdClasses.php",
+            "$ns\\TFourth"              => "$testDirPath/ClassTypeDeps.php",
+            "$ns\\IThird"               => "$testDirPath/ClassTypeDeps.php",
+            "$ns\\Some"                 => "$testDirPath/ClassTypeDeps.php",
+            "$ns\\DefinedInTheSameFile" => "$testDirPath/ClassTypeDeps.php",
+            "$ns\\Service"              => "$testDirPath/ClassTypeDeps.php",
+            "$ns\\First"                => "$testDirPath/ClassTypeDeps.php",
+            "$ns\\Second"               => "$testDirPath/ClassTypeDeps.php",
+        ];
+        sort($expected);
+        $actual = $this->classTypeDiscoverer->classTypesDefinedInDir($testDirPath);
+        sort($actual);
+        $this->assertSame($expected, $actual);
     }
 
     public function testDefaultStrategy() {
