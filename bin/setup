@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+set -eu
+
+SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR_PATH
+SCRIPT_FILE_NAME="$(basename "$0")"
+readonly SCRIPT_FILE_NAME
+readonly SCRIPT_FILE_PATH="$SCRIPT_DIR_PATH/$SCRIPT_FILE_NAME"
+
+BASE_DIR_PATH="$(realpath -e "$SCRIPT_DIR_PATH"/..)"
+readonly BASE_DIR_PATH
+
+################################################################################
+
+clean-cache() {
+    sudo bash -c "rm -rfv $BASE_DIR_PATH/backend/localhost/cache/*"
+}
+
+################################################################################
+
+# Return if script has been sourced as the library
+#(return 0 2>/dev/null) && return 0
+
+cmd_re() {
+    grep -P '^[0-9a-z].*\(\)\s+{' "$SCRIPT_FILE_PATH" | grep -vP '[_A-Z]' | tr -d '() {' | tr '\n' '|' | sed 's/|$//' | sed 's/^/(/' | sed 's/$/)/'
+}
+
+usage() {
+    echo "Usage: $0 \$cmd"
+    # shellcheck disable=SC2016
+    echo '    where $cmd:'
+    cmd_re | perl -WpE 's/[|()]/\n/g' | perl -WpE 's/^/        /' | perl -WnE 'print unless m/^\s*$/'
+}
+
+
+if [[ $# -lt 1 ]]; then
+    usage
+    exit
+fi
+
+if [[ ! "$1" =~ ^$(cmd_re)$ ]]; then
+    usage
+    exit 1
+fi
+
+"$@"
