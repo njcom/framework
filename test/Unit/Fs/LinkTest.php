@@ -23,7 +23,7 @@ use function unlink;
 class LinkTest extends TestCase {
     private $tmpDirPath;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->tmpDirPath = $this->createTmpDir(__FUNCTION__);
     }

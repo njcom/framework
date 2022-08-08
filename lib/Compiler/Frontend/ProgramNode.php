@@ -6,6 +6,5 @@
  */
 namespace Morpho\Compiler\Frontend;
 
-interface IProgram extends INode {
-
+class ProgramNode extends Node implements IProgramNode {
 }

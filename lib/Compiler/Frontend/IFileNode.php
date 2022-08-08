@@ -7,5 +7,7 @@
 namespace Morpho\Compiler\Frontend;
 
 interface IFileNode extends INode {
+    public function setFilePath(string $filePath): void;
 
+    public function filePath(): string;
 }

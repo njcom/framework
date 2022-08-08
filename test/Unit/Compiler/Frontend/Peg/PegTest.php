@@ -14,7 +14,7 @@ use Morpho\Testing\TestCase;
 class PegTest extends TestCase {
     private Peg $peg;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->peg = new Peg();
     }

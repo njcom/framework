@@ -16,7 +16,7 @@ use function Morpho\Base\dasherize;
 class RouteMetaProviderTest extends TestCase {
     private RouteMetaProvider $routeMetaProvider;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->routeMetaProvider = new RouteMetaProvider();
     }

@@ -14,7 +14,7 @@ use function uniqid;
 class SessionTest extends TestCase {
     private Session $session;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $_SESSION = [];
         $this->session = new Session(__CLASS__, false);

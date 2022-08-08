@@ -14,7 +14,7 @@ use const Morpho\App\TEST_DATA_DIR_NAME;
 abstract class DiscoverStrategyTest extends TestCase {
     protected IDiscoverStrategy $strategy;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->strategy = $this->mkDiscoverStrategy();
     }

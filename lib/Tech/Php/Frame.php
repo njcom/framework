@@ -7,8 +7,9 @@
 namespace Morpho\Tech\Php;
 
 use ArrayAccess;
+use Stringable;
 
-class Frame implements ArrayAccess {
+class Frame implements ArrayAccess, Stringable {
     protected $function;
 
     protected $line;

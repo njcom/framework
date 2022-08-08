@@ -11,7 +11,7 @@ use Morpho\Tech\Sql\IQuery;
 abstract class QueryTest extends DbTestCase {
     protected IQuery $query;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->query = $this->mkQuery();
     }

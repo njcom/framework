@@ -51,12 +51,12 @@ use function unlink;
 class VfsTest extends TestCase {
     private $umask;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->umask = umask();
     }
 
-    public function tearDown(): void {
+    protected function tearDown(): void {
         parent::tearDown();
         umask($this->umask);
         Vfs::resetState();

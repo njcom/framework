@@ -13,7 +13,7 @@ namespace Morpho\Test\Unit\App\Web\View {
     class MessengerTest extends TestCase {
         private Messenger $messenger;
 
-        public function setUp(): void {
+        protected function setUp(): void {
             parent::setUp();
             $this->messenger = new Messenger();
             $this->messenger->setMessageStorage(new MessageStorage([]));

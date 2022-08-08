@@ -21,13 +21,13 @@ class SchemaTest extends DbTestCase {
 
     private array $dbs = [];
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->schema = new Schema($this->db);
         $this->dbs = [];
     }
 
-    public function tearDown(): void {
+    protected function tearDown(): void {
         parent::tearDown();
         foreach ($this->dbs as $dbName) {
             $this->db->eval("DROP DATABASE IF EXISTS " . $dbName);

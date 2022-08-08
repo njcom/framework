@@ -11,7 +11,7 @@ namespace Morpho\Test\Unit\Base {
     use Morpho\Testing\TestCase;
 
     class TSingletonTest extends TestCase {
-        public function tearDown(): void {
+        protected function tearDown(): void {
             parent::tearDown();
             Singleton::resetState();
         }

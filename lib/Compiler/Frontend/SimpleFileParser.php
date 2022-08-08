@@ -9,8 +9,10 @@ namespace Morpho\Compiler\Frontend;
 abstract class SimpleFileParser implements ISimpleFileParser {
     public function parseFile(string $filePath): mixed {
         $fileNode = $this->mkFileNode();
-        $fileNode->setPath($filePath);
-        $fileNode->append($this->parseStr(file_get_contents($filePath)));
+        $fileNode->setFilePath($filePath);
+        $fileNode->exchangeArray($this->parseStr(file_get_contents($filePath)));
         return $fileNode;
     }
+
+    abstract protected function mkFileNode(): IFileNode;
 }

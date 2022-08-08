@@ -108,11 +108,8 @@ return [
             ],
             'templateEngine'       => [
                 'forceCompile' => true,
-                'plugins' => [
-                    'Messenger' => MessengerPlugin::class,
-                    'Grid'      => GridWidget::class,
-                ],
-                /*            'forceCompileTs' => false,
+                'pluginNss' => ['Morpho\\App\\Web\\View'],
+                /* 
                             'nodeBinDirPath' => getenv('NODE_BIN_DIR_PATH') ?: '/usr/bin',
                             'tsOptions' => [
                                 '--forceConsistentCasingInFileNames',

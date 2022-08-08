@@ -18,7 +18,7 @@ use function range;
 class PagerTest extends TestCase {
     private Pager $pager;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->pager = new Pager();
     }

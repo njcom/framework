@@ -14,7 +14,7 @@ use Morpho\Testing\TestCase;
 class NoDupsListenerTest extends TestCase {
     private $lockFileDirPath;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->lockFileDirPath = $this->createTmpDir();
     }

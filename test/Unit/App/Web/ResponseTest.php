@@ -19,7 +19,7 @@ use function ob_start;
 class ResponseTest extends TestCase {
     private Response $response;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->response = new Response();
     }

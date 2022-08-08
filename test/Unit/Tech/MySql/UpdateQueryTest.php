@@ -13,7 +13,7 @@ use Morpho\Tech\Sql\Result;
 use PDO;
 
 class UpdateQueryTest extends QueryTest {
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->createCarsTable(true);
     }

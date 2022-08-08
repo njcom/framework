@@ -22,7 +22,7 @@ use function strpos;
 class UriParser implements IFn {
     protected ?Uri $uri = null;
 
-    protected array $semiParsed;
+    protected array $match;
 
     public static function parseOnlyAuthority(string $authorityStr): Authority {
         // authority = [ userinfo "@" ] host [ ":" port ]
@@ -150,18 +150,18 @@ class UriParser implements IFn {
         # We use modified [regular expression from the RFC 3986](https://tools.ietf.org/html/rfc3986#appendix-B)
         if (!preg_match(
             '~^
-            ((?P<scheme>[^:/?\#]+):)?                      # scheme
-            (?P<authority_>//(?P<authority>[^/?\#]*))?     # authority
-            (?P<path>[^?\#]*)                              # path
-            (?P<query_>\?(?P<query>[^\#]*))?               # query
-            (?P<fragment_>\#(?P<fragment>.*))?             # fragment
+            ((?P<scheme>[^:/?\#]+):)?                      # optional scheme
+            (?P<authority_>//(?P<authority>[^/?\#]*))?     # optinal authority
+            (?P<path>[^?\#]*)                              # required path
+            (?P<query_>\?(?P<query>[^\#]*))?               # optional query
+            (?P<fragment_>\#(?P<fragment>.*))?             # optional fragment
             $~six',
             $uri,
             $match
         )) {
             throw new UriParseException('Invalid URI');
         }
-        $this->semiParsed = $match;
+        $this->match = $match;
 
         $this->parseScheme();
         $this->parseAuthority();
@@ -173,34 +173,34 @@ class UriParser implements IFn {
     }
 
     protected function parseScheme(): void {
-        $scheme = $this->semiParsed['scheme'];
+        $scheme = $this->match['scheme'];
         $this->uri->setScheme($scheme);
     }
 
     protected function parseAuthority(): void {
-        $hasAuthority = $this->semiParsed['authority_'] !== '';
+        $hasAuthority = $this->match['authority_'] !== '';
         if ($hasAuthority) {
-            $authority = $this->semiParsed['authority'];
+            $authority = $this->match['authority'];
             $this->uri->setAuthority($authority);
         }
     }
 
     protected function parsePath(): void {
-        $path = $this->semiParsed['path'];
+        $path = $this->match['path'];
         $this->uri->setPath($path);
     }
 
     protected function parseQuery(): void {
-        $hasQuery = isset($this->semiParsed['query_']) && $this->semiParsed['query_'] !== '';
+        $hasQuery = isset($this->match['query_']) && $this->match['query_'] !== '';
         if ($hasQuery) {
-            $this->uri->setQuery($this->semiParsed['query']);
+            $this->uri->setQuery($this->match['query']);
         }
     }
 
     protected function parseFragment(): void {
-        $hasFragment = isset($this->semiParsed['fragment_']) && $this->semiParsed['fragment_'] !== '';
+        $hasFragment = isset($this->match['fragment_']) && $this->match['fragment_'] !== '';
         if ($hasFragment) {
-            $this->uri->setFragment($this->semiParsed['fragment']);
+            $this->uri->setFragment($this->match['fragment']);
         }
     }
 }

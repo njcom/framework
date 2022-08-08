@@ -14,7 +14,7 @@ use function trim;
 class HtmlSemiParserTest extends TestCase {
     private HtmlSemiParser $parser;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->parser = new HtmlSemiParser();
     }

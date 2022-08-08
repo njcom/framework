@@ -13,7 +13,7 @@ use Morpho\Testing\TestCase;
 class PriceFilterTest extends TestCase {
     private IFn $filter;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->filter = new PriceFilter();
     }

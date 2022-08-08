@@ -38,6 +38,7 @@ class App extends EventManager {
             return $event->args['exitCode'];
         } catch (Throwable $e) {
             if (Env::boolIniVal('display_errors')) {
+                while (@ob_end_clean());
                 echo $e;
             }
             self::logErrorFallback($e);

@@ -13,7 +13,7 @@ use Morpho\Testing\TestCase;
 class DebuggerTest extends TestCase {
     private Debugger $debugger;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         $this->debugger = Debugger::instance();
     }
 
@@ -47,7 +47,7 @@ class DebuggerTest extends TestCase {
         $this->assertEquals($expected, $this->debugger->calledAt());
     }
 
-    public function tearDown(): void {
+    protected function tearDown(): void {
         Debugger::resetState();
     }
 }

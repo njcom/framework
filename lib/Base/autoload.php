@@ -97,6 +97,18 @@ const WAIT_INTERVAL_MICRO_SEC = 200000;
  */
 
 /**
+ * @param mixed $val
+ * @return bool Returns true if the $val is one of `enum` `case` values.
+ */
+function isEnumCase(mixed $val): bool {
+    return is_object($val) && enum_exists($val::class);
+}
+
+function val(mixed $val): mixed {
+    return isEnumCase($val) ? $val->value : $val;
+}
+
+/**
  * @psalm-param callable(mixed, mixed): bool $predicate
  * @psalm-param List $list
  * @return bool
@@ -182,8 +194,8 @@ function unpackArgs(array $args): array {
 
 /**
  * @param string|Stringable|iterable<mixed, string>|int|float $list
- * @param string $pre
- * @param string|null $post
+ * @param string                                                 $pre
+ * @param string|null                                            $post
  * @return string|array
  */
 function wrap(string|Stringable|iterable|int|float $list, string $pre, string $post = null): string|array {
@@ -491,7 +503,7 @@ function fromJson(string $json, bool $objectsToArrays = true): mixed {
 
 /**
  * Sets properties of the object $instance using values from $props
- * @param object $instance
+ * @param object      $instance
  * @param iterable $props E.g.: ['myProp1' => 'myVal1', 'myProp2' => 'myVal2'];
  * @return object
  */
@@ -563,7 +575,7 @@ function tpl($__filePath, array $__vars = null): string {
         ob_end_clean();
         throw $e;
     }
-    return trim(ob_get_clean());
+    return ob_get_clean();
 }
 
 /**
@@ -842,7 +854,7 @@ function chain(...$iterables): iterable {
 
 /**
  * @param iterable|string $haystack
- * @param mixed $needle
+ * @param mixed              $needle
  */
 function contains($haystack, $needle): bool {
     if (is_string($haystack)) {
@@ -910,7 +922,7 @@ function filter(callable $predicate, $iter) {
  *     flatMap(function($v) { return [-$v, $v]; }, [1, 2, 3, 4, 5]);
  *     => iterable(-1, 1, -2, 2, -3, 3, -4, 4, -5, 5)
  *
- * @param callable $fn Mapping function: iterable function(mixed $value)
+ * @param callable           $fn Mapping function: iterable function(mixed $value)
  * @param iterable|string $iter Iterable to be mapped over
  *
  * @return string|Generator|array
@@ -1126,8 +1138,8 @@ function map(callable $fn, $iter) {
  *           $curValue is the current element
  *           $curKey is a key of the current element
  *     The reduction function must return a new accumulator value.
- * @param iterable<mixed, mixed>|string $list Iterable to reduce.
- * @param mixed $initial Start value for accumulator. Usually identity value of $function.
+ * @param iterable<mixed, mixed>|string     $list Iterable to reduce.
+ * @param mixed                                $initial Start value for accumulator. Usually identity value of $function.
  *
  * @return mixed Result of the reduction.
  */
@@ -1175,6 +1187,7 @@ function unindent(string|Stringable|int|float $text, int $indent = INDENT_SIZE):
 }
 
 /**
+ * @deprecated should be removed after PHP 8.2 and replaced with iterator_to_array()
  * Alternative to iterator_to_array(), as the iterator_to_array() does not support arrays as the first argument
  * @param iterable $it
  * @return array

@@ -50,6 +50,6 @@ abstract class CommandResult implements ICommandResult {
     }
 
     public function __toString(): string {
-        return (string) $this->stdOut();
+        return $this->stdOut();
     }
 }

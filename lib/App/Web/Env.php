@@ -15,7 +15,7 @@ use function strtolower;
 
 class Env extends BaseEnvironment {
     public const HTTP_PROTO = 'HTTP/1.1';
-    protected bool $startSession = false;
+    //protected bool $startSession = false;
 
     public static function clientIp(): array {
         return [

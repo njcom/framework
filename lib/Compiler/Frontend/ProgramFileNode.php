@@ -6,12 +6,14 @@
  */
 namespace Morpho\Compiler\Frontend;
 
-class Token {
-    /**
-     * @todo: change type to int|string|enum after PHP 8.1
-     * AKA Token-class
-     */
-    public mixed $type;
-    public Location $location;
-    public array $meta = [];
+class ProgramFileNode extends ProgramNode implements IProgramFileNode {
+    protected string $filePath;
+
+    public function setFilePath(string $filePath): void {
+        $this->filePath = $filePath;
+    }
+
+    public function filePath(): string {
+        return $this->filePath;
+    }
 }

@@ -9,6 +9,7 @@ namespace Morpho\App\Cli;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Handler\ErrorLogHandler as PhpErrorLogWriter;
 use Monolog\Logger;
+use Monolog\LogRecord;
 use Morpho\App\ServiceManager as BaseServiceManager;
 use Morpho\Base\EventManager;
 use Morpho\Base\NotImplementedException;
@@ -30,7 +31,7 @@ class ServiceManager extends BaseServiceManager {
 
         $logger->pushHandler(
             new class extends AbstractProcessingHandler {
-                protected function write(array $record): void {
+                protected function write(LogRecord $record): void {
                     errorLn($record['message']);
                 }
             }

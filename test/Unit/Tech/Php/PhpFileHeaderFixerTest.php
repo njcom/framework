@@ -17,7 +17,7 @@ use const Morpho\Tech\Php\LICENSE_COMMENT;
 class PhpFileHeaderFixerTest extends TestCase {
     private PhpFileHeaderFixer $fixer;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->fixer = new PhpFileHeaderFixer(LICENSE_COMMENT);
     }

@@ -17,12 +17,12 @@ use function touch;
 class StatTest extends TestCase {
     private int $oldUmask;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->oldUmask = umask();
     }
 
-    public function tearDown(): void {
+    protected function tearDown(): void {
         umask($this->oldUmask);
         parent::tearDown();
     }

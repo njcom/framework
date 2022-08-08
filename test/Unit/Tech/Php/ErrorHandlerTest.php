@@ -23,12 +23,12 @@ require_once __DIR__ . '/BaseErrorHandlerTest.php';
 class ErrorHandlerTest extends BaseErrorHandlerTest {
     private $oldErrorLevel;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->oldErrorLevel = ini_get('display_errors');
     }
 
-    public function tearDown(): void {
+    protected function tearDown(): void {
         parent::tearDown();
         ini_set('display_errors', $this->oldErrorLevel);
     }

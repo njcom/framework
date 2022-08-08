@@ -9,13 +9,15 @@ namespace Morpho\Base;
 use DateTimeImmutable;
 use DateTimeZone;
 
+use Stringable;
+
 use function is_numeric;
 use function is_string;
 use function preg_match;
 use function strlen;
 use function substr;
 
-class DateTime extends DateTimeImmutable {
+class DateTime extends DateTimeImmutable implements Stringable {
     public const MYSQL_DATETIME = 'Y-m-d H:i:s';
     public const MYSQL_DATETIME_RE = '~^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2}) (?<hour>\d{2}):(?<min>\d{2}):(?<sec>\d{2})$~s';
 

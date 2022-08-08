@@ -1,31 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- https://phpunit.readthedocs.io/en/9.5/configuration.html -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.0/phpunit.xsd"
+         backupGlobals="false"
          beStrictAboutChangesToGlobalState="true"
          beStrictAboutCoverageMetadata="true"
          beStrictAboutOutputDuringTests="true"
          bootstrap="./bootstrap.php"
          cacheDirectory=".phpunit.cache"
          colors="true"
-         convertDeprecationsToExceptions="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         executionOrder="depends,defects"
+         displayDetailsOnIncompleteTests="true"
+         displayDetailsOnSkippedTests="true"
          failOnEmptyTestSuite="true"
          failOnIncomplete="false"
          failOnRisky="true"
-         failOnSkipped="true"
          failOnWarning="true"
-         requireCoverageMetadata="false"
          stopOnDefect="true"
-         stopOnError="true"
-         stopOnFailure="true"
          stopOnIncomplete="false"
-         stopOnRisky="true"
-         stopOnSkipped="false"
-         stopOnWarning="true"
-         verbose="true">
+         requireCoverageMetadata="false">
     <testsuites>
         <testsuite name="lib">
             <!-- <file>TestSuite.php</file> -->

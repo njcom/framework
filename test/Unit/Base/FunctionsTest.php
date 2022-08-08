@@ -10,8 +10,8 @@ use ArrayIterator;
 use IteratorAggregate;
 use Morpho\Base\IDisposable;
 use Morpho\Base\IFn;
+use Morpho\Test\Unit\Base\FunctionsTest\Foo;
 use Morpho\Testing\TestCase;
-use ReturnTypeWillChange;
 use RuntimeException;
 use SplStack;
 use stdClass;
@@ -23,7 +23,7 @@ use function count;
 use function fclose;
 use function file_put_contents;
 use function get_class_methods;
-use function Morpho\Base\{all, append, appendFn, camelize, camelizeKeys, capture, cartesianProduct, classify, compose, dasherize, deleteDups, formatBytes, formatFloat, fromJson, humanize, indent, index, isSubset, isUtf8Text, last, lastPos, lines, memoize, merge, normalizeEols, not, op, partial, permutations, pipe, prepend, prependFn, q, qq, sanitize, setProps, setsEqual, shorten, showLn, showOk, subsets, symDiff, titleize, toIt, toJson, tpl, etrim, ucfirst, underscore, underscoreKeys, unindent, union, uniqueName, unsetMany, unsetOne, unsetRecursive, using, waitUntilNumOfAttempts, waitUntilTimeout, words, wrap, wrapFn};
+use function Morpho\Base\{all, append, appendFn, camelize, camelizeKeys, capture, cartesianProduct, classify, compose, dasherize, deleteDups, formatBytes, formatFloat, fromJson, humanize, indent, index, isEnumCase, isSubset, isUtf8Text, last, lastPos, lines, memoize, merge, normalizeEols, not, op, partial, permutations, pipe, prepend, prependFn, q, qq, sanitize, setProps, setsEqual, shorten, showLn, showOk, subsets, symDiff, titleize, toIt, toJson, tpl, etrim, ucfirst, underscore, underscoreKeys, unindent, union, uniqueName, unsetMany, unsetOne, unsetRecursive, using, val, waitUntilNumOfAttempts, waitUntilTimeout, words, wrap, wrapFn};
 use function ob_get_clean;
 use function ob_start;
 use function property_exists;
@@ -31,11 +31,22 @@ use function property_exists;
 class FunctionsTest extends TestCase {
     private $tmpHandle;
 
-    public function tearDown(): void {
+    protected function tearDown(): void {
         parent::tearDown();
         if (isset($this->tmpHandle)) {
             fclose($this->tmpHandle);
         }
+    }
+
+    public function testIsEnumCase() {
+        $this->assertFalse(isEnumCase($this));
+        $this->assertFalse(isEnumCase(__CLASS__));
+        $this->assertTrue(isEnumCase(Foo::First));
+    }
+
+    public function testVal() {
+        $this->assertSame(Foo::First->value, val(Foo::First));
+        $this->assertSame(123, val(123));
     }
 
     // -------------------------------------------------------------------------
@@ -1550,4 +1561,11 @@ OUT;
         ];
         $this->assertSame(36, pipe($iter, 7));
     }
+}
+
+namespace Morpho\Test\Unit\Base\FunctionsTest;
+
+enum Foo: string {
+    case First = 'abc';
+    case Second = 'def';
 }

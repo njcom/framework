@@ -15,7 +15,7 @@ use function iterator_to_array;
 class ActionMetaProviderTest extends TestCase {
     private ActionMetaProvider $actionMetaProvider;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->actionMetaProvider = new ActionMetaProvider();
     }

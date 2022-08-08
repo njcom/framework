@@ -8,6 +8,7 @@ namespace Morpho\App\Cli;
 
 use IteratorAggregate;
 use Stringable;
+use Traversable;
 
 interface ICommandResult extends IteratorAggregate, Stringable {
     public function command(): string;
@@ -20,7 +21,7 @@ interface ICommandResult extends IteratorAggregate, Stringable {
 
     public function isError(): bool;
 
-    public function lines(): \Traversable;
+    public function lines(): Traversable;
 
     public function __toString(): string;
 }

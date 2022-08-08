@@ -7,5 +7,4 @@
 namespace Morpho\Compiler\Frontend;
 
 interface INode {
-
 }

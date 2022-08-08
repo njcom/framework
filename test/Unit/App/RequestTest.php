@@ -15,7 +15,7 @@ use Morpho\Base\NotImplementedException;
 class RequestTest extends MessageTest {
     private $request;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->request = new class extends Request {
             public function response(): IResponse {

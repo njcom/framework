@@ -31,7 +31,7 @@ use function touch;
 use function uniqid;
 
 class FileTest extends TestCase {
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
     }
 

@@ -14,7 +14,7 @@ use Morpho\Testing\TestCase;
 class FormProcessorTest extends TestCase {
     private FormProcessor $formPersister;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $request = $this->createMock(Request::class);
         $uri = $this->createMock(Uri::class);

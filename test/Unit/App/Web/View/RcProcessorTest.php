@@ -21,7 +21,7 @@ class RcProcessorTest extends TestCase {
     private RcProcessor $processor;
     private string $baseUriPath;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->baseUriPath = '/base/path';
         $this->processor = new RcProcessor($this->mkRequest('foo/bar'), $this->mkSiteStub('abc/efg'));

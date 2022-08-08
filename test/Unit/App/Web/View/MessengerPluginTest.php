@@ -23,7 +23,7 @@ class MessengerPluginTest extends TestCase {
      */
     private $messengerPlugin;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->messenger = new Messenger();
         $this->messenger->setMessageStorage(new MessageStorage());

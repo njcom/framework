@@ -6,6 +6,7 @@
  */
 namespace Morpho\Test\Unit\App\Web\View;
 
+use ArrayIterator;
 use Morpho\App\ISite;
 use Morpho\App\Web\IRequest;
 use Morpho\App\Web\View\FormProcessor;
@@ -16,6 +17,8 @@ use Morpho\App\Web\View\UriProcessor;
 use Morpho\Base\IPipe;
 use Morpho\Testing\TestCase;
 
+use Morpho\Uri\Uri;
+
 use function date;
 use function file_put_contents;
 use function str_replace;
@@ -23,7 +26,7 @@ use function str_replace;
 class PhpTemplateEngineTest extends TestCase {
     private PhpTemplateEngine $templateEngine;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->templateEngine = new PhpTemplateEngine($this->templateEngineConf());
     }
@@ -111,6 +114,64 @@ class PhpTemplateEngineTest extends TestCase {
         $this->checkBoolAccessor([$this->templateEngine, 'forceCompile'], false);
     }
 
+    public function testLink_WithoutText() {
+        $uri = 'http://localhost/?foo=123&bar=456';
+
+        $request = $this->createMock(IRequest::class);
+        $request->expects($this->any())
+            ->method('prependWithBasePath')
+            ->with($this->identicalTo($uri))
+            ->willReturn(new Uri($uri));
+        $this->templateEngine->setRequest($request);
+
+        $this->assertSame('<a href="' . htmlspecialchars($uri, ENT_QUOTES) . '">' . htmlspecialchars($uri, ENT_QUOTES) . '</a>', $this->templateEngine->l($uri));
+    }
+
+    public function testUl() {
+        $this->assertSame(
+            '<ul id="u123"><li>foo</li><li>bar</li></ul>',
+            $this->templateEngine->ul(
+                [
+                    'foo',
+                    'bar',
+                ],
+                [
+                    'id' => 'u123',
+                ],
+            )
+        );
+    }
+
+    public function testOl() {
+        $this->assertSame(
+            '<ol id="u123"><li>foo</li><li>bar</li></ol>',
+            $this->templateEngine->ol(
+                [
+                    'foo',
+                    'bar',
+                ],
+                [
+                    'id' => 'u123',
+                ],
+            )
+        );
+    }
+
+    public function testList() {
+        $expected = '<li>foo</li><li>bar</li>';
+        $list = ['foo', 'bar'];
+        $this->assertSame(
+            $expected,
+            $this->templateEngine->list($list),
+            'Accepts array',
+        );
+        $this->assertSame(
+            $expected,
+            $this->templateEngine->list(new ArrayIterator($list)),
+            'Accepts iterable',
+        );
+    }
+
     public function testSelectControl_Empty() {
         $this->assertHtmlEquals("<select></select>", $this->templateEngine->selectControl([]));
     }
@@ -144,6 +205,64 @@ class PhpTemplateEngineTest extends TestCase {
         $this->assertHtmlEquals('<select name="task[id]" id="task-id"></select>', $html);
     }
 
+    public function dataAttribs(): iterable {
+        yield [
+            '',
+            [],
+        ];
+        yield [
+            '',
+            null,
+        ];
+        yield [
+            ' checked',
+            [
+                'checked',
+            ],
+        ];
+        yield [
+            ' checked autofocus',
+            [
+                'checked',
+                'autofocus',
+            ],
+        ];
+        yield [
+            ' type="image" border="1"',
+            [
+                'type'   => 'image',
+                'border' => '1',
+            ],
+        ];
+        yield [
+            ' style="display: block; width: 80%;"',
+            [
+                'style' => 'display: block; width: 80%;',
+            ],
+        ];
+        yield [
+            ' checked type="image"',
+            [
+                'checked',
+                'type' => 'image',
+            ],
+        ];
+        yield [
+            ' che&#039;c&quot;ked ty&#039;p&quot;e="im&quot;a&#039;ge"',
+            [
+                'che\'c"ked',
+                'ty\'p"e' => 'im"a\'ge',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider dataAttribs
+     */
+    public function testAttribs($expected, $attribs, string $msg = '') {
+        $this->assertSame($expected, $this->templateEngine->attribs($attribs), $msg);
+    }
+
     public function testTag() {
         $this->assertSame('<foo bar="baz">hello</foo>', $this->templateEngine->tag('foo', 'hello', ['bar' => 'baz']));
     }
@@ -154,7 +273,7 @@ class PhpTemplateEngineTest extends TestCase {
         $this->assertEquals("<foo></foo>", $this->templateEngine->tag('foo', null, null, ['eol' => false]));
     }
 
-    public function testTag_EscapeConfParam() {
+    public function testTag_EscapeConfParam_1() {
         $this->assertEquals(
             '<foo>&quot;</foo>',
             $this->templateEngine->tag('foo', '"', null, ['eol' => false, 'escape' => true])
@@ -163,6 +282,13 @@ class PhpTemplateEngineTest extends TestCase {
         $this->assertEquals(
             '<foo>"</foo>',
             $this->templateEngine->tag('foo', '"', null, ['eol' => false, 'escape' => false])
+        );
+    }
+
+    public function testTag_EscapeConfParam_2() {
+        $this->assertSame(
+            '<ul id="u123"><li>foo</li><li>bar</li></ul>',
+            $this->templateEngine->tag('ul', '<li>foo</li><li>bar</li>', ['id' => 'u123'], ['escape' => false]),
         );
     }
 
@@ -245,6 +371,13 @@ class PhpTemplateEngineTest extends TestCase {
         $encoded = $this->templateEngine->e($original);
         $this->assertEquals('&lt;h1&gt;Hello&lt;/h1&gt;', $encoded);
         $this->assertEquals($original, $this->templateEngine->de($encoded));
+    }
+
+    public function testEncode_DoesNotEncodeClosure() {
+        $fn = function () {
+            return '&mdash;';
+        };
+        $this->assertSame('&mdash;', $this->templateEngine->e($fn));
     }
 
     public function testEncodeDecode_OnlySpecialChars() {

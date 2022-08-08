@@ -7,7 +7,7 @@
 namespace Morpho\Test\Unit\Tech\MySql;
 
 trait TUsingNorthwind {
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->pdo->exec('USE northwind');
     }

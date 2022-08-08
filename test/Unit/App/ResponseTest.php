@@ -13,7 +13,7 @@ use Morpho\App\Response;
 class ResponseTest extends MessageTest {
     private IResponse $response;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->response = new class extends Response {
 

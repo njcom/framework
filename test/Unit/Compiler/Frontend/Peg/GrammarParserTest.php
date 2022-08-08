@@ -15,7 +15,7 @@ use Morpho\Testing\TestCase;
 class GrammarParserTest extends TestCase {
     private GrammarParser $parser;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->markTestIncomplete();
         $this->parser = new GrammarParser(new GrammarLexer(GrammarLexer::genTokens()));

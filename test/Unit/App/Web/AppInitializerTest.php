@@ -19,12 +19,12 @@ use function ini_set;
 class AppInitializerTest extends TestCase {
     private string $timezone;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->timezone = ini_get('date.timezone');
     }
 
-    public function tearDown(): void {
+    protected function tearDown(): void {
         parent::tearDown();
         ini_set('date.timezone', $this->timezone);
     }

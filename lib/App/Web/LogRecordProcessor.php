@@ -6,12 +6,13 @@
  */
 namespace Morpho\App\Web;
 
+use Monolog\LogRecord;
 use Monolog\Processor\WebProcessor;
 
 use function array_merge;
 
 class LogRecordProcessor extends WebProcessor {
-    public function __invoke(array $record): array {
+    public function __invoke(LogRecord $record): LogRecord {
         $record = parent::__invoke($record);
         $record['extra'] = array_merge($record['extra'], Env::clientIp());
         $record['extra']['userAgent'] = $_SERVER['HTTP_USER_AGENT'] ?? null;

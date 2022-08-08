@@ -213,19 +213,6 @@ class Dir extends Entry {
         }
     }
 
-    private static function normalizeConf(null|array|bool $conf): array {
-        if (!is_array($conf)) {
-            if (null === $conf) {
-                $conf = [];
-            } elseif (is_bool($conf)) {
-                $conf = ['recursive' => $conf];
-            } else {
-                throw new InvalidArgumentException();
-            }
-        }
-        return $conf;
-    }
-
     /**
      * Deletes files and directories recursively from a file system.
      *
@@ -240,78 +227,6 @@ class Dir extends Entry {
             }
         } else {
             static::_delete($dirPath, $predicateFnOrFlag);
-        }
-    }
-
-    private static function _delete(string $dirPath, $predicateOrDeleteSelf) {
-        if (is_callable($predicateOrDeleteSelf)) {
-            self::__delete($dirPath, $predicateOrDeleteSelf);
-        } elseif (is_bool($predicateOrDeleteSelf)) {
-            if ($predicateOrDeleteSelf) {
-                // Delete self
-                $predicate = null;
-            } else {
-                // Not delete self
-                $predicate = function ($path, $isDir) use ($dirPath) {
-                    return $path !== $dirPath;
-                };
-            }
-            self::__delete($dirPath, $predicate);
-        } else {
-            throw new InvalidArgumentException('The second argument must be either bool or callable');
-        }
-    }
-
-    /**
-     * @param string $dirPath
-     * @param callable|null $predicate Predicate selects entries which will be deleted.
-     */
-    private static function __delete(string $dirPath, ?callable $predicate): void {
-        if (!file_exists($dirPath)) {
-            return;
-        }
-        $absPath = Path::normalize($dirPath);
-        $it = new DirectoryIterator($absPath);
-        foreach ($it as $entry) {
-            if ($entry->isDot()) {
-                continue;
-            }
-            $entryPath = $entry->getPathname();
-            if (is_link($entryPath)) {
-                if (!unlink($entryPath)) {
-                    throw new RuntimeException("The symlink '$entryPath' can not be deleted");
-                }
-                clearstatcache(true, $entryPath);
-                continue;
-            }
-            if ($entry->isDir()) {
-                if (null !== $predicate) {
-                    if ($predicate($entryPath, true)) {
-                        // If it is a directory and we need to delete this directory, delete contents regardless of the $predicate, so pass the `null` as the second argument.
-                        self::__delete($entryPath, null);
-                    } else {
-                        // The $predicate can be used for the directory contents, so pass it as the argument.
-                        self::__delete($entryPath, $predicate);
-                    }
-                } else {
-                    self::__delete($entryPath, null);
-                }
-            } else {
-                if (null === $predicate || $predicate($entryPath, false)) {
-                    if (!unlink($entryPath)) {
-                        throw new RuntimeException("The file '$entryPath' can not be deleted, check permissions");
-                    }
-                    clearstatcache(true, $entryPath);
-                }
-            }
-        }
-        if (null === $predicate || $predicate($absPath, true)) {
-            if (!rmdir($absPath)) {
-                throw new RuntimeException(
-                    "Unable to delete the directory '$absPath': it may be not empty or doesn't have relevant permissions"
-                );
-            }
-            clearstatcache(true, $absPath);
         }
     }
 
@@ -555,5 +470,90 @@ class Dir extends Entry {
      */
     public static function numOfEntries(string $dirPath): int {
         return iterator_count(static::paths($dirPath));
+    }
+
+    private static function _delete(string $dirPath, $predicateOrDeleteSelf) {
+        if (is_callable($predicateOrDeleteSelf)) {
+            self::__delete($dirPath, $predicateOrDeleteSelf);
+        } elseif (is_bool($predicateOrDeleteSelf)) {
+            if ($predicateOrDeleteSelf) {
+                // Delete self
+                $predicate = null;
+            } else {
+                // Not delete self
+                $predicate = function ($path, $isDir) use ($dirPath) {
+                    return $path !== $dirPath;
+                };
+            }
+            self::__delete($dirPath, $predicate);
+        } else {
+            throw new InvalidArgumentException('The second argument must be either bool or callable');
+        }
+    }
+
+    /**
+     * @param string $dirPath
+     * @param callable|null $predicate Predicate selects entries which will be deleted.
+     */
+    private static function __delete(string $dirPath, ?callable $predicate): void {
+        if (!file_exists($dirPath)) {
+            return;
+        }
+        $absPath = Path::normalize($dirPath);
+        $it = new DirectoryIterator($absPath);
+        foreach ($it as $entry) {
+            if ($entry->isDot()) {
+                continue;
+            }
+            $entryPath = $entry->getPathname();
+            if (is_link($entryPath)) {
+                if (!unlink($entryPath)) {
+                    throw new RuntimeException("The symlink '$entryPath' can not be deleted");
+                }
+                clearstatcache(true, $entryPath);
+                continue;
+            }
+            if ($entry->isDir()) {
+                if (null !== $predicate) {
+                    if ($predicate($entryPath, true)) {
+                        // If it is a directory and we need to delete this directory, delete contents regardless of the $predicate, so pass the `null` as the second argument.
+                        self::__delete($entryPath, null);
+                    } else {
+                        // The $predicate can be used for the directory contents, so pass it as the argument.
+                        self::__delete($entryPath, $predicate);
+                    }
+                } else {
+                    self::__delete($entryPath, null);
+                }
+            } else {
+                if (null === $predicate || $predicate($entryPath, false)) {
+                    if (!unlink($entryPath)) {
+                        throw new RuntimeException("The file '$entryPath' can not be deleted, check permissions");
+                    }
+                    clearstatcache(true, $entryPath);
+                }
+            }
+        }
+        if (null === $predicate || $predicate($absPath, true)) {
+            if (!rmdir($absPath)) {
+                throw new RuntimeException(
+                    "Unable to delete the directory '$absPath': it may be not empty or doesn't have relevant permissions"
+                );
+            }
+            clearstatcache(true, $absPath);
+        }
+    }
+
+    private static function normalizeConf(null|array|bool $conf): array {
+        if (!is_array($conf)) {
+            if (null === $conf) {
+                $conf = [];
+            } elseif (is_bool($conf)) {
+                $conf = ['recursive' => $conf];
+            } else {
+                throw new InvalidArgumentException();
+            }
+        }
+        return $conf;
     }
 }

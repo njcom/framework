@@ -16,7 +16,7 @@ abstract class DbTestCase extends BaseDbTestCase {
     protected IDbClient $db;
     protected PDO $pdo;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->pdo = $this->mkPdo();
         $this->db = mkDbClient($this->dbConf());

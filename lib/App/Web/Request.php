@@ -287,12 +287,12 @@ class Request extends BaseRequest implements IRequest {
         return $this->uri;
     }
 
-    public function prependWithBasePath(string $path): Uri {
-        $uri = new Uri($path);
-        $basePath = $this->uri()->path()->basePath();
+    public function prependWithBasePath(string $uriStr): Uri {
+        $uri = new Uri($uriStr);
         if ($uri->authority()->isNull() && $uri->scheme() === '') {
             $path = $uri->path();
             if (!$path->isRel()) {
+                $basePath = $this->uri()->path()->basePath();
                 $uriStr = Path::combine($basePath, $uri->toStr(null, false));
                 $uri = new Uri($uriStr);
                 $uri->path()->setBasePath($basePath);

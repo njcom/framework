@@ -13,7 +13,7 @@ use Morpho\Testing\TestCase;
 class GrammarLexerTest extends TestCase {
     private GrammarLexer $lexer;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->markTestIncomplete();
         $this->lexer = new GrammarLexer(GrammarLexer::genTokens());

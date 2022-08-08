@@ -16,12 +16,12 @@ use function strtoupper;
 class EnvTest extends TestCase {
     private $oldZendEnableGc;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->oldZendEnableGc = ini_set('zend.enable_gc', '1'); // we change this setting below.
     }
 
-    public function tearDown(): void {
+    protected function tearDown(): void {
         parent::tearDown();
         ini_set('zend.enable_gc', $this->oldZendEnableGc);
     }

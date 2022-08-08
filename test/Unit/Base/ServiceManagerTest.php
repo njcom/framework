@@ -19,7 +19,7 @@ use stdClass;
 class ServiceManagerTest extends TestCase {
     private IServiceManager $serviceManager;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->serviceManager = new MyServiceManager();
     }

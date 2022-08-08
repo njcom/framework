@@ -7,6 +7,7 @@
 namespace Morpho\App\Web\View;
 
 use ArrayObject;
+use Closure;
 use Morpho\App\Web\IRequest;
 use Morpho\Uri\Uri;
 use Morpho\Base\ArrPipe;
@@ -61,7 +62,7 @@ class PhpTemplateEngine extends ArrPipe {
 
     public function __construct(array $conf = null) {
         $this->init();
-        $conf = (array) $conf;
+        $conf = (array)$conf;
         $this->forceCompile = $conf['forceCompile'] ?? false;
         $this->pluginFactory = $conf['pluginFactory'] ?? function () {
             };
@@ -69,15 +70,19 @@ class PhpTemplateEngine extends ArrPipe {
         parent::__construct($conf['steps']);
     }
 
-    private function init(): void {
-        self::$htmlIds = [];
+    public static function e($text): string {
+        if ($text instanceof Closure) {
+            // NB: only Closure is supported for performance
+            return $text();
+        }
+        return htmlspecialchars((string)$text, ENT_QUOTES);
     }
 
     /**
      * Opposite to e().
      */
     public static function de($text): string {
-        return htmlspecialchars_decode((string) $text, ENT_QUOTES);
+        return htmlspecialchars_decode((string)$text, ENT_QUOTES);
     }
 
     public function setRequest(IRequest $request): void {
@@ -159,6 +164,10 @@ class PhpTemplateEngine extends ArrPipe {
         $this->baseSourceDirPaths = [];
     }
 
+    public function baseSourceDirPaths(): array {
+        return $this->baseSourceDirPaths;
+    }
+
     /**
      * Translates PHTML code into PHP code and evaluates the PHP code by exporting variables from the $context.
      */
@@ -167,41 +176,6 @@ class PhpTemplateEngine extends ArrPipe {
         $targetAbsFilePath = $this->targetDirPath . '/' . $context['_view'] . '.php';
         $this->compileFile($sourceAbsFilePath, $targetAbsFilePath, []);
         return $this->evalPhpFile($targetAbsFilePath, $context);
-    }
-
-    protected function sourceAbsFilePath(string $sourceAbsOrRelFilePath, bool $throwExIfNotFound = true): bool|string {
-        $sourceAbsOrRelFilePath .= self::VIEW_FILE_EXT;
-        if (Path::isAbs($sourceAbsOrRelFilePath) && is_readable($sourceAbsOrRelFilePath)) {
-            return $sourceAbsOrRelFilePath;
-        }
-        for ($i = count($this->baseSourceDirPaths()) - 1; $i >= 0; $i--) {
-            $baseSourceDirPath = $this->baseSourceDirPaths[$i];
-            $sourceAbsFilePath = Path::combine($baseSourceDirPath, $sourceAbsOrRelFilePath);
-            if (is_readable($sourceAbsFilePath)) {
-                return $sourceAbsFilePath;
-            }
-        }
-        if ($throwExIfNotFound) {
-            throw new RuntimeException(
-                "Unable to detect an absolute file path for the path '$sourceAbsOrRelFilePath', searched in paths:\n'"
-                . implode(PATH_SEPARATOR, $this->baseSourceDirPaths) . "'"
-            );
-        }
-        return false;
-    }
-
-    public function baseSourceDirPaths(): array {
-        return $this->baseSourceDirPaths;
-    }
-
-    protected function compileFile(string $sourceFilePath, string $targetFilePath, array $context): void {
-        $forceCompile = $this->forceCompile;
-        if ($forceCompile || !file_exists($targetFilePath)) {
-            $context['filePath'] = $sourceFilePath;
-            $context['program'] = file_get_contents($sourceFilePath);
-            $preprocessed = parent::__invoke($context);
-            File::write($targetFilePath, $preprocessed['program']);
-        }
     }
 
     /**
@@ -225,7 +199,7 @@ class PhpTemplateEngine extends ArrPipe {
     /**
      * Evaluates PHPTemplateEngine code.
      * @param string $sourceCode
-     * @param array $__vars
+     * @param array  $__vars
      * @return string
      */
     public function eval(string $sourceCode, array $__vars): string {
@@ -245,14 +219,9 @@ class PhpTemplateEngine extends ArrPipe {
         return trim(ob_get_clean());
     }
 
-    protected function compile(string $sourceCode): string {
-        $context = parent::__invoke(['program' => $sourceCode]);
-        return $context['program'];
-    }
-
     /**
      * Evaluates a file containing PHPTemplateEngine code by compiling it to PHP and evaluating the produced PHP. The result of evaluation is returned as string.
-     * @param string $sourceAbsFilePath
+     * @param string     $sourceAbsFilePath
      * @param array|null $context
      * @return string
      * @throws Throwable
@@ -280,7 +249,7 @@ class PhpTemplateEngine extends ArrPipe {
         $targetRelFilePath = Path::changeExt(Path::rel($baseSourceDirPath, $sourceAbsFilePath), 'php');
         $targetAbsFilePath = $this->targetDirPath . '/' . $targetRelFilePath;
         $this->compileFile($sourceAbsFilePath, $targetAbsFilePath, []);
-        return $this->evalPhpFile($targetAbsFilePath, (array) $context);
+        return $this->evalPhpFile($targetAbsFilePath, (array)$context);
     }
 
     public function pageHtmlId(): string {
@@ -289,7 +258,7 @@ class PhpTemplateEngine extends ArrPipe {
     }
 
     public function htmlId(string $htmlId): string {
-        $htmlId = dasherize(deleteDups(preg_replace('/[^\w-]/s', '-', (string) $htmlId), '-'));
+        $htmlId = dasherize(deleteDups(preg_replace('/[^\w-]/s', '-', (string)$htmlId), '-'));
         if (isset(self::$htmlIds[$htmlId])) {
             $htmlId .= '-' . self::$htmlIds[$htmlId]++;
         } else {
@@ -298,20 +267,18 @@ class PhpTemplateEngine extends ArrPipe {
         return $this->e($htmlId);
     }
 
-    public static function e($text): string {
-        return htmlspecialchars((string) $text, ENT_QUOTES);
-    }
-
-    public function textControl(array $attribs): string {
-        $attribs['type'] = 'text';
-        return $this->tag1('input', $this->addCommonAttribs($attribs));
-    }
-
     public function tag1(string $tagName, array $attribs = null, array $conf = []): string {
         $conf['single'] = true;
         return $this->tag($tagName, null, $attribs, $conf);
     }
 
+    /**
+     * @param string      $tagName
+     * @param string|null $text
+     * @param array|null  $attribs
+     * @param array|null  $conf
+     * @return string
+     */
     public function tag(string $tagName, string $text = null, array $attribs = null, array $conf = null): string {
         $conf = Conf::check(
             [
@@ -320,9 +287,9 @@ class PhpTemplateEngine extends ArrPipe {
                 'xml'    => false,
                 'eol'    => false,
             ],
-            (array) $conf
+            (array)$conf
         );
-        $output = $this->openTag($tagName, (array) $attribs, $conf['xml']);
+        $output = $this->openTag($tagName, $attribs, $conf['xml']);
         if (!$conf['single']) {
             $output .= $conf['escape'] ? $this->e($text) : $text;
             $output .= $this->closeTag($tagName);
@@ -333,42 +300,39 @@ class PhpTemplateEngine extends ArrPipe {
         return $output;
     }
 
-    public function openTag(string $tagName, array $attribs = [], bool $isXml = false): string {
+    public function openTag(string $tagName, array $attribs = null, bool $isXml = false): string {
         return '<'
             . $this->e($tagName)
             . $this->attribs($attribs)
             . ($isXml ? ' />' : '>');
     }
 
-    /**
-     * The source was found in Drupal-7.
-     */
-    public function attribs(array $attribs): string {
-        foreach ($attribs as $attrib => &$data) {
-            if (!is_numeric($attrib)) {
-                $data = implode(' ', (array) $data);
-                $data = $attrib . '="' . $this->e($data) . '"';
-            }
-        }
-        unset($data);
-        return $attribs ? ' ' . implode(' ', $attribs) : '';
-    }
-
     public function closeTag(string $name): string {
         return '</' . $this->e($name) . '>';
     }
 
-    private function addCommonAttribs(array $attribs): array {
-        if (!isset($attribs['id']) && isset($attribs['name'])) {
-            $attribs['id'] = $this->htmlId($attribs['name']);
+    public function attribs(?array $attribs): string {
+        $newAttribs = [];
+        foreach ((array)$attribs as $key => $val) {
+            if (!is_numeric($key)) {
+                $newAttribs[] = $this->e($key) . '="' . $this->e($val) . '"';
+            } else {
+                // Attribute without a value like `checked`
+                $newAttribs[] = $this->e($val);
+            }
         }
-        return $attribs;
+        return $newAttribs ? ' ' . implode(' ', $newAttribs) : '';
+    }
+
+    public function textControl(array $attribs): string {
+        $attribs['type'] = 'text';
+        return $this->tag1('input', $this->addCommonAttribsOfControl($attribs));
     }
 
     public function textareaControl(array $attribs): string {
         $val = $attribs['value'];
         unset($attribs['value']);
-        return $this->tag('textarea', $val, $this->addCommonAttribs($attribs));
+        return $this->tag('textarea', $val, $this->addCommonAttribsOfControl($attribs));
     }
 
     public function checkboxControl(array $attribs): string {
@@ -376,11 +340,11 @@ class PhpTemplateEngine extends ArrPipe {
         if (!isset($attribs['value'])) {
             $attribs['value'] = 1;
         }
-        return $this->tag1('input', $this->addCommonAttribs($attribs));
+        return $this->tag1('input', $this->addCommonAttribsOfControl($attribs));
     }
 
     public function selectControl(?iterable $options, mixed $selectedOption = null, array $attribs = null): string {
-        $html = $this->openTag('select', $this->addCommonAttribs((array) $attribs));
+        $html = $this->openTag('select', $this->addCommonAttribsOfControl((array)$attribs));
         if (null !== $options) {
             $html .= $this->optionControls($options, $selectedOption);
         }
@@ -391,9 +355,9 @@ class PhpTemplateEngine extends ArrPipe {
     public function optionControls(iterable $options, mixed $selectedOption = null): string {
         $html = '';
         if (null === $selectedOption || is_scalar($selectedOption)) {
-            $selectedVal = (string) $selectedOption;
+            $selectedVal = (string)$selectedOption;
             foreach ($options as $val => $text) {
-                $val = (string) $val;
+                $val = (string)$val;
                 $html .= '<option value="' . $this->e(
                         $val
                     ) . '"' . ($val === $selectedVal ? ' selected' : '') . '>' . $this->e($text) . '</option>';
@@ -405,11 +369,11 @@ class PhpTemplateEngine extends ArrPipe {
         }
         $newOptions = [];
         foreach ($options as $value => $text) {
-            $newOptions[(string) $value] = $text;
+            $newOptions[(string)$value] = $text;
         }
         $selectedOptions = [];
         foreach ($selectedOption as $val) {
-            $val = (string) $val;
+            $val = (string)$val;
             $selectedOptions[$val] = true;
         }
         foreach ($newOptions as $value => $text) {
@@ -421,12 +385,12 @@ class PhpTemplateEngine extends ArrPipe {
     }
 
     public function httpMethod(string $method = null, array $attribs = null): string {
-        return $this->hiddenControl(['name' => '_method', 'value' => $method] + (array) $attribs);
+        return $this->hiddenControl(['name' => '_method', 'value' => $method] + (array)$attribs);
     }
 
     public function hiddenControl(array $attribs): string {
         $attribs['type'] = 'hidden';
-        return $this->tag1('input', $this->addCommonAttribs($attribs));
+        return $this->tag1('input', $this->addCommonAttribsOfControl($attribs));
     }
 
     public function buttonControl(string $text, array $attribs = null): string {
@@ -434,7 +398,7 @@ class PhpTemplateEngine extends ArrPipe {
     }
 
     public function submitControl(string $text, array $attribs = null): string {
-        $attribs = (array) $attribs;
+        $attribs = (array)$attribs;
         $attribs['type'] = 'submit';
         return $this->tag('button', $text, $attribs);
     }
@@ -462,12 +426,29 @@ class PhpTemplateEngine extends ArrPipe {
     /**
      * Renders link - HTML `a` tag.
      */
-    public function link(string|Uri $uri, string $text, array $attribs = null, array $conf = null): string {
-        $attribs = (array) $attribs;
-        $attribs['href'] = $this->request->prependWithBasePath(
-            is_string($uri) ? $uri : $uri->toStr(null, false)
-        )->toStr(null, false);
+    public function l(string|Uri $uri, string $text = null, array $attribs = null, array $conf = null): string {
+        $uriStr = is_string($uri) ? $uri : $uri->toStr(null, false);
+        $attribs['href'] = $this->request->prependWithBasePath($uriStr)->toStr(null, false);
+        if (null === $text) {
+            $text = $attribs['href'];
+        }
         return $this->tag('a', $text, $attribs, $conf);
+    }
+
+    public function ul(iterable $items, array $attribs = null): string {
+        return '<ul' . $this->attribs($attribs) . '>' . $this->list($items) . '</ul>';
+    }
+
+    public function ol(iterable $items, array $attribs = null): string {
+        return '<ol' . $this->attribs($attribs) . '>' . $this->list($items) . '</ol>';
+    }
+
+    public function list(iterable $items): string {
+        $html = '';
+        foreach ($items as $item) {
+            $html .= '<li>' . $this->e($item) . '</li>';
+        }
+        return $html;
     }
 
     public function copyright(string $brand, string|int $startYear = null): string {
@@ -523,5 +504,55 @@ class PhpTemplateEngine extends ArrPipe {
                     $event->sender->actionScripts($this->request['view'])
                 );
             });
+    }
+
+    protected function sourceAbsFilePath(string $sourceAbsOrRelFilePath, bool $throwExIfNotFound = true): bool|string {
+        $sourceAbsOrRelFilePath .= self::VIEW_FILE_EXT;
+        if (Path::isAbs($sourceAbsOrRelFilePath) && is_readable($sourceAbsOrRelFilePath)) {
+            return $sourceAbsOrRelFilePath;
+        }
+        for ($i = count($this->baseSourceDirPaths()) - 1; $i >= 0; $i--) {
+            $baseSourceDirPath = $this->baseSourceDirPaths[$i];
+            $sourceAbsFilePath = Path::combine($baseSourceDirPath, $sourceAbsOrRelFilePath);
+            if (is_readable($sourceAbsFilePath)) {
+                return $sourceAbsFilePath;
+            }
+        }
+        if ($throwExIfNotFound) {
+            throw new RuntimeException(
+                "Unable to detect an absolute file path for the path '$sourceAbsOrRelFilePath', searched in paths:\n'"
+                . implode(PATH_SEPARATOR, $this->baseSourceDirPaths) . "'"
+            );
+        }
+        return false;
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    protected function compileFile(string $sourceFilePath, string $targetFilePath, array $context): void {
+        $forceCompile = $this->forceCompile;
+        if ($forceCompile || !file_exists($targetFilePath)) {
+            $context['filePath'] = $sourceFilePath;
+            $context['program'] = file_get_contents($sourceFilePath);
+            $preprocessed = parent::__invoke($context);
+            File::write($targetFilePath, $preprocessed['program']);
+        }
+    }
+
+    protected function compile(string $sourceCode): string {
+        $context = parent::__invoke(['program' => $sourceCode]);
+        return $context['program'];
+    }
+
+    protected function addCommonAttribsOfControl(array $attribs): array {
+        if (!isset($attribs['id']) && isset($attribs['name'])) {
+            $attribs['id'] = $this->htmlId($attribs['name']);
+        }
+        return $attribs;
+    }
+
+    private function init(): void {
+        self::$htmlIds = [];
     }
 }

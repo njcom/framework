@@ -6,34 +6,48 @@
  */
 namespace Morpho\Compiler\Frontend;
 
-/**
- * https://en.wikipedia.org/wiki/Punctuation
- */
-enum Lexeme {
-    // Double quote
-    public const DoubleQ = '"';
+enum Lexeme: string {
+    case At = '@';
     // Back quote
-    public const BackQ = '`';
-    // Apostrophe
-    public const Apos = "'";
-    // Opening parenthesis
-    public const OpenParen = '(';
-    // Closing parenthesis
-    public const CloseParen = ')';
-    // Opening square bracket
-    public const OpenBracket = '[';
-    // Closing square bracket
-    public const CloseBracket = ']';
-    // Opening curly brace
-    public const OpenBrace = '{';
-    // Closing curly brace
-    public const CloseBrace = '}';
-    // Opening angle bracket
-    public const OpenAngleBracket = '<';
+    case BackQ = '`';
+    case BackSlash = '\\';
+    case Caret = '^';
     // Closing angle bracket
-    public const CloseAngleBracket = '>';
-    public const Comma = ',';
-    public const Dot = '.';
-    public const Hyphen = '-';
-    public const Semicolon = ';';
+    case CloseAngleBracket = '>';
+    // Closing curly brace
+    case CloseBrace = '}';
+    // Closing square bracket
+    case CloseBracket = ']';
+    // Closing parenthesis
+    case CloseParen = ')';
+    case Comma = ',';
+    case Colon = ':';
+    case Dollar = '$';
+    case Dot = '.';
+    // Double quote
+    case DoubleQ = '"';
+    case Equal = '=';
+    case Exclamation = '!';
+    case Hash = '#';
+    // Aka Dash/Hyphen
+    case Minus = '-';
+    // Opening angle bracket
+    case OpenAngleBracket = '<';
+    // Opening curly brace
+    case OpenBrace = '{';
+    // Opening square bracket
+    case OpenBracket = '[';
+    // Opening parenthesis
+    case OpenParen = '(';
+    case Question = '?';
+    case Percent = '%';
+    case Plus = '+';
+    case Semicolon = ';';
+    // Aka Apostrophe
+    case SingleQ = "'";
+    case Slash = '/';
+    // Aka Asterisk
+    case Star = '*';
+    case Tilde = '~';
+    case VerticalBar = '|';
 }

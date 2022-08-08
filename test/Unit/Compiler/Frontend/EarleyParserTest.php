@@ -7,14 +7,14 @@
 namespace Morpho\Test\Unit\Compiler\Frontend;
 
 use Morpho\Compiler\Frontend\EarleyParser;
-use Morpho\Compiler\Frontend\IProgram;
+use Morpho\Compiler\Frontend\IProgramNode;
 use Morpho\Compiler\Frontend\ITopDownParser;
 use Morpho\Testing\TestCase;
 
 class EarleyParserTest extends TestCase {
     private EarleyParser $parser;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $this->parser = new EarleyParser();
     }
@@ -25,6 +25,6 @@ class EarleyParserTest extends TestCase {
 
     public function testInvoke() {
         $program = $this->parser->__invoke(null);
-        $this->assertInstanceOf(IProgram::class, $program);
+        $this->assertInstanceOf(IProgramNode::class, $program);
     }
 }

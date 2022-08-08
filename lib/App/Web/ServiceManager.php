@@ -92,13 +92,19 @@ class ServiceManager extends BaseServiceManager {
         if (isset($this->conf['templateEngine']['pluginFactory'])) {
             $factory = $this->conf['templateEngine']['pluginFactory'];
         } else {
-            $factory = function ($pluginName) {
-                $class = init(__NAMESPACE__, '\\') . '\\Web\\View\\' . classify($pluginName) . 'Plugin';
-                $plugin = new $class();
-                if ($plugin instanceof IHasServiceManager) {
-                    $plugin->setServiceManager($this);
+            $pluginNss = $this->conf['templateEngine']['pluginNss'];
+            $factory = function ($pluginName) use ($pluginNss) {
+                foreach ($pluginNss as $pluginNs) {
+                    $class = $pluginNs . '\\' . classify($pluginName) . 'Plugin';
+                    if (class_exists($class)) {
+                        $plugin = new $class();
+                        if ($plugin instanceof IHasServiceManager) {
+                            $plugin->setServiceManager($this);
+                        }
+                        return $plugin;
+                    }
                 }
-                return $plugin;
+                throw new \RuntimeException("Unable to find the class of the plugin '$pluginName'");
             };
         }
         return $factory;

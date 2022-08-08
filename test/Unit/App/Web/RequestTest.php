@@ -20,10 +20,16 @@ use function rawurlencode;
 class RequestTest extends TestCase {
     private IRequest $request;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $_GET = $_POST = $_REQUEST = $_COOKIE = [];
+        $this->serverVars = $_SERVER;
         $this->request = $this->mkRequest([]);
+    }
+
+    protected function tearDown(): void {
+        parent::tearDown();
+        $_SERVER = $this->serverVars;
     }
 
     public function testResponse_ReturnsTheSameInstance() {

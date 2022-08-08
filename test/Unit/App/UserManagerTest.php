@@ -16,7 +16,7 @@ use RuntimeException;
 class UserManagerTest extends DbTestCase {
     private UserManager $userManager;
 
-    public function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         $userRepo = new class implements IUserRepo {
             private int $id = 0;
