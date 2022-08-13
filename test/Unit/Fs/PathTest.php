@@ -12,6 +12,8 @@ use Morpho\Fs\Path;
 use Morpho\Test\Unit\Base\PathTest as BasePathTest;
 use Morpho\Testing\TestCase;
 
+use UnexpectedValueException;
+
 use function basename;
 use function touch;
 
@@ -213,41 +215,61 @@ class PathTest extends TestCase {
     }
 
     public function testNormalizeExt() {
-        $this->assertEquals('php', Path::normalizeExt('.php'));
+        $this->assertEquals('.php', Path::normalizeExt('.php'));
+        $this->assertEquals('.php', Path::normalizeExt('php'));
     }
 
-    public function testChangeExt() {
-        $this->assertEquals('term.txt', Path::changeExt('term.jpg', 'txt'));
-        $this->assertEquals('term.txt', Path::changeExt('term.jpg', '.txt'));
+    public function testChangeExt_GuessOldExt() {
+        $this->assertSame('test.jpg', Path::changeExt('test.txt', null, 'jpg'));
 
-        $this->assertEquals('term.txt', Path::changeExt('term.txt', 'txt'));
-        $this->assertEquals('term.txt', Path::changeExt('term.txt', '.txt'));
+        $this->assertEquals('term.txt', Path::changeExt('term.jpg', null, 'txt'));
+        $this->assertEquals('term.txt', Path::changeExt('term.jpg', null, '.txt'));
 
-        $this->assertEquals('term.txt', Path::changeExt('term', 'txt'));
-        $this->assertEquals('term.txt', Path::changeExt('term', '.txt'));
+        $this->assertEquals('term.txt', Path::changeExt('term.txt', null, 'txt'));
+        $this->assertEquals('term.txt', Path::changeExt('term.txt', null, '.txt'));
 
-        $this->assertEquals('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.jpg', 'txt'));
-        $this->assertEquals('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.jpg', '.txt'));
-        $this->assertEquals('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.', 'txt'));
+        $this->assertEquals('term.txt', Path::changeExt('term', null, 'txt'));
+        $this->assertEquals('term.txt', Path::changeExt('term', null, '.txt'));
 
-        $this->assertEquals('dir/foo.d.ts', Path::changeExt('dir/foo.d.ts', 'd.ts'));
+        $this->assertEquals('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.jpg', null, 'txt'));
+        $this->assertEquals('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.jpg', null, '.txt'));
+        $this->assertEquals('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.', null, 'txt'));
+
+        $this->assertEquals('dir/foo.d.ts', Path::changeExt('dir/foo.d.ts', null, 'd.ts'));
     }
 
-    public function testChangeExt_EmptyPathOrExt() {
-        $this->assertEquals('term', Path::changeExt('term', ''));
-        $this->assertEquals('term', Path::changeExt('term.', ''));
-        $this->assertEquals('/foo/bar/term', Path::changeExt('/foo/bar/term', ''));
-        $this->assertEquals('/foo/bar/term', Path::changeExt('/foo/bar/term.txt', ''));
-        $this->assertEquals('/foo/bar/term', Path::changeExt('/foo/bar/term.', ''));
-
-        $this->assertEquals('.jpg', Path::changeExt('', '.jpg'));
-        $this->assertEquals('.jpg', Path::changeExt('', 'jpg'));
+    public function dataChangeExt_GuessOldExt_EmptyPathOrNewExt() {
+        yield [
+            'term',
+            null,
+            '',
+            //'term', 
+        ];
+        yield [
+            '',
+            null,
+            '.ext',
+        ];
     }
 
-    public function testDropExt() {
-        $this->assertEquals('C:/foo/bar/test', Path::dropExt('C:\\foo\\bar\\test'));
+    /**
+     * @dataProvider dataChangeExt_GuessOldExt_EmptyPathOrNewExt
+     */
+    public function testChangeExt_GuessExt_EmptyPathOrNewExt(string $path, ?string $oldExt, string $newExt) {
+        $this->expectExceptionObject(new UnexpectedValueException("Path or extension can't be empty"));
+        Path::changeExt($path, $oldExt, $newExt);
+    }
+
+    public function testDropExt_Quess() {
+        $this->assertEquals('C:\\foo\\bar\\test', Path::dropExt('C:\\foo\\bar\\test'));
         $this->assertEquals('/foo/bar/test', Path::dropExt('/foo/bar/test.php'));
         $this->assertEquals('test', Path::dropExt('test.php'));
+    }
+
+    public function testDropExt_ConcreteExt() {
+        $this->assertEquals('C:\\foo\\bar\\test', Path::dropExt('C:\\foo\\bar\\test.foo.bar', '.foo.bar'));
+        $this->assertEquals('/foo/bar/test', Path::dropExt('/foo/bar/test.php', '.php'));
+        $this->assertEquals('test.php', Path::dropExt('test.php', '.ts'), 'Skips invalid extension');
     }
 
     public function testUnique_ThrowsExceptionWhenParentDirDoesNotExist() {

@@ -10,6 +10,8 @@ use Morpho\Base\Path as BasePath;
 use Morpho\Base\NotImplementedException;
 use Morpho\Base\SecurityException;
 
+use UnexpectedValueException;
+
 use function array_pop;
 use function count;
 use function dirname;
@@ -63,31 +65,42 @@ class Path extends BasePath {
         return dirname($path);
     }
 
-    public static function dropExt(string $path): string {
-        return self::changeExt($path, '');
+    /**
+     * @param string      $path
+     * @param string|null $ext If null will guess it.
+     * @return string
+     */
+    public static function dropExt(string $path, string $ext = null): string {
+        if (null !== $ext) {
+            $ext = self::normalizeExt($ext);
+            if (str_ends_with($path, $ext)) {
+                return substr($path, 0, -strlen($ext));
+            }
+            return $path;
+        }
+        $pos = strrpos($path, '.');
+        if (false !== $pos) {
+            return substr($path, 0, $pos);
+        }
+        return $path;
     }
 
-    public static function changeExt(string $path, string $newExt): string {
-        $parts = explode('/', self::normalize($path));
-        $fileName = array_pop($parts);
-        if (!empty($newExt)) {
-            $newExt = '.' . self::normalizeExt($newExt);
-            $extLength = strlen($newExt);
-            if (substr($path, -$extLength) === $newExt) {
-                $baseName = substr($fileName, 0, -$extLength);
-            } else {
-                $baseName = self::nameWithoutExt($fileName);
-            }
-        } else {
-            $baseName = self::nameWithoutExt($fileName);
+    public static function changeExt(string $path, ?string $oldExt, string $newExt): string {
+        if ($path === '' || $newExt === '') {
+            throw new UnexpectedValueException("Path or extension can't be empty");
         }
-        return count($parts)
-            ? implode('/', $parts) . '/' . $baseName . $newExt
-            : $baseName . $newExt;
+        $newExt = self::normalizeExt($newExt);
+        if (!str_ends_with($path, $newExt)) {
+            return self::dropExt($path, $oldExt) . $newExt;
+        }
+        return $path;
     }
 
     public static function normalizeExt(string $ext): string {
-        return ltrim($ext, '.');
+        if (strlen($ext)) {
+            return '.' . ltrim($ext, '.');
+        }
+        return '';
     }
 
     public static function nameWithoutExt(string $path): string {
