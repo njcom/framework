@@ -33,8 +33,7 @@ abstract class CommandResult implements ICommandResult {
         return $this->lines();
     }
 
-    // @TODO: Unify with #152.
-    public function lines($noEmptyLines = true, bool $trimLines = true): Generator {
+    public function lines(bool $noEmptyLines = true, bool $trimLines = true): Generator {
         /*if (!is_bool($noEmptyLines) && is_callable($noEmptyLines)) {
             $filter = $noEmptyLines;
         }*/

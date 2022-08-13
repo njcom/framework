@@ -104,7 +104,7 @@ function isEnumCase(mixed $val): bool {
     return is_object($val) && enum_exists($val::class);
 }
 
-function val(mixed $val): mixed {
+function valOfCase(mixed $val): mixed {
     return isEnumCase($val) ? $val->value : $val;
 }
 

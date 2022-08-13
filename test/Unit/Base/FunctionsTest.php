@@ -23,7 +23,7 @@ use function count;
 use function fclose;
 use function file_put_contents;
 use function get_class_methods;
-use function Morpho\Base\{all, append, appendFn, camelize, camelizeKeys, capture, cartesianProduct, classify, compose, dasherize, deleteDups, formatBytes, formatFloat, fromJson, humanize, indent, index, isEnumCase, isSubset, isUtf8Text, last, lastPos, lines, memoize, merge, normalizeEols, not, op, partial, permutations, pipe, prepend, prependFn, q, qq, sanitize, setProps, setsEqual, shorten, showLn, showOk, subsets, symDiff, titleize, toIt, toJson, tpl, etrim, ucfirst, underscore, underscoreKeys, unindent, union, uniqueName, unsetMany, unsetOne, unsetRecursive, using, val, waitUntilNumOfAttempts, waitUntilTimeout, words, wrap, wrapFn};
+use function Morpho\Base\{all, append, appendFn, camelize, camelizeKeys, capture, cartesianProduct, classify, compose, dasherize, deleteDups, formatBytes, formatFloat, fromJson, humanize, indent, index, isEnumCase, isSubset, isUtf8Text, last, lastPos, lines, memoize, merge, normalizeEols, not, op, partial, permutations, pipe, prepend, prependFn, q, qq, sanitize, setProps, setsEqual, shorten, showLn, showOk, subsets, symDiff, titleize, toIt, toJson, tpl, etrim, ucfirst, underscore, underscoreKeys, unindent, union, uniqueName, unsetMany, unsetOne, unsetRecursive, using, valOfCase, waitUntilNumOfAttempts, waitUntilTimeout, words, wrap, wrapFn};
 use function ob_get_clean;
 use function ob_start;
 use function property_exists;
@@ -44,9 +44,9 @@ class FunctionsTest extends TestCase {
         $this->assertTrue(isEnumCase(Foo::First));
     }
 
-    public function testVal() {
-        $this->assertSame(Foo::First->value, val(Foo::First));
-        $this->assertSame(123, val(123));
+    public function testValOfCase() {
+        $this->assertSame(Foo::First->value, valOfCase(Foo::First));
+        $this->assertSame(123, valOfCase(123));
     }
 
     // -------------------------------------------------------------------------

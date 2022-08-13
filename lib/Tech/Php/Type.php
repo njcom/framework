@@ -60,8 +60,34 @@ enum Type: string {
 
         iterable: array | Traversable
 
-        callable: [$obj, 'method'] | Closure | todo... static methods
+        callable:
+            'function'
+            | [$obj, 'method']
+            | ['Class', 'method']
+            | self::class . "::method"
+            | parent::class . "::method"
+            | static::class . "::method"
+            | [self::class, "method"]
+            | [parent::class, "method"]
+            | [static::class, "method"]
+            | Closure
+            | foo(...)
+            | strlen(...)
+            | $closure(...);
+            | $invokableObject(...);
+            | $obj->method(...);
+            | $obj->$methodStr(...);
+            | ($obj->property)(...);
+            | Foo::method(...);
+            | $classStr::$methodStr(...);
+            | self::{$complex . $expression}(...);
+            | 'strlen'(...);
+            | [$obj, 'method'](...);
+            | [Foo::class, 'method'](...);
+
             Any value which can be called with `call_user_func($val)`
+            https://wiki.php.net/rfc/deprecate_partially_supported_callables
+            https://wiki.php.net/rfc/first_class_callable_syntax
     */
     case Int = 'int';         // in TProperty, TParam, TReturn, TScalar, TNullable
     case Float = 'float';       // in TProperty, TParam, TReturn, TScalar, TNullable
