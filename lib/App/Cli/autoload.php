@@ -70,6 +70,15 @@ function showErrorLn(string $errMessage = null): void {
     showError($errMessage . "\n");
 }
 
+/**
+ * @param string $ch
+ * @param int    $n
+ * @return void
+ */
+function showSep(string $ch = '-', int $n = 80): void {
+    showLn(str_repeat('-', $n));
+}
+
 function stylize(string $text, $codes): string {
     // @TODO:
     // RGB

@@ -31,6 +31,9 @@ namespace {
 }
 
 namespace Morpho\Tech\Php {
+    // Matches single-line and multi-line C-style comments:
+    const C_COMMENTS_RE = '\/\*[\s\S]*?\*\/|\/\/.*'; // https://stackoverflow.com/a/59094308
+    const C_COMMENTS_FULL_RE = '~\/\*[\s\S]*?\*\/|\/\/.*~m'; // https://stackoverflow.com/a/59094308
 
     require_once __DIR__ . '/PhpErrorException.php';
 

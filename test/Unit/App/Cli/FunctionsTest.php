@@ -17,7 +17,7 @@ use function fclose;
 use function file_put_contents;
 use function fwrite;
 use function md5;
-use function Morpho\App\Cli\{arg, envVarsStr, earg, sh, stylize};
+use function Morpho\App\Cli\{arg, envVarsStr, earg, sh, showSep, stylize};
 use function ob_get_clean;
 use function ob_start;
 use function proc_close;
@@ -27,6 +27,12 @@ use function stream_get_contents;
 use const Morpho\Test\BASE_DIR_PATH;
 
 class FunctionsTest extends TestCase {
+    public function testShowSep() {
+        ob_start();
+        showSep();
+        $this->assertSame("--------------------------------------------------------------------------------\n", ob_get_clean());
+    }
+
     public function dataWriteErrorAndWriteErrorLn() {
         return [
             ['showError', 'Something went wrong', 'Something went wrong'],

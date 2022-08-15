@@ -74,10 +74,6 @@ const TRIM_CHARS = " \t\n\r\x00\x0B";
 const EOL_RE = '(?>\r\n|\n|\r)';
 const EOL_FULL_RE = '~' . EOL_RE . '~s';
 
-// Matches single-line and multi-line C-style comments:
-const C_COMMENTS_RE = '\/\*[\s\S]*?\*\/|\/\/.*'; // https://stackoverflow.com/a/59094308
-const C_COMMENTS_FULL_RE = '~\/\*[\s\S]*?\*\/|\/\/.*~m'; // https://stackoverflow.com/a/59094308
-
 const INDENT_SIZE = 4; // size in spaces
 define(__NAMESPACE__ . '\\INDENT', str_repeat(' ', INDENT_SIZE));
 
@@ -104,8 +100,19 @@ function isEnumCase(mixed $val): bool {
     return is_object($val) && enum_exists($val::class);
 }
 
-function valOfCase(mixed $val): mixed {
+function caseVal(mixed $val): mixed {
     return isEnumCase($val) ? $val->value : $val;
+}
+
+function enumVals(string $enumName, bool $preserveNames = true): array {
+    $vals = [];
+    foreach ($enumName::cases() as $case) {
+        $vals[$case->name] = $case->value;
+    }
+    if (!$preserveNames) {
+        return array_values($vals);
+    }
+    return $vals;
 }
 
 /**
@@ -1493,9 +1500,12 @@ function underscoreKeys(array $arr): array {
     return $result;
 }
 
-// Taken from nikic/phlexy
-function compileRe(array $regexes, string $additionalModifiers = ''): string {
-    return '~(' . str_replace('~', '\~', implode(')|(', $regexes)) . ')~A' . $additionalModifiers;
+/**
+ * @param array<string> $regexes
+ * @return string
+ */
+function compileRe(array $regexes, string $subpatternOpts = null): string {
+    return '(' . $subpatternOpts . str_replace('~', '\~', implode('|', $regexes)) . ')';
 }
 
 function isUtf8Text(string $text): bool {
