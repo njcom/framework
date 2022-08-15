@@ -14,50 +14,288 @@ class AsciiStringReader implements IStringReader {
     protected int $offset = 0;
     protected int $prevOffset = 0;
     protected ?string $matched = null;
-    protected bool $anchored = true;
+    protected readonly bool $anchored;
     protected ?array $subgroups = null;
 
     /**
      * @param string $input
-     * @param bool Either use the `A` PCRE modifier (PCRE_ANCHORED) for all regular expressions or not.
+     * @param bool $anchored Either use the `A` PCRE modifier (PCRE_ANCHORED) for all regular expressions or not.
      */
     public function __construct(string $input, bool $anchored = true) {
         $this->input = $input;
         $this->anchored = $anchored;
     }
 
+    /**
+     * @see IStringReader::setInput()
+     */
     public function setInput(string $input): void {
         $this->input = $input;
         $this->reset();
     }
 
+    /**
+     * @see IStringReader::input()
+     */
+    public function input(): string {
+        return $this->input;
+    }
+
+    /**
+     * @see IStringReader::concat()
+     */
+    public function concat(string $input): void {
+        $this->input .= $input;
+    }
+
+    /**
+     * @see IStringReader::setOffset()
+     */
+    public function setOffset(int $offset): void {
+        $this->offset = $offset;
+    }
+
+    /**
+     * @see IStringReader::offset()
+     */
+    public function offset(): int {
+        return $this->offset;
+    }
+
+    /**
+     * @see IStringReader::offsetInBytes()
+     */
+    public function offsetInBytes(): int {
+        return $this->offset;
+    }
+
+    /**
+     * @see IStringReader::look()
+     */
+    public function look(string $re): ?int {
+        return $this->scan($re, false, false);
+    }
+
+    /**
+     * @see IStringReader::check()
+     */
+    public function check(string $re): ?string {
+        return $this->scan($re, false, true);
+    }
+
+    /**
+     * @see IStringReader::skip()
+     */
+    public function skip(string $re): ?int {
+        return $this->scan($re, true, false);
+    }
+
+    /**
+     * @see IStringReader::read()
+     */
+    public function read(string $re): string|null {
+        return $this->scan($re, true, true);
+    }
+
+    /**
+     * @see IStringReader::lookUntil()
+     */
+    public function lookUntil(string $re): ?int {
+        return $this->scanUntil($re, false, false);
+    }
+
+    /**
+     * @see IStringReader::checkUntil()
+     */
+    public function checkUntil(string $re): ?string {
+        return $this->scanUntil($re, false, true);
+    }
+
+    /**
+     * @see IStringReader::skipUntil()
+     */
+    public function skipUntil(string $re): ?int {
+        return $this->scanUntil($re, true, false);
+    }
+
+    /**
+     * @see IStringReader::readUntil()
+     */
+    public function readUntil(string $re): null|string {
+        return $this->scanUntil($re, true, true);
+    }
+
+    /**
+     * @see IStringReader::peek()
+     */
+    public function peek(int $n): string {
+        $res = $this->substr($this->input, $this->offset, $n);
+        if (false !== $res) {
+            return $res;
+        }
+        return '';
+    }
+
+    /**
+     * @see IStringReader::char()
+     */
+    public function char(): ?string {
+        $this->subgroups = $this->matched = null;
+        if ($this->offset >= $this->strlen($this->input)) {
+            return null;
+        }
+        $this->prevOffset = $this->offset;
+        $matched = $this->substr($this->input, $this->offset, 1);
+        $this->offset += $this->strlen($matched);
+        $this->subgroups = [$matched];
+        return $this->matched = $matched;
+    }
+
+    /**
+     * @see IStringReader::unread()
+     */
+    public function unread(): void {
+        if (null === $this->matched) {
+            throw new StringReaderException("Previous match record doesn't exist");
+        }
+        $this->matched = null;
+        $this->subgroups = null;
+        $this->offset = $this->prevOffset;
+    }
+
+    /**
+     * @see IStringReader::terminate()
+     */
+    public function terminate(): void {
+        $this->matched = null;
+        $this->subgroups = null;
+        $this->offset = $this->strlen($this->input);
+    }
+
+    /**
+     * @see IStringReader::reset()
+     */
     public function reset(): void {
         $this->matched = null;
         $this->offset = $this->prevOffset = 0;
         $this->subgroups = null;
     }
 
-    public function input(): string {
-        return $this->input;
+    /**
+     * @see IStringReader::isLineStart()
+     */
+    public function isLineStart(): bool {
+        if ($this->offset == 0) {
+            return true;
+        }
+        $n = strlen($this->input);
+        $offsetInBytes = $this->offsetInBytes();
+        return $offsetInBytes < $n
+            && ($this->input[$offsetInBytes - 1] == "\n" // *nix
+                || $this->input[$offsetInBytes - 1] == "\r" // mac
+                || ($n >= 2 && $this->input[$offsetInBytes - 2] == "\r" && $this->input[$offsetInBytes - 1] == "\n")); // win
     }
 
-    public function concat(string $input): void {
-        $this->input .= $input;
+    /**
+     * @see IStringReader::isEnd()
+     */
+    public function isEnd(): bool {
+        return $this->offset >= $this->strlen($this->input);
     }
 
-    public function setOffset(int $offset): void {
-        $this->offset = $offset;
+    /**
+     * @see IStringReader::matched()
+     */
+    public function matched(): ?string {
+        return $this->matched;
     }
 
-    public function offset(): int {
-        return $this->offset;
+    /**
+     * @see IStringReader::matchedSize()
+     */
+    public function matchedSize(): ?int {
+        return null === $this->matched || $this->offset >= $this->strlen($this->input)
+            ? null
+            : $this->strlen($this->matched);
     }
 
-    public function check(string $re): ?string {
-        return $this->read($re, false);
+    /**
+     * @see IStringReader::preMatch()
+     */
+    public function preMatch(): ?string {
+        return null === $this->matched
+            ? null
+            : $this->substr($this->input, 0, $this->prevOffset);
     }
 
-    public function read(string $re, bool $advanceOffset = true, bool $returnStr = true): string|int|null {
+    /**
+     * @see IStringReader::postMatch()
+     */
+    public function postMatch(): ?string {
+        return null === $this->matched
+            ? null
+            : $this->substr($this->input, $this->offset, null);
+    }
+
+    /**
+     * @see IStringReader::subgroups()
+     */
+    public function subgroups(): ?array {
+        return $this->subgroups;
+    }
+
+    /**
+     * @see IStringReader::rest()
+     */
+    public function rest(): string {
+        $res = $this->substr($this->input, $this->offset, null);
+        if (false === $res) {
+            return '';
+        }
+        return $res;
+    }
+
+    /**
+     * @see IStringReader::restSize()
+     */
+    public function restSize(): int {
+        return $this->strlen($this->input) - $this->offset;
+    }
+
+    /**
+     * @see IStringReader::isAnchored()
+     */
+    public function isAnchored(): bool {
+        return $this->anchored;
+    }
+
+    protected function substr(string $s, int $offset, ?int $length): string|false {
+        return substr($s, $offset, $length);
+    }
+
+    protected function strlen(mixed $s): int {
+        return strlen($s);
+    }
+
+    protected function re(string $re, bool $anchored = null): string {
+        if (null === $anchored) {
+            return $this->anchored ? $re . 'A' : $re;
+        }
+        return $anchored ? $re . 'A' : $re;
+    }
+
+    /**
+     * Can change or not the offset dependening from the $advanceOffset
+     * Changes the `matched` register
+     * @param string $re
+     * @param bool $advanceOffset If true the offset will be advanced.
+     * @param bool $returnStr
+     *     If true then string will be returned if there is a match, if there is no match the null will be returned.
+     *     If false then int will be returned if there is a match, if there is no match the null will be returned.
+     * @return string|int|null Depending from the $advanceOffset and $returnStr arguments the different result will be returned.
+     * @return string|int|null
+     */
+    protected function scan(string $re, bool $advanceOffset, bool $returnStr): string|int|null {
         $matched = null;
         if (preg_match($this->re($re), $this->input, $match, 0, $this->offsetInBytes())) {
             $matched = $match[0];
@@ -74,23 +312,19 @@ class AsciiStringReader implements IStringReader {
         return $matched === null ? null : $this->strlen($matched);
     }
 
-    public function offsetInBytes(): int {
-        return $this->offset;
-    }
-
-    public function skip(string $re): ?int {
-        return $this->read($re, true, false);
-    }
-
-    public function look(string $re): ?int {
-        return $this->read($re, false, false);
-    }
-
-    public function checkUntil(string $re): ?string {
-        return $this->readUntil($re, false);
-    }
-
-    public function readUntil(string $re, bool $advanceOffset = true, bool $returnStr = true): string|int|null {
+    /**
+     * Reads the text until the pattern is matched. Can advance or not the offset. Modifies the `matched` register.
+     * Ruby methods:
+     *     [scan_until()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-scan_until).
+     *     [search_full()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-search_full).
+     * @param string $re Pattern (PCRE) to match.
+     * @param bool $advanceOffset If true the offset will be advanced.
+     * @param bool $returnStr
+     *     If true then string will be returned if there is a match, if there is no match the null will be returned.
+     *     If false then int will be returned if there is a match, if there is no match the null will be returned.
+     * @return string|int|null Depending from the $advanceOffset and $returnStr arguments the different result will be returned.
+     */
+    protected function scanUntil(string $re, bool $advanceOffset, bool $returnStr): string|int|null {
         if (preg_match($this->re($re, false), $this->input, $match, PREG_OFFSET_CAPTURE, $this->offsetInBytes())) {
             $res = $this->substr(
                 $this->input,
@@ -109,122 +343,7 @@ class AsciiStringReader implements IStringReader {
             return $this->strlen($res);
         }
         $this->subgroups = null;
-        return $this->matched = null;
-    }
-
-    public function skipUntil(string $re): ?int {
-        return $this->readUntil($re, true, false);
-    }
-
-    public function lookUntil(string $re): ?int {
-        return $this->readUntil($re, false, false);
-    }
-
-    public function char(): ?string {
-        $this->subgroups = $this->matched = null;
-        if ($this->offset >= $this->strlen($this->input)) {
-            return null;
-        }
-        $this->prevOffset = $this->offset;
-        $matched = $this->substr($this->input, $this->offset, 1);
-        $this->offset += $this->strlen($matched);
-        $this->subgroups = [$matched];
-        return $this->matched = $matched;
-    }
-
-    public function unread(): void {
-        if (null === $this->matched) {
-            throw new StringReaderException("Previous match record doesn't exist");
-        }
         $this->matched = null;
-        $this->subgroups = null;
-        $this->offset = $this->prevOffset;
-    }
-
-    public function peek(int $n): string {
-        $res = $this->substr($this->input, $this->offset, $n);
-        if (false !== $res) {
-            return $res;
-        }
-        return '';
-    }
-
-    public function terminate(): void {
-        $this->matched = null;
-        $this->subgroups = null;
-        $this->offset = $this->strlen($this->input);
-    }
-
-    public function isLineStart(): bool {
-        if ($this->offset == 0) {
-            return true;
-        }
-        $n = strlen($this->input);
-        $offsetInBytes = $this->offsetInBytes();
-        return $offsetInBytes < $n
-            && ($this->input[$offsetInBytes - 1] == "\n" // *nix
-                || $this->input[$offsetInBytes - 1] == "\r" // mac
-                || ($n >= 2 && $this->input[$offsetInBytes - 2] == "\r" && $this->input[$offsetInBytes - 1] == "\n")); // win
-    }
-
-    public function isEnd(): bool {
-        return $this->offset >= $this->strlen($this->input);
-    }
-
-    public function matched(): ?string {
-        return $this->matched;
-    }
-
-    public function matchedSize(): ?int {
-        return null === $this->matched || $this->offset >= $this->strlen($this->input)
-            ? null
-            : $this->strlen($this->matched);
-    }
-
-    public function subgroups(): ?array {
-        return $this->subgroups;
-    }
-
-    public function preMatch(): ?string {
-        return null === $this->matched
-            ? null
-            : $this->substr($this->input, 0, $this->prevOffset);
-    }
-
-    public function postMatch(): ?string {
-        return null === $this->matched
-            ? null
-            : $this->substr($this->input, $this->offset, null);
-    }
-
-    public function rest(): string {
-        $res = $this->substr($this->input, $this->offset, null);
-        if (false === $res) {
-            return '';
-        }
-        return $res;
-    }
-
-    public function restSize(): int {
-        return $this->strlen($this->input) - $this->offset;
-    }
-
-    public function isAnchored(): bool {
-        return $this->anchored;
-    }
-
-    protected function substr(string $s, int $offset, ?int $length): string {
-        return substr($s, $offset, $length);
-    }
-
-    protected function strlen(mixed $s): int {
-        return strlen($s);
-    }
-
-    protected function re(string $re, bool $anchored = null): string {
-        if (null === $anchored) {
-            return $this->anchored ? $re . 'A' : $re;
-        }
-        return $anchored ? $re . 'A' : $re;
+        return null;
     }
 }
