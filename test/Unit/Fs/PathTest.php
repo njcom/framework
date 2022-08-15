@@ -125,7 +125,7 @@ class PathTest extends TestCase {
 
     public function dataNormalize() {
         yield from (new BasePathTest(__METHOD__))->dataNormalize();
-        $fixSlashes = fn ($path) => str_replace('\\', '/', $path);
+        $fixSlashes = fn($path) => str_replace('\\', '/', $path);
         $data = [
             ['C:/', 'C:/'],
             ['C:/', 'C:\\'],
@@ -160,25 +160,42 @@ class PathTest extends TestCase {
         // https://docs.microsoft.com/en-us/dotnet/standard/io/file-path-formats
         yield from [
             [
-                '\\\\', '\\\\',
+                '\\\\',
+                '\\\\',
             ],
             [
-                'C:/foo\\bar/baz', 'C:/foo\\bar', 'baz'
+                'C:/foo\\bar/baz',
+                'C:/foo\\bar',
+                'baz',
             ],
             [
-                'C:/foo\\bar/baz', 'C:/foo\\bar', '/baz'
+                'C:/foo\\bar/baz',
+                'C:/foo\\bar',
+                '/baz',
             ],
             [
-                'C:/foo\\bar/baz', 'C:/foo\\bar/', '/baz'
+                'C:/foo\\bar/baz',
+                'C:/foo\\bar/',
+                '/baz',
             ],
             [
-                'C:/', 'C:/', '', '/'
+                'C:/',
+                'C:/',
+                '',
+                '/',
             ],
             [
-                'C:\\', 'C:\\', '', '\\', '',
+                'C:\\',
+                'C:\\',
+                '',
+                '\\',
+                '',
             ],
             [
-                '\\\\127.0.0.1', '\\\\', '127.0.0.1', '\\',
+                '\\\\127.0.0.1',
+                '\\\\',
+                '127.0.0.1',
+                '\\',
             ],
         ];
     }
@@ -191,51 +208,51 @@ class PathTest extends TestCase {
     }
 
     public function testNameWithoutExt() {
-        $this->assertEquals('', Path::nameWithoutExt(''));
-        $this->assertEquals('', Path::nameWithoutExt('.jpg'));
-        $this->assertEquals('foo', Path::nameWithoutExt('foo.jpg'));
+        $this->assertSame('', Path::nameWithoutExt(''));
+        $this->assertSame('', Path::nameWithoutExt('.jpg'));
+        $this->assertSame('foo', Path::nameWithoutExt('foo.jpg'));
     }
 
     public function testExt() {
-        $this->assertEquals('', Path::ext(''));
-        $this->assertEquals('jpg', Path::ext('.jpg'));
-        $this->assertEquals('txt', Path::ext('conf.txt'));
-        $this->assertEquals('txt', Path::ext('.conf.txt'));
+        $this->assertSame('', Path::ext(''));
+        $this->assertSame('jpg', Path::ext('.jpg'));
+        $this->assertSame('txt', Path::ext('conf.txt'));
+        $this->assertSame('txt', Path::ext('.conf.txt'));
 
-        $this->assertEquals('txt', Path::ext('dir/.txt'));
-        $this->assertEquals('txt', Path::ext('dir/conf.txt'));
-        $this->assertEquals('php', Path::ext(__FILE__));
-        $this->assertEquals('ts', Path::ext(__DIR__ . '/test.d.ts'));
+        $this->assertSame('txt', Path::ext('dir/.txt'));
+        $this->assertSame('txt', Path::ext('dir/conf.txt'));
+        $this->assertSame('php', Path::ext(__FILE__));
+        $this->assertSame('ts', Path::ext(__DIR__ . '/test.d.ts'));
 
-        $this->assertEquals('', Path::ext('term.'));
+        $this->assertSame('', Path::ext('term.'));
     }
 
     public function testFileName() {
-        $this->assertEquals('PathTest.php', Path::fileName(__FILE__));
+        $this->assertSame('PathTest.php', Path::fileName(__FILE__));
     }
 
     public function testNormalizeExt() {
-        $this->assertEquals('.php', Path::normalizeExt('.php'));
-        $this->assertEquals('.php', Path::normalizeExt('php'));
+        $this->assertSame('.php', Path::normalizeExt('.php'));
+        $this->assertSame('.php', Path::normalizeExt('php'));
     }
 
     public function testChangeExt_GuessOldExt() {
         $this->assertSame('test.jpg', Path::changeExt('test.txt', null, 'jpg'));
 
-        $this->assertEquals('term.txt', Path::changeExt('term.jpg', null, 'txt'));
-        $this->assertEquals('term.txt', Path::changeExt('term.jpg', null, '.txt'));
+        $this->assertSame('term.txt', Path::changeExt('term.jpg', null, 'txt'));
+        $this->assertSame('term.txt', Path::changeExt('term.jpg', null, '.txt'));
 
-        $this->assertEquals('term.txt', Path::changeExt('term.txt', null, 'txt'));
-        $this->assertEquals('term.txt', Path::changeExt('term.txt', null, '.txt'));
+        $this->assertSame('term.txt', Path::changeExt('term.txt', null, 'txt'));
+        $this->assertSame('term.txt', Path::changeExt('term.txt', null, '.txt'));
 
-        $this->assertEquals('term.txt', Path::changeExt('term', null, 'txt'));
-        $this->assertEquals('term.txt', Path::changeExt('term', null, '.txt'));
+        $this->assertSame('term.txt', Path::changeExt('term', null, 'txt'));
+        $this->assertSame('term.txt', Path::changeExt('term', null, '.txt'));
 
-        $this->assertEquals('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.jpg', null, 'txt'));
-        $this->assertEquals('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.jpg', null, '.txt'));
-        $this->assertEquals('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.', null, 'txt'));
+        $this->assertSame('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.jpg', null, 'txt'));
+        $this->assertSame('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.jpg', null, '.txt'));
+        $this->assertSame('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.', null, 'txt'));
 
-        $this->assertEquals('dir/foo.d.ts', Path::changeExt('dir/foo.d.ts', null, 'd.ts'));
+        $this->assertSame('dir/foo.d.ts', Path::changeExt('dir/foo.d.ts', null, 'd.ts'));
     }
 
     public function dataChangeExt_GuessOldExt_EmptyPathOrNewExt() {
@@ -261,15 +278,17 @@ class PathTest extends TestCase {
     }
 
     public function testDropExt_Quess() {
-        $this->assertEquals('C:\\foo\\bar\\test', Path::dropExt('C:\\foo\\bar\\test'));
-        $this->assertEquals('/foo/bar/test', Path::dropExt('/foo/bar/test.php'));
-        $this->assertEquals('test', Path::dropExt('test.php'));
+        $this->assertSame('C:\\foo\\bar\\test', Path::dropExt('C:\\foo\\bar\\test'));
+        $this->assertSame('/foo/bar/test', Path::dropExt('/foo/bar/test.php'));
+        $this->assertSame('test', Path::dropExt('test.php'));
     }
 
     public function testDropExt_ConcreteExt() {
-        $this->assertEquals('C:\\foo\\bar\\test', Path::dropExt('C:\\foo\\bar\\test.foo.bar', '.foo.bar'));
-        $this->assertEquals('/foo/bar/test', Path::dropExt('/foo/bar/test.php', '.php'));
-        $this->assertEquals('test.php', Path::dropExt('test.php', '.ts'), 'Skips invalid extension');
+        $this->assertSame('foo', Path::dropExt('foo.txt', '.txt'));
+        $this->assertSame('foo', Path::dropExt('foo.txt', 'txt'));
+        $this->assertSame('C:\\foo\\bar\\test', Path::dropExt('C:\\foo\\bar\\test.foo.bar', '.foo.bar'));
+        $this->assertSame('/foo/bar/test', Path::dropExt('/foo/bar/test.php', '.php'));
+        $this->assertSame('test.php', Path::dropExt('test.php', '.ts'), 'Skips invalid extension');
     }
 
     public function testUnique_ThrowsExceptionWhenParentDirDoesNotExist() {
@@ -283,18 +302,18 @@ class PathTest extends TestCase {
     }
 
     public function testUnique_ExistingFileWithExt() {
-        $this->assertEquals(__DIR__ . '/' . basename(__FILE__, '.php') . '-0.php', Path::unique(__FILE__));
+        $this->assertSame(__DIR__ . '/' . basename(__FILE__, '.php') . '-0.php', Path::unique(__FILE__));
     }
 
     public function testUnique_ExistingFileWithoutExt() {
         $tmpDirPath = $this->createTmpDir();
         $tmpFilePath = $tmpDirPath . '/abc';
         touch($tmpFilePath);
-        $this->assertEquals($tmpFilePath . '-0', Path::unique($tmpFilePath));
+        $this->assertSame($tmpFilePath . '-0', Path::unique($tmpFilePath));
     }
 
     public function testUnique_ExistingDirectory() {
-        $this->assertEquals(__DIR__ . '-0', Path::unique(__DIR__));
+        $this->assertSame(__DIR__ . '-0', Path::unique(__DIR__));
     }
 
     public function testUnique_ThrowsExceptionWhenNumberOfAttemptsReachedForFile() {
