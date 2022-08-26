@@ -548,7 +548,8 @@ function lastPos(string $haystack, string $needle, int $offset = 0) {
 /**
  * The name is taken from the `lines` function in Haskell.
  */
-function lines(string $text, bool $filterEmpty = true, bool $trim = true): Traversable {
+function lines(string|Stringable $text, bool $filterEmpty = true, bool $trim = true): Traversable {
+    $text = (string) $text;
     if ($text === '') {
         return [];
     }

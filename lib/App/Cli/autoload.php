@@ -76,7 +76,7 @@ function showErrorLn(string $errMessage = null): void {
  * @return void
  */
 function showSep(string $ch = '-', int $n = 80): void {
-    showLn(str_repeat('-', $n));
+    showLn(str_repeat($ch, $n));
 }
 
 function stylize(string $text, $codes): string {

@@ -27,10 +27,16 @@ use function stream_get_contents;
 use const Morpho\Test\BASE_DIR_PATH;
 
 class FunctionsTest extends TestCase {
-    public function testShowSep() {
+    public function testShowSep_DefaultSep() {
         ob_start();
         showSep();
         $this->assertSame("--------------------------------------------------------------------------------\n", ob_get_clean());
+    }
+
+    public function testShowSep_CustomSep() {
+        ob_start();
+        showSep('#', 3);
+        $this->assertSame("###\n", ob_get_clean());
     }
 
     public function dataWriteErrorAndWriteErrorLn() {

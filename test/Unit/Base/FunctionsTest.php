@@ -206,6 +206,14 @@ class FunctionsTest extends TestCase {
         $this->assertSame(['one', 'two'], $test("one{$sep}two$sep"));
     }
 
+    public function testLines_AcceptsStringable() {
+        $this->assertSame(['foo', 'bar'], iterator_to_array(lines(new class implements Stringable {
+            public function __toString(): string {
+                return "foo\nbar";
+            }
+        })));
+    }
+
     public function testWaitUntilNoOfAttempts_PredicateReturnsTrueOnSomeIteration() {
         $called = 0;
         $predicate = function () use (&$called) {
