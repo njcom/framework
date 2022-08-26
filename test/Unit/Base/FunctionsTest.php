@@ -300,12 +300,6 @@ class FunctionsTest extends TestCase {
         $this->assertEquals("Printed\n", ob_get_clean());
     }
 
-    public function testShowLn_MultipleArgs() {
-        ob_start();
-        showLn("bee", "ant");
-        $this->assertEquals("bee\nant\n", ob_get_clean());
-    }
-
     public function testShowLn_IterableArg() {
         $val = new ArrayIterator(['foo', 'bar', 'baz']);
         ob_start();

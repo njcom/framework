@@ -141,7 +141,7 @@ function toIt(iterable|string|Stringable $list): iterable {
         return $list;
     }
     if ($list instanceof Stringable) {
-        $list = (string) $list;
+        $list = (string)$list;
     }
     return mb_str_split($list);
 }
@@ -150,27 +150,22 @@ function toIt(iterable|string|Stringable $list): iterable {
 // todo: review functions below #12
 
 function e(string|Stringable|int|float $s): string {
-    return htmlspecialchars((string) $s, ENT_QUOTES);
+    return htmlspecialchars((string)$s, ENT_QUOTES);
 }
 
 function de(string|Stringable|int|float $s): string {
-    return htmlspecialchars_decode((string) $s, ENT_QUOTES);
+    return htmlspecialchars_decode((string)$s, ENT_QUOTES);
 }
 
-/**
- * @param string|iterable<mixed, string> ...$messages
- */
-function showLn(...$messages): void {
-    if (!count($messages)) {
+function showLn(string|Stringable|iterable|int|float $text = null): void {
+    if (null === $text) {
         echo "\n";
     } else {
-        foreach ($messages as $message) {
-            if (is_iterable($message)) {
-                foreach ($message as $msg) {
-                    echo $msg . "\n";
-                }
-            } else {
-                echo $message . "\n";
+        if (is_scalar($text) || $text instanceof Stringable) {
+            echo (string) $text . "\n";
+        } else {
+            foreach ($text as $line) {
+                echo $line . "\n";
             }
         }
     }
@@ -182,7 +177,7 @@ function showOk(string|Stringable $msg = null): void {
 
 /**
  * @param IDisposable $disposable
- * @param mixed $val Will be passed to IFn::__invoke()
+ * @param mixed       $val Will be passed to IFn::__invoke()
  * @return mixed
  */
 function using(IDisposable $disposable, $val = null) {
@@ -202,8 +197,8 @@ function unpackArgs(array $args): array {
 
 /**
  * @param string|Stringable|iterable<mixed, string>|int|float $list
- * @param string                                                 $pre
- * @param string|null                                            $post
+ * @param string                                              $pre
+ * @param string|null                                         $post
  * @return string|array
  */
 function wrap(string|Stringable|iterable|int|float $list, string $pre, string $post = null): string|array {
@@ -231,11 +226,11 @@ function prepend(string|Stringable|iterable|int|float $list, string $prefix): st
     if (is_iterable($list)) {
         $r = [];
         foreach ($list as $k => $v) {
-            $r[$k] = $prefix . (string) $v;
+            $r[$k] = $prefix . (string)$v;
         }
         return $r;
     }
-    return $prefix . (string) $list;
+    return $prefix . (string)$list;
 }
 
 function prependFn(string $prefix): Closure {
@@ -248,11 +243,11 @@ function append(string|Stringable|iterable|int|float $list, string $suffix): str
     if (is_iterable($list)) {
         $r = [];
         foreach ($list as $k => $v) {
-            $r[$k] = (string) $v . $suffix;
+            $r[$k] = (string)$v . $suffix;
         }
         return $r;
     }
-    return (string) $list . $suffix;
+    return (string)$list . $suffix;
 }
 
 function appendFn(string $suffix): Closure {
@@ -278,15 +273,15 @@ function uniqueName(): string {
 }
 
 function words(string|Stringable|int $list, int $limit = -1): array {
-    $list = (string) $list;
+    $list = (string)$list;
     return preg_split('~\\s+~s', trim($list), $limit, PREG_SPLIT_NO_EMPTY);
 }
 
 /**
  * Replaces first capsed letter or underscore with dash and small later.
- * @param mixed $list Allowed string are: /[a-zA-Z0-9_- ]/s. All other characters will be removed.
+ * @param mixed  $list Allowed string are: /[a-zA-Z0-9_- ]/s. All other characters will be removed.
  * @param string $additionalChars
- * @param bool $trim Either trailing '-' characters should be removed or not.
+ * @param bool   $trim Either trailing '-' characters should be removed or not.
  * @return string
  */
 function dasherize(string|Stringable|int $list, string $additionalChars = '', bool $trim = true) {
@@ -316,7 +311,7 @@ function dasherize(string|Stringable|int $list, string $additionalChars = '', bo
  * Replaces first capsed letter or dash with underscore and small later.
  *
  * @param Stringable|string $s
- * @param bool $trim Either trailing '_' characters should be removed or not.
+ * @param bool              $trim Either trailing '_' characters should be removed or not.
  *
  * @return string
  */
@@ -352,7 +347,7 @@ function underscore(Stringable|string $s, bool $trim = true) {
  * @return string
  */
 function classify(string|Stringable $s): string {
-    $string = sanitize(str_replace('/', '\\', (string) $s), '-_\\ ');
+    $string = sanitize(str_replace('/', '\\', (string)$s), '-_\\ ');
     if (str_contains($string, '\\')) {
         $string = preg_replace_callback(
             '{\\\\(\w)}si',
@@ -372,7 +367,7 @@ function classify(string|Stringable $s): string {
  * First latter will be in upper case if $lcfirst == true or in lower case if $lcfirst == false.
  *
  * @param Stringable|string $s
- * @param bool $toUpperFirstChar
+ * @param bool              $toUpperFirstChar
  * @return string
  */
 function camelize(string|Stringable $s, bool $toUpperFirstChar = false): string {
@@ -397,7 +392,7 @@ function humanize(string|Stringable|int $list, bool $escape = true) {
         function ($m) {
             return $m[1] . ' ' . strtolower($m[2]);
         },
-        str_replace('_', ' ', (string ) $list)
+        str_replace('_', ' ', (string )$list)
     );
     if ($escape) {
         $result = e($result);
@@ -412,9 +407,9 @@ function humanize(string|Stringable|int $list, bool $escape = true) {
  * 'foo bar_baz' -> 'Foo bar baz'
  *
  * @param string $list
- * @param bool $ucwords If == true -> all words will be titleized, else only first word will
+ * @param bool   $ucwords If == true -> all words will be titleized, else only first word will
  *                        titleized.
- * @param bool $escape Either need to apply escaping of HTML special chars?
+ * @param bool   $escape Either need to apply escaping of HTML special chars?
  *
  * @return string.
  */
@@ -429,7 +424,7 @@ function titleize(string|Stringable|int $list, bool $ucwords = true, bool $escap
 
 function sanitize(string|Stringable|int $list, string $allowedCharacters, bool $deleteDups = true) {
     $regexp = '/[^a-zA-Z0-9' . preg_quote($allowedCharacters, '/') . ']/s';
-    $result = preg_replace($regexp, '', (string) $list);
+    $result = preg_replace($regexp, '', (string)$list);
     if ($deleteDups) {
         $result = deleteDups($result, $allowedCharacters);
     }
@@ -448,7 +443,7 @@ function etrim(string|Stringable|iterable|int|float $list, string $chars = null)
         }
         return $r;
     }
-    return trim((string) $list, $chars . TRIM_CHARS);
+    return trim((string)$list, $chars . TRIM_CHARS);
 }
 
 /**
@@ -457,14 +452,14 @@ function etrim(string|Stringable|iterable|int|float $list, string $chars = null)
  * @param Stringable|int|string $list Source string with duplicated characters.
  * @param Stringable|int|string $chars Either a set of characters to use in character class or a reg-exp pattern that must match
  *                               all duplicated characters that must be removed.
- * @param bool $isCharClass
+ * @param bool                  $isCharClass
  * @return string                String with removed duplicates.
  */
 function deleteDups(string|Stringable|int $list, Stringable|int|string $chars, bool $isCharClass = true) {
     $regExp = $isCharClass
-        ? '/([' . preg_quote((string) $chars, '/') . '])+/si'
+        ? '/([' . preg_quote((string)$chars, '/') . '])+/si'
         : "/($chars)+/si";
-    return preg_replace($regExp, '\1', (string) $list);
+    return preg_replace($regExp, '\1', (string)$list);
 }
 
 function format($string, array $args, callable $format): string {
@@ -511,7 +506,7 @@ function fromJson(string $json, bool $objectsToArrays = true): mixed {
 
 /**
  * Sets properties of the object $instance using values from $props
- * @param object      $instance
+ * @param object   $instance
  * @param iterable $props E.g.: ['myProp1' => 'myVal1', 'myProp2' => 'myVal2'];
  * @return object
  */
@@ -532,7 +527,7 @@ function setProps(object $instance, iterable $props): object {
 /**
  * @param string $haystack
  * @param string $needle
- * @param int $offset
+ * @param int    $offset
  * @return int|false
  */
 function lastPos(string $haystack, string $needle, int $offset = 0) {
@@ -549,7 +544,7 @@ function lastPos(string $haystack, string $needle, int $offset = 0) {
  * The name is taken from the `lines` function in Haskell.
  */
 function lines(string|Stringable $text, bool $filterEmpty = true, bool $trim = true): Traversable {
-    $text = (string) $text;
+    $text = (string)$text;
     if ($text === '') {
         return [];
     }
@@ -577,7 +572,7 @@ function capture(callable $fn): string {
 }
 
 function tpl(string $__filePath, array $__vars = null): string {
-    extract((array) $__vars, EXTR_SKIP);
+    extract((array)$__vars, EXTR_SKIP);
     unset($__vars);
     ob_start();
     try {
@@ -733,7 +728,7 @@ function formatFloat($val): string {
     if (empty($val)) {
         $val = 0;
     }
-    $val = str_replace(',', '.', (string) $val);
+    $val = str_replace(',', '.', (string)$val);
     return number_format(round(floatval($val), 2), 2, '.', ' ');
 }
 
@@ -866,7 +861,7 @@ function chain(...$iterables): iterable {
 
 /**
  * @param iterable|string $haystack
- * @param mixed              $needle
+ * @param mixed           $needle
  */
 function contains($haystack, $needle): bool {
     if (is_string($haystack)) {
@@ -934,7 +929,7 @@ function filter(callable $predicate, $iter) {
  *     flatMap(function($v) { return [-$v, $v]; }, [1, 2, 3, 4, 5]);
  *     => iterable(-1, 1, -2, 2, -3, 3, -4, 4, -5, 5)
  *
- * @param callable           $fn Mapping function: iterable function(mixed $value)
+ * @param callable        $fn Mapping function: iterable function(mixed $value)
  * @param iterable|string $iter Iterable to be mapped over
  *
  * @return string|Generator|array
@@ -1150,7 +1145,7 @@ function map(callable $fn, $iter) {
  *           $curValue is the current element
  *           $curKey is a key of the current element
  *     The reduction function must return a new accumulator value.
- * @param iterable<mixed, mixed>|string     $list Iterable to reduce.
+ * @param iterable<mixed, mixed>|string        $list Iterable to reduce.
  * @param mixed                                $initial Start value for accumulator. Usually identity value of $function.
  *
  * @return mixed Result of the reduction.
@@ -1173,7 +1168,7 @@ function lfold(callable $fn, iterable|string $list, mixed $initial = null): mixe
  * @return string
  */
 function ucfirst(string|Stringable $list): string {
-    $list = (string) $list;
+    $list = (string)$list;
     $fc = mb_strtoupper(mb_substr($list, 0, 1));
     return $fc . mb_substr($list, 1);
 }
@@ -1181,28 +1176,28 @@ function ucfirst(string|Stringable $list): string {
 /**
  * Opposite to unindent()
  * @param string|Stringable|int|float $text
- * @param int $indent Number of spaces
+ * @param int                         $indent Number of spaces
  * @return string
  */
 function indent(string|Stringable|int|float $text, int $indent = INDENT_SIZE): string {
-    return preg_replace('~^~m', str_repeat(' ', $indent), (string) $text);
+    return preg_replace('~^~m', str_repeat(' ', $indent), (string)$text);
 }
 
 /**
  * Opposite to indent()
  * @param string|Stringable|int|float $text
- * @param int $indent Number of spaces
+ * @param int                         $indent Number of spaces
  * @return string
  */
 function unindent(string|Stringable|int|float $text, int $indent = INDENT_SIZE): string {
-    return preg_replace('~^' . str_repeat(' ', $indent) . '~m', '', (string) $text);
+    return preg_replace('~^' . str_repeat(' ', $indent) . '~m', '', (string)$text);
 }
 
 /**
- * @deprecated should be removed after PHP 8.2 and replaced with iterator_to_array()
- * Alternative to iterator_to_array(), as the iterator_to_array() does not support arrays as the first argument
  * @param iterable $it
  * @return array
+ * @deprecated should be removed after PHP 8.2 and replaced with iterator_to_array()
+ * Alternative to iterator_to_array(), as the iterator_to_array() does not support arrays as the first argument
  */
 function toArr(iterable $it): array {
     if (is_array($it)) {
@@ -1215,7 +1210,7 @@ function toArr(iterable $it): array {
     $i = 0;
     $intKeys = true;
     foreach ($it as $key => $val) {
-        if (!preg_match('~^\d+$~s', (string) $key)) {
+        if (!preg_match('~^\d+$~s', (string)$key)) {
             $intKeys = false;
             break;
         }
@@ -1398,7 +1393,7 @@ function unsetOne(array $arr, $val, bool $resetIntKeys = true, bool $allOccur = 
             break;
         }
     }
-    return $resetIntKeys && all(fn ($key) => is_int($key), array_keys($arr))
+    return $resetIntKeys && all(fn($key) => is_int($key), array_keys($arr))
         ? array_values($arr)
         : $arr;
 }
@@ -1423,7 +1418,7 @@ function unsetMany(
             }
         }
     }
-    return $resetIntKeys && all(fn ($key) => is_int($key), array_keys($arr))
+    return $resetIntKeys && all(fn($key) => is_int($key), array_keys($arr))
         ? array_values($arr)
         : $arr;
 }
@@ -1514,5 +1509,5 @@ function compileRe(array $regexes, string $subpatternOpts = null): string {
 }
 
 function isUtf8Text(string $text): bool {
-    return (bool) preg_match('/.*/us', $text); // [u/PCRE_UTF8](https://www.php.net/manual/en/reference.pcre.pattern.modifiers.php)
+    return (bool)preg_match('/.*/us', $text); // [u/PCRE_UTF8](https://www.php.net/manual/en/reference.pcre.pattern.modifiers.php)
 }
