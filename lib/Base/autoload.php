@@ -17,6 +17,7 @@ use OutOfBoundsException;
 use RuntimeException;
 use Stringable;
 use Throwable;
+use Traversable;
 use UnexpectedValueException;
 
 use function array_fill_keys;
@@ -547,17 +548,20 @@ function lastPos(string $haystack, string $needle, int $offset = 0) {
 /**
  * The name is taken from the `lines` function in Haskell.
  */
-function lines(string|iterable $text): string|iterable {
-    if (is_iterable($text)) {
-        return $text;
+function lines(string $text, bool $filterEmpty = true, bool $trim = true): Traversable {
+    if ($text === '') {
+        return [];
     }
-    /*    if ($text === '') {
-            return [];
-        }*/
-    return preg_split(EOL_FULL_RE, $text);
+    foreach (preg_split(EOL_FULL_RE, $text, -1, $filterEmpty ? PREG_SPLIT_NO_EMPTY : 0) as $line) {
+        if ($trim) {
+            $line = trim($line);
+        }
+        if ($filterEmpty && $line === '') {
+            continue;
+        }
+        yield $line;
+    }
 }
-
-// @TODO: implement nonEmptyLines()
 
 function capture(callable $fn): string {
     ob_start();
@@ -571,7 +575,7 @@ function capture(callable $fn): string {
     return ob_get_clean();
 }
 
-function tpl($__filePath, array $__vars = null): string {
+function tpl(string $__filePath, array $__vars = null): string {
     extract((array) $__vars, EXTR_SKIP);
     unset($__vars);
     ob_start();
@@ -589,7 +593,7 @@ function tpl($__filePath, array $__vars = null): string {
  * Modified version of the operator() from the https://github.com/nikic/iter
  * @Copyright (c) 2013 by Nikita Popov.
  */
-function op($operator, $arg = null): Closure {
+function op(string $operator, $arg = null): Closure {
     $functions = [
         'instanceof' => function ($a, $b) {
             return $a instanceof $b;

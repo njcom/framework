@@ -194,25 +194,16 @@ class FunctionsTest extends TestCase {
      * @dataProvider dataLines
      */
     public function testLines($sep) {
-        // Cases taken from http://hackage.haskell.org/package/base-4.10.0.0/docs/Prelude.html#v:lines
-        // They were changed to match our criteria.
-        $this->assertSame([''], lines(''));
-        $this->assertSame(['', ''], lines("$sep"));
-        $this->assertSame(['one'], lines("one"));
-        $this->assertSame(['one', ''], lines("one$sep"));
-        $this->assertSame(['one', '', ''], lines("one$sep$sep"));
-        $this->assertSame(['one', 'two'], lines("one{$sep}two"));
-        $this->assertSame(['one', 'two', ''], lines("one{$sep}two$sep"));
-    }
-
-    public function testLines_AcceptsIterable() {
-        $lines = ['', 'foo'];
-        $this->assertSame($lines, lines($lines));
-
-        $gen = (function () {
-            yield 'foo';
-        })();
-        $this->assertSame($gen, lines($gen));
+        $test = function (string $val): array {
+            return iterator_to_array(lines($val, true, true));
+        };
+        $this->assertSame([], $test(''));
+        $this->assertSame([], $test("$sep"));
+        $this->assertSame(['one'], $test("one"));
+        $this->assertSame(['one'], $test("one$sep"));
+        $this->assertSame(['one'], $test("one$sep$sep"));
+        $this->assertSame(['one', 'two'], $test("one{$sep}two"));
+        $this->assertSame(['one', 'two'], $test("one{$sep}two$sep"));
     }
 
     public function testWaitUntilNoOfAttempts_PredicateReturnsTrueOnSomeIteration() {

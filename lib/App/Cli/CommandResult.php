@@ -6,13 +6,9 @@
  */
 namespace Morpho\App\Cli;
 
-use Generator;
 use Traversable;
 
-use function preg_split;
-use function trim;
-
-use const Morpho\Base\EOL_FULL_RE;
+use function Morpho\Base\lines;
 
 abstract class CommandResult implements ICommandResult {
     protected int $exitCode;
@@ -33,19 +29,8 @@ abstract class CommandResult implements ICommandResult {
         return $this->lines();
     }
 
-    public function lines(bool $noEmptyLines = true, bool $trimLines = true): Generator {
-        /*if (!is_bool($noEmptyLines) && is_callable($noEmptyLines)) {
-            $filter = $noEmptyLines;
-        }*/
-        foreach (preg_split(EOL_FULL_RE, $this->stdOut(), -1, $noEmptyLines ? PREG_SPLIT_NO_EMPTY : 0) as $line) {
-            if ($trimLines) {
-                $line = trim($line);
-            }
-            if ($noEmptyLines && $line === '') {
-                continue;
-            }
-            yield $line;
-        }
+    public function lines(bool $filterEmpty = true, bool $trim = true): Traversable {
+        return lines($this->stdOut(), $filterEmpty, $trim);
     }
 
     public function __toString(): string {
