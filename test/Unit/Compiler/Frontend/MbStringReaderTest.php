@@ -81,11 +81,11 @@ class MbStringReaderTest extends AsciiStringReaderTest {
         $this->assertTrue($reader->isEnd());
     }
 
-    public function testMatchedSize() {
-        parent::testMatchedSize();
+    public function testMatchLen() {
+        parent::testMatchLen();
         $reader = $this->mkReader("Привет Мир!");
         $reader->read('/Прив/');
-        $this->assertSame(4, $reader->matchedSize());
+        $this->assertSame(4, $reader->matchLen());
     }
 
     public function testPreMatch() {
@@ -112,11 +112,11 @@ class MbStringReaderTest extends AsciiStringReaderTest {
         $this->assertSame(' Мир!', $reader->rest());
     }
 
-    public function testRestSize() {
-        parent::testRestSize();
+    public function testRestLen() {
+        parent::testRestLen();
         $reader = $this->mkReader("Привет Мир!");
-        $this->assertSame(11, $reader->restSize());
+        $this->assertSame(11, $reader->restLen());
         $reader->read('/Привет/');
-        $this->assertSame(5, $reader->restSize());
+        $this->assertSame(5, $reader->restLen());
     }
 }

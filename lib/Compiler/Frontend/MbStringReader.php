@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 /**
  * This file is part of morpho-os/framework
  * It is distributed under the 'Apache License Version 2.0' license.
@@ -28,15 +26,15 @@ class MbStringReader extends AsciiStringReader {
         return strlen($this->substr($this->input, 0, $this->offset));
     }
 
-    protected function substr(string $s, int $offset, ?int $length): string {
-        return mb_substr($s, $offset, $length);
-    }
-
     protected function re(string $re, bool $anchored = null): string {
         if (null === $anchored) {
             return $this->anchored ? $re . 'Au' : $re;
         }
         return $anchored ? $re . 'Au' : $re;
+    }
+
+    protected function substr(string $s, int $offset, ?int $length): string {
+        return mb_substr($s, $offset, $length);
     }
 
     protected function strlen(mixed $s): int {

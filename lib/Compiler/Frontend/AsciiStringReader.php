@@ -13,7 +13,7 @@ class AsciiStringReader implements IStringReader {
     protected string $input;
     protected int $offset = 0;
     protected int $prevOffset = 0;
-    protected ?string $matched = null;
+    protected ?string $match = null;
     protected readonly bool $anchored;
     protected ?array $subgroups = null;
 
@@ -140,25 +140,25 @@ class AsciiStringReader implements IStringReader {
      * @see IStringReader::char()
      */
     public function char(): ?string {
-        $this->subgroups = $this->matched = null;
+        $this->subgroups = $this->match = null;
         if ($this->offset >= $this->strlen($this->input)) {
             return null;
         }
         $this->prevOffset = $this->offset;
-        $matched = $this->substr($this->input, $this->offset, 1);
-        $this->offset += $this->strlen($matched);
-        $this->subgroups = [$matched];
-        return $this->matched = $matched;
+        $match = $this->substr($this->input, $this->offset, 1);
+        $this->offset += $this->strlen($match);
+        $this->subgroups = [$match];
+        return $this->match = $match;
     }
 
     /**
      * @see IStringReader::unread()
      */
     public function unread(): void {
-        if (null === $this->matched) {
+        if (null === $this->match) {
             throw new StringReaderException("Previous match record doesn't exist");
         }
-        $this->matched = null;
+        $this->match = null;
         $this->subgroups = null;
         $this->offset = $this->prevOffset;
     }
@@ -167,7 +167,7 @@ class AsciiStringReader implements IStringReader {
      * @see IStringReader::terminate()
      */
     public function terminate(): void {
-        $this->matched = null;
+        $this->match = null;
         $this->subgroups = null;
         $this->offset = $this->strlen($this->input);
     }
@@ -176,7 +176,7 @@ class AsciiStringReader implements IStringReader {
      * @see IStringReader::reset()
      */
     public function reset(): void {
-        $this->matched = null;
+        $this->match = null;
         $this->offset = $this->prevOffset = 0;
         $this->subgroups = null;
     }
@@ -204,26 +204,26 @@ class AsciiStringReader implements IStringReader {
     }
 
     /**
-     * @see IStringReader::matched()
+     * @see IStringReader::match()
      */
-    public function matched(): ?string {
-        return $this->matched;
+    public function match(): ?string {
+        return $this->match;
     }
 
     /**
-     * @see IStringReader::matchedSize()
+     * @see IStringReader::matchLen()
      */
-    public function matchedSize(): ?int {
-        return null === $this->matched || $this->offset >= $this->strlen($this->input)
+    public function matchLen(): ?int {
+        return null === $this->match || $this->offset >= $this->strlen($this->input)
             ? null
-            : $this->strlen($this->matched);
+            : $this->strlen($this->match);
     }
 
     /**
      * @see IStringReader::preMatch()
      */
     public function preMatch(): ?string {
-        return null === $this->matched
+        return null === $this->match
             ? null
             : $this->substr($this->input, 0, $this->prevOffset);
     }
@@ -232,7 +232,7 @@ class AsciiStringReader implements IStringReader {
      * @see IStringReader::postMatch()
      */
     public function postMatch(): ?string {
-        return null === $this->matched
+        return null === $this->match
             ? null
             : $this->substr($this->input, $this->offset, null);
     }
@@ -256,9 +256,9 @@ class AsciiStringReader implements IStringReader {
     }
 
     /**
-     * @see IStringReader::restSize()
+     * @see IStringReader::restLen()
      */
-    public function restSize(): int {
+    public function restLen(): int {
         return $this->strlen($this->input) - $this->offset;
     }
 
@@ -286,7 +286,7 @@ class AsciiStringReader implements IStringReader {
 
     /**
      * Can change or not the offset dependening from the $advanceOffset
-     * Changes the `matched` register
+     * Changes the `match` register
      * @param string $re
      * @param bool $advanceOffset If true the offset will be advanced.
      * @param bool $returnStr
@@ -296,24 +296,24 @@ class AsciiStringReader implements IStringReader {
      * @return string|int|null
      */
     protected function scan(string $re, bool $advanceOffset, bool $returnStr): string|int|null {
-        $matched = null;
-        if (preg_match($this->re($re), $this->input, $match, 0, $this->offsetInBytes())) {
-            $matched = $match[0];
+        $match = null;
+        if (preg_match($this->re($re), $this->input, $m, 0, $this->offsetInBytes())) {
+            $match = $m[0];
             if ($advanceOffset) {
                 $this->prevOffset = $this->offset;
-                $this->offset += $this->strlen($matched);
+                $this->offset += $this->strlen($match);
             }
         }
-        $this->matched = $matched;
-        $this->subgroups = null === $matched ? null : $match;
+        $this->match = $match;
+        $this->subgroups = null === $match ? null : $m;
         if ($returnStr) {
-            return $matched;
+            return $match;
         }
-        return $matched === null ? null : $this->strlen($matched);
+        return $match === null ? null : $this->strlen($match);
     }
 
     /**
-     * Reads the text until the pattern is matched. Can advance or not the offset. Modifies the `matched` register.
+     * Reads the text until the pattern is match. Can advance or not the offset. Modifies the `match` register.
      * Ruby methods:
      *     [scan_until()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-scan_until).
      *     [search_full()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-search_full).
@@ -325,25 +325,25 @@ class AsciiStringReader implements IStringReader {
      * @return string|int|null Depending from the $advanceOffset and $returnStr arguments the different result will be returned.
      */
     protected function scanUntil(string $re, bool $advanceOffset, bool $returnStr): string|int|null {
-        if (preg_match($this->re($re, false), $this->input, $match, PREG_OFFSET_CAPTURE, $this->offsetInBytes())) {
+        if (preg_match($this->re($re, false), $this->input, $m, PREG_OFFSET_CAPTURE, $this->offsetInBytes())) {
             $res = $this->substr(
                 $this->input,
                 $this->offset,
-                $match[0][1] - $this->offset + $this->strlen($match[0][0])
+                $m[0][1] - $this->offset + $this->strlen($m[0][0])
             );
             if ($advanceOffset) {
-                $this->prevOffset = $match[0][1];
+                $this->prevOffset = $m[0][1];
                 $this->offset += $this->strlen($res);
             }
-            $this->subgroups = array_column($match, 0);
-            $this->matched = $match[0][0];
+            $this->subgroups = array_column($m, 0);
+            $this->match = $m[0][0];
             if ($returnStr) {
                 return $res;
             }
             return $this->strlen($res);
         }
         $this->subgroups = null;
-        $this->matched = null;
+        $this->match = null;
         return null;
     }
 }

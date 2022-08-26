@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 /**
  * This file is part of morpho-os/framework
  * It is distributed under the 'Apache License Version 2.0' license.
@@ -15,7 +13,7 @@ namespace Morpho\Compiler\Frontend;
 interface IStringReader {
     /**
      * Sets the new input.
-     * Modifies: offset, matched, subgroups
+     * Modifies: offset, match, subgroups
      * Ruby method: [string=()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-string-3D).
      * @param string $input The new input string.
      * @return void
@@ -56,8 +54,8 @@ interface IStringReader {
     public function offsetInBytes(): int;
 
     /**
-     * Tests whether the given pattern is matched from the current scan pointer.
-     * Modifies: matched, subgroups
+     * Tests whether the given pattern is match from the current scan pointer.
+     * Modifies: match, subgroups
      * Ruby method: [match?()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-match-3F)
      * @param string $re Pattern (PCRE) to match.
      * @return int|null The length of the match, or null.
@@ -66,34 +64,34 @@ interface IStringReader {
 
     /**
      * Checks what `read()` will read.
-     * Modifes: matched, subgroups
+     * Modifes: match, subgroups
      * @param string $re Pattern (PCRE) to match.
-     * @return string|null The matched substring or null if there is no match.
+     * @return string|null The match substring or null if there is no match.
      */
     public function check(string $re): ?string;
 
     /**
      * Skips the matching bytes from the current offset.
-     * Modifies: offset, matched, subgroups
+     * Modifies: offset, match, subgroups
      * @param string $re Pattern (PCRE) to match.
-     * @return int|null The number of matched bytes or null in case of no matching.
+     * @return int|null The number of match bytes or null in case of no matching.
      */
     public function skip(string $re): ?int;
 
     /**
      * Reads the text (input) matching the pattern.
-     * Modifies: offset, matched, subgroups
+     * Modifies: offset, match, subgroups
      * Ruby methods:
      *     [scan()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-scan).
      *     [scan_full()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-scan_full)
      * @param string $re Pattern (PCRE) to match.
-     * @return string|null The matched substring or null if there is no match.
+     * @return string|null The match substring or null if there is no match.
      */
     public function read(string $re): string|null;
 
     /**
      * Looks ahead to see if the pattern exists anywhere in the string.
-     * Modifies: matched, subgroups
+     * Modifies: match, subgroups
      * Ruby method: [exist?()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-exist-3F).
      * @param string $re Pattern (PCRE) to match.
      * @return int|null
@@ -102,23 +100,23 @@ interface IStringReader {
 
     /**
      * Checks what `readUntil()` will read.
-     * Modifies: matched, sugroups
+     * Modifies: match, sugroups
      * @param string $re Pattern (PCRE) to match.
-     * @return string|null The matched substring from the current offset up to and including the end of the match or null otherwise.
+     * @return string|null The match substring from the current offset up to and including the end of the match or null otherwise.
      */
     public function checkUntil(string $re): ?string;
 
     /**
-     * Skips the text until the pattern is matched.
-     * Modifies, offset, matched, subgroups
+     * Skips the text until the pattern is match.
+     * Modifies, offset, match, subgroups
      * @param string $re Pattern (PCRE) to match.
      * @return int|null
      */
     public function skipUntil(string $re): ?int;
 
     /**
-     * Reads the text until the pattern is matched.
-     * Modifies: offset, matched, subgroups
+     * Reads the text until the pattern is match.
+     * Modifies: offset, match, subgroups
      * Ruby methods:
      *     [scan_until()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-scan_until).
      *     [search_full()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-search_full).
@@ -136,7 +134,7 @@ interface IStringReader {
 
     /**
      * Reads the next character.
-     * Modifies: charOffset, matched
+     * Modifies: charOffset, match
      * Ruby methods:
      *     * [getch()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-getch)
      * @return string|null
@@ -146,7 +144,7 @@ interface IStringReader {
 
     /**
      * Changes the offset to the previous one. Only one previous offset is remembered
-     * Modifies: offset, matched, subgroups
+     * Modifies: offset, match, subgroups
      * Ruby method: [unscan()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-unscan).
      * @return void
      */
@@ -154,13 +152,13 @@ interface IStringReader {
 
     /**
      * Sets the offset to the end of the string.
-     * Modifies: offset, matched, subgroups
+     * Modifies: offset, match, subgroups
      */
     public function terminate(): void;
 
     /**
      * Resets the offset to 0.
-     * Modifies: offset, matched, subgroups
+     * Modifies: offset, match, subgroups
      * @return void
      */
     public function reset(): void;
@@ -180,26 +178,26 @@ interface IStringReader {
     public function isEnd(): bool;
 
     /**
-     * Returns the `matched` register: the last matched string.
+     * Returns the `match` register: the last match string.
      * @return string|null
      */
-    public function matched(): ?string;
+    public function match(): ?string;
 
     /**
-     * Returns size of `matched` register in chars.
+     * Returns size of `match` register in characters.
      * Ruby method: [matched_size()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-matched_size)
      * @return int|null
      */
-    public function matchedSize(): ?int;
+    public function matchLen(): ?int;
 
     /**
-     * Returns the part of input string before the `matched` register.
+     * Returns the part of input string before the `match` register.
      * @return string|null
      */
     public function preMatch(): ?string;
 
     /**
-     * Returns the part of input string after the `matched` register.
+     * Returns the part of input string after the `match` register.
      * @return string|null
      */
     public function postMatch(): ?string;
@@ -224,7 +222,7 @@ interface IStringReader {
      * Ruby method:[rest_size()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-rest_size)
      * @return int
      */
-    public function restSize(): int;
+    public function restLen(): int;
 
     public function isAnchored(): bool;
 }
