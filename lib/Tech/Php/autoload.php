@@ -31,14 +31,9 @@ namespace {
 }
 
 namespace Morpho\Tech\Php {
-    // Matches single-line and multi-line C-style comments:
-    const C_COMMENTS_RE = '\/\*[\s\S]*?\*\/|\/\/.*'; // https://stackoverflow.com/a/59094308
-    const C_COMMENTS_FULL_RE = '~\/\*[\s\S]*?\*\/|\/\/.*~m'; // https://stackoverflow.com/a/59094308
-
     require_once __DIR__ . '/PhpErrorException.php';
 
     const LICENSE_COMMENT = "/**\n * This file is part of morpho-os/framework\n * It is distributed under the 'Apache License Version 2.0' license.\n * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.\n */";
-    const PHP_SHEBANG_FULL_RE = '~^#!/usr/bin/env\\s+php$~';
 
     use Composer\Autoload\ClassLoader;
     use PhpParser\Node;

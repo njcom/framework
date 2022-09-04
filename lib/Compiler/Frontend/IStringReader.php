@@ -54,15 +54,6 @@ interface IStringReader {
     public function offsetInBytes(): int;
 
     /**
-     * Tests whether the given pattern is match from the current scan pointer.
-     * Modifies: match, subgroups
-     * Ruby method: [match?()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-match-3F)
-     * @param string $re Pattern (PCRE) to match.
-     * @return int|null The length of the match, or null.
-     */
-    public function look(string $re): ?int;
-
-    /**
      * Checks what `read()` will read.
      * Modifes: match, subgroups
      * @param string $re Pattern (PCRE) to match.
@@ -71,12 +62,12 @@ interface IStringReader {
     public function check(string $re): ?string;
 
     /**
-     * Skips the matching bytes from the current offset.
-     * Modifies: offset, match, subgroups
+     * Checks what `readUntil()` will read.
+     * Modifies: match, sugroups
      * @param string $re Pattern (PCRE) to match.
-     * @return int|null The number of match bytes or null in case of no matching.
+     * @return string|null The match substring from the current offset up to and including the end of the match or null otherwise.
      */
-    public function skip(string $re): ?int;
+    public function checkUntil(string $re): ?string;
 
     /**
      * Reads the text (input) matching the pattern.
@@ -90,31 +81,6 @@ interface IStringReader {
     public function read(string $re): string|null;
 
     /**
-     * Looks ahead to see if the pattern exists anywhere in the string.
-     * Modifies: match, subgroups
-     * Ruby method: [exist?()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-exist-3F).
-     * @param string $re Pattern (PCRE) to match.
-     * @return int|null
-     */
-    public function lookUntil(string $re): ?int;
-
-    /**
-     * Checks what `readUntil()` will read.
-     * Modifies: match, sugroups
-     * @param string $re Pattern (PCRE) to match.
-     * @return string|null The match substring from the current offset up to and including the end of the match or null otherwise.
-     */
-    public function checkUntil(string $re): ?string;
-
-    /**
-     * Skips the text until the pattern is match.
-     * Modifies, offset, match, subgroups
-     * @param string $re Pattern (PCRE) to match.
-     * @return int|null
-     */
-    public function skipUntil(string $re): ?int;
-
-    /**
      * Reads the text until the pattern is match.
      * Modifies: offset, match, subgroups
      * Ruby methods:
@@ -124,6 +90,40 @@ interface IStringReader {
      * @return string|null
      */
     public function readUntil(string $re): string|null;
+
+    /**
+     * Tests whether the given pattern is match from the current scan pointer.
+     * Modifies: match, subgroups
+     * Ruby method: [match?()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-match-3F)
+     * @param string $re Pattern (PCRE) to match.
+     * @return int|null The length of the match, or null.
+     */
+    public function look(string $re): ?int;
+
+    /**
+     * Looks ahead to see if the pattern exists anywhere in the string.
+     * Modifies: match, subgroups
+     * Ruby method: [exist?()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-exist-3F).
+     * @param string $re Pattern (PCRE) to match.
+     * @return int|null
+     */
+    public function lookUntil(string $re): ?int;
+
+    /**
+     * Skips the matching bytes from the current offset.
+     * Modifies: offset, match, subgroups
+     * @param string $re Pattern (PCRE) to match.
+     * @return int|null The number of match bytes or null in case of no matching.
+     */
+    public function skip(string $re): ?int;
+
+    /**
+     * Skips the text until the pattern is match.
+     * Modifies, offset, match, subgroups
+     * @param string $re Pattern (PCRE) to match.
+     * @return int|null
+     */
+    public function skipUntil(string $re): ?int;
 
     /**
      * Returns a string with length $n from the current offset.

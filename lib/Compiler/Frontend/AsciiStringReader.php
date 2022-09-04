@@ -70,38 +70,10 @@ class AsciiStringReader implements IStringReader {
     }
 
     /**
-     * @see IStringReader::look()
-     */
-    public function look(string $re): ?int {
-        return $this->scan($re, false, false);
-    }
-
-    /**
      * @see IStringReader::check()
      */
     public function check(string $re): ?string {
         return $this->scan($re, false, true);
-    }
-
-    /**
-     * @see IStringReader::skip()
-     */
-    public function skip(string $re): ?int {
-        return $this->scan($re, true, false);
-    }
-
-    /**
-     * @see IStringReader::read()
-     */
-    public function read(string $re): string|null {
-        return $this->scan($re, true, true);
-    }
-
-    /**
-     * @see IStringReader::lookUntil()
-     */
-    public function lookUntil(string $re): ?int {
-        return $this->scanUntil($re, false, false);
     }
 
     /**
@@ -112,10 +84,10 @@ class AsciiStringReader implements IStringReader {
     }
 
     /**
-     * @see IStringReader::skipUntil()
+     * @see IStringReader::read()
      */
-    public function skipUntil(string $re): ?int {
-        return $this->scanUntil($re, true, false);
+    public function read(string $re): string|null {
+        return $this->scan($re, true, true);
     }
 
     /**
@@ -123,6 +95,34 @@ class AsciiStringReader implements IStringReader {
      */
     public function readUntil(string $re): null|string {
         return $this->scanUntil($re, true, true);
+    }
+
+    /**
+     * @see IStringReader::look()
+     */
+    public function look(string $re): ?int {
+        return $this->scan($re, false, false);
+    }
+
+    /**
+     * @see IStringReader::lookUntil()
+     */
+    public function lookUntil(string $re): ?int {
+        return $this->scanUntil($re, false, false);
+    }
+
+    /**
+     * @see IStringReader::skip()
+     */
+    public function skip(string $re): ?int {
+        return $this->scan($re, true, false);
+    }
+
+    /**
+     * @see IStringReader::skipUntil()
+     */
+    public function skipUntil(string $re): ?int {
+        return $this->scanUntil($re, true, false);
     }
 
     /**
@@ -293,7 +293,6 @@ class AsciiStringReader implements IStringReader {
      *     If true then string will be returned if there is a match, if there is no match the null will be returned.
      *     If false then int will be returned if there is a match, if there is no match the null will be returned.
      * @return string|int|null Depending from the $advanceOffset and $returnStr arguments the different result will be returned.
-     * @return string|int|null
      */
     protected function scan(string $re, bool $advanceOffset, bool $returnStr): string|int|null {
         $match = null;
