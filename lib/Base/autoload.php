@@ -116,6 +116,47 @@ function enumVals(string $enumName, bool $preserveNames = true): array {
     return $vals;
 }
 
+function showLn(string|Stringable|iterable|int|float $text = null): void {
+    if (null === $text) {
+        echo "\n";
+    } else {
+        if (is_scalar($text) || $text instanceof Stringable) {
+            echo (string) $text . "\n";
+        } else {
+            foreach ($text as $line) {
+                echo $line . "\n";
+            }
+        }
+    }
+}
+
+function lines(string|Stringable|iterable $text, bool $filterEmpty = true, bool $trim = true): Traversable {
+    if (!is_iterable($text)) {
+        $text = (string)$text;
+        if ($text === '') {
+            return;
+        }
+        $text = preg_split(EOL_FULL_RE, $text, -1, $filterEmpty ? PREG_SPLIT_NO_EMPTY : 0);
+    }
+    foreach ($text as $line) {
+        if ($trim) {
+            $line = trim($line);
+        }
+        if ($filterEmpty && $line === '') {
+            continue;
+        }
+        yield $line;
+    }
+}
+
+function partial(callable $fn, ...$args1): Closure {
+    return function (...$args2) use ($fn, $args1) {
+        return $fn(...array_merge($args1, $args2));
+    };
+}
+
+// todo: review functions below #12
+
 /**
  * @psalm-param callable(mixed, mixed): bool $predicate
  * @psalm-param List $list
@@ -146,9 +187,6 @@ function toIt(iterable|string|Stringable $list): iterable {
     return mb_str_split($list);
 }
 
-
-// todo: review functions below #12
-
 function e(string|Stringable|int|float $s): string {
     return htmlspecialchars((string)$s, ENT_QUOTES);
 }
@@ -157,19 +195,6 @@ function de(string|Stringable|int|float $s): string {
     return htmlspecialchars_decode((string)$s, ENT_QUOTES);
 }
 
-function showLn(string|Stringable|iterable|int|float $text = null): void {
-    if (null === $text) {
-        echo "\n";
-    } else {
-        if (is_scalar($text) || $text instanceof Stringable) {
-            echo (string) $text . "\n";
-        } else {
-            foreach ($text as $line) {
-                echo $line . "\n";
-            }
-        }
-    }
-}
 
 function showOk(string|Stringable $msg = null): void {
     showLn('OK' . (null !== $msg ? ': ' . $msg : ''));
@@ -180,7 +205,7 @@ function showOk(string|Stringable $msg = null): void {
  * @param mixed       $val Will be passed to IFn::__invoke()
  * @return mixed
  */
-function using(IDisposable $disposable, $val = null) {
+function using(IDisposable $disposable, mixed $val = null): mixed {
     try {
         $result = $disposable($val);
     } finally {
@@ -540,24 +565,6 @@ function lastPos(string $haystack, string $needle, int $offset = 0) {
     return mb_strrpos($haystack, $needle, $offset);
 }
 
-/**
- * The name is taken from the `lines` function in Haskell.
- */
-function lines(string|Stringable $text, bool $filterEmpty = true, bool $trim = true): Traversable {
-    $text = (string)$text;
-    if ($text === '') {
-        return [];
-    }
-    foreach (preg_split(EOL_FULL_RE, $text, -1, $filterEmpty ? PREG_SPLIT_NO_EMPTY : 0) as $line) {
-        if ($trim) {
-            $line = trim($line);
-        }
-        if ($filterEmpty && $line === '') {
-            continue;
-        }
-        yield $line;
-    }
-}
 
 function capture(callable $fn): string {
     ob_start();
@@ -684,12 +691,6 @@ function op(string $operator, $arg = null): Closure {
 function not(callable $predicateFn): Closure {
     return function (...$args) use ($predicateFn) {
         return !$predicateFn(...$args);
-    };
-}
-
-function partial(callable $fn, ...$args1): Closure {
-    return function (...$args2) use ($fn, $args1) {
-        return $fn(...array_merge($args1, $args2));
     };
 }
 
@@ -1106,24 +1107,32 @@ function tail($list, string $separator = null) {
 /**
  * @return string|Generator|array
  */
-function map(callable $fn, $iter) {
-    if (is_string($iter)) {
-        if ($iter !== '') {
+function map(callable $fn, $it, bool $passKey = false) {
+    if (is_string($it)) {
+        // @TODO: Handle strings
+        if ($it !== '') {
             throw new NotImplementedException();
         }
         return '';
     }
-    if (is_array($iter)) {
+    if (is_array($it)) {
         $newArr = [];
-        foreach ($iter as $k => $v) {
-            $newArr[$k] = $fn($v, $k);
+        foreach ($it as $k => $v) {
+            if ($passKey) {
+                $newArr[$k] = $fn($v, $k);
+            } else {
+                $newArr[$k] = $fn($v);
+            }
         }
         return $newArr;
     }
-    // @TODO: Handle strings
-    return (function () use ($fn, $iter) {
-        foreach ($iter as $k => $v) {
-            yield $k => $fn($v, $k);
+    return (function () use ($fn, $it, $passKey) {
+        foreach ($it as $k => $v) {
+            if ($passKey) {
+                yield $k => $fn($v, $k);
+            } else {
+                yield $k => $fn($v);
+            }
         }
     })();
 }

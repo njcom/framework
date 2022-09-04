@@ -214,6 +214,10 @@ class FunctionsTest extends TestCase {
         })));
     }
 
+    public function testLines_AcceptsIterable() {
+        $this->assertSame(['foo', 'bar', 'baz'], iterator_to_array(lines(['foo', '  bar', '', 'baz'])));
+    }
+
     public function testWaitUntilNoOfAttempts_PredicateReturnsTrueOnSomeIteration() {
         $called = 0;
         $predicate = function () use (&$called) {

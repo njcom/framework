@@ -32,10 +32,7 @@ class EventManager implements IEventManager {
         }
     }
 
-    /**
-     * @return mixed
-     */
-    public function trigger(Event $event) {
+    public function trigger(Event $event): mixed {
         $name = $event->name;
         if (isset($this->handlers[$name])) {
             foreach ($this->handlers[$name] as $handler) {
