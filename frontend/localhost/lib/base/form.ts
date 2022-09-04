@@ -92,7 +92,7 @@ export enum FieldType {
 
 export const elChangeEvents = 'keyup blur change paste cut';
 
-export class Form<FormConf = WidgetConf> extends Widget<FormConf> {
+export class Form<FormConf extends WidgetConf = WidgetConf> extends Widget<FormConf> {
     public static readonly defaultInvalidCssClass: string = 'invalid';
     public skipValidation!: boolean;
     public elContainerCssClass!: string;
