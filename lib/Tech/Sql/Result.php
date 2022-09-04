@@ -15,11 +15,19 @@ class Result extends PDOStatement implements Countable {
     protected function __construct() {
     }
 
-    public function rows(): array {
-        return $this->fetchAll(PDO::FETCH_ASSOC);
+    /**
+     * @param int $mode PDO::FETCH_ASSOC | PDO::FETCH_NUM | PDO::FETCH_BOTH | PDO::FETCH_NAMED
+     * @return array
+     */
+    public function rows(int $mode = PDO::FETCH_ASSOC): array {
+        return $this->fetchAll($mode);
     }
 
-    public function row(): array|false {
+    /**
+     * @param int $mode PDO::FETCH_ASSOC | PDO::FETCH_NUM | PDO::FETCH_BOTH | PDO::FETCH_NAMED
+     * @return array|false
+     */
+    public function row(int $mode = PDO::FETCH_ASSOC): array|false {
         return $this->fetch(PDO::FETCH_ASSOC);
     }
 

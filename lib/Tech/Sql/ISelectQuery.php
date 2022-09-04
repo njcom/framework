@@ -7,4 +7,25 @@
 namespace Morpho\Tech\Sql;
 
 interface ISelectQuery extends IQuery {
+    public function columns(array|Expr|string $columns): static;
+
+    public function sql(): string;
+
+    public function into(): static;
+
+    public function union(): static;
+
+    public function leftJoin(string|Expr $sql): static;
+
+    public function innerJoin(string|Expr $sql): static;
+
+    public function rightJoin(string|Expr $sql): static;
+
+    public function groupBy(string|Expr $sql): static;
+
+    public function having(string|Expr $sql): static;
+
+    public function orderBy(string|Expr|array $orderBy): static;
+
+    public function limit(int $numOfRows, int $offset = null): static;
 }
