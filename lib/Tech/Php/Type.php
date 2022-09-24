@@ -31,7 +31,7 @@ enum Type: string {
         TClassOrInterfaceOrEnum: ClassName | InterfaceName | EnumName (>= 8.1)
             Any class and interface name.
 
-        TProperty: int | float | bool | string | array | object | iterable | self | parent | mixed | TClassOrInterfaceOrEnum | TUnion | TNullable
+        TProperty: TScalar | array | object | iterable | self | parent | mixed | TClassOrInterfaceOrEnum | TUnion | TNullable
             Can be used in class definition as property type hint.
             object: contains TClassOrInterfaceOrEnum
             mixed: contains null, but null can't e used as standalone type hint here
@@ -42,7 +42,7 @@ enum Type: string {
         TReturn: TParam | void | never (>= 8.1)
             Can be used in function definition as return type hint.
 
-        TScalar: int | float | bool | string | null
+        TScalar: int | float | bool | string
             Scalar type.
 
         TUnion: TPropery
@@ -93,7 +93,7 @@ enum Type: string {
     case Float = 'float';       // in TProperty, TParam, TReturn, TScalar, TNullable
     case Bool = 'bool';        // in TProperty, TParam, TReturn, TScalar, TNullable
     case String = 'string';      // in TProperty, TParam, TReturn, TScalar, TNullable
-    case Null = 'null';        // in TScalar
+    case Null = 'null';        // in TNullable
     case Array = 'array';       // in TProperty, TParam, TReturn, TUnion, TNullable
     case Resource = 'resource';    // in TSpecial
     case Object = 'object';      // in TProperty, TParam, TReturn, TUnion, TNullable
