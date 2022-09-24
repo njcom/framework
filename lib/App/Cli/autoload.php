@@ -295,11 +295,6 @@ function askYesNo(string $question): bool {
     } while (true);
 }
 
-function askYesNoDialog(string $question): bool {
-    $res = sh('dialog --stdout --yesno ' . escapeshellarg($question) . ' 0 0', ['check' => false, 'capture' => true]);
-    return !$res->isError();
-}
-
 function stdOutIsTerminal(): bool {
     return posix_isatty(STDOUT);
 }

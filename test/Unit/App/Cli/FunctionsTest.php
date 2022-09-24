@@ -159,7 +159,7 @@ OUT
         envVarsStr(['&']);
     }
 
-    public function testAskYesNo() {
+    public function testAskYes() {
         $tmpFilePath = $this->createTmpFile();
         $autoloadFilePath = BASE_DIR_PATH . '/vendor/autoload.php';
         $question = "Do you want to play";

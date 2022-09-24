@@ -9,7 +9,15 @@ namespace Morpho\Test\Manual;
 use ErrorException;
 use RuntimeException;
 
+use function error_reporting;
 use function ini_get;
+
+use function ini_set;
+use function set_error_handler;
+
+use const ASSERT_ACTIVE;
+use const ASSERT_BAIL;
+use const ASSERT_CALLBACK;
 
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
@@ -30,7 +38,6 @@ assert_options(
     false
 );   // issue a PHP warning for each failed assertion, handled by the ASSERT_CALLBACK
 assert_options(ASSERT_BAIL, false);      // terminate execution on failed assertions, handled by the ASSERT_CALLBACK
-assert_options(ASSERT_QUIET_EVAL, true); // disable error_reporting during assertion expression evaluation
 assert_options(                          // callback to call on failed assertions
     ASSERT_CALLBACK,
     function (string $filePath, int $lineNo, string $assertionExpr, string $description = null) {

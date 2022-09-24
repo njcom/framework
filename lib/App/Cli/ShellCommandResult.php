@@ -7,19 +7,9 @@
 namespace Morpho\App\Cli;
 
 class ShellCommandResult extends CommandResult {
-    /**
-     * @var string
-     */
-    protected $stdOut;
-    /**
-     * @var string
-     */
-    protected $stdErr;
-
-    /**
-     * @var string
-     */
-    protected $command;
+    protected string $stdOut;
+    protected string $stdErr;
+    protected string $command;
 
     public function __construct(string $command, int $exitCode, string $stdOut, string $stdErr) {
         parent::__construct($exitCode);
