@@ -24,8 +24,11 @@ class PegTest extends TestCase {
     }
 
     public function testInvoke() {
-        $context = ['grammar' => new Grammar()];
-        $result = $this->peg->__invoke($context);
+        //$context = ['grammar' => new Grammar()];
+        $grammar = <<<OUT
+
+OUT;
+        $result = $this->peg->__invoke($grammar);
         $this->assertNotEmpty($result); // todo
     }
 }

@@ -49,13 +49,6 @@ class AsciiStringReader implements IStringReader {
     }
 
     /**
-     * @see IStringReader::setOffset()
-     */
-    public function setOffset(int $offset): void {
-        $this->offset = $offset;
-    }
-
-    /**
      * @see IStringReader::offset()
      */
     public function offset(): int {
@@ -70,17 +63,31 @@ class AsciiStringReader implements IStringReader {
     }
 
     /**
-     * @see IStringReader::check()
+     * @see IStringReader::look()
      */
-    public function check(string $re): ?string {
+    public function look(string $re): ?string {
         return $this->scan($re, false, true);
     }
 
     /**
-     * @see IStringReader::checkUntil()
+     * @see IStringReader::lookUntil()
      */
-    public function checkUntil(string $re): ?string {
+    public function lookUntil(string $re): ?string {
         return $this->scanUntil($re, false, true);
+    }
+
+    /**
+     * @see IStringReader::lookN()
+     */
+    public function lookN(string $re): ?int {
+        return $this->scan($re, false, false);
+    }
+
+    /**
+     * @see IStringReader::lookNUntil()
+     */
+    public function lookNUntil(string $re): ?int {
+        return $this->scanUntil($re, false, false);
     }
 
     /**
@@ -98,30 +105,16 @@ class AsciiStringReader implements IStringReader {
     }
 
     /**
-     * @see IStringReader::look()
+     * @see IStringReader::readN()
      */
-    public function look(string $re): ?int {
-        return $this->scan($re, false, false);
-    }
-
-    /**
-     * @see IStringReader::lookUntil()
-     */
-    public function lookUntil(string $re): ?int {
-        return $this->scanUntil($re, false, false);
-    }
-
-    /**
-     * @see IStringReader::skip()
-     */
-    public function skip(string $re): ?int {
+    public function readN(string $re): ?int {
         return $this->scan($re, true, false);
     }
 
     /**
-     * @see IStringReader::skipUntil()
+     * @see IStringReader::readNUntil()
      */
-    public function skipUntil(string $re): ?int {
+    public function readNUntil(string $re): ?int {
         return $this->scanUntil($re, true, false);
     }
 

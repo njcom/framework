@@ -9,8 +9,10 @@ namespace Morpho\Compiler\Frontend;
 class Re {
     public const WHITESPACES = '\\s+';
     //public const WHITESPACES_FULL = '~\\s+~s';
+    public const NOT_WHITESPACES = '\\S+';
 
     public const SINGLE_QUOTED = "'((?:[^'\\\\]|\\\\.)*)'";
+
     public const DOUBLE_QUOTED = '"((?:[^"\\\\]|\\\\.)*)"';
 
     // Matches single-line and multi-line C-style comments (https://stackoverflow.com/a/59094308):

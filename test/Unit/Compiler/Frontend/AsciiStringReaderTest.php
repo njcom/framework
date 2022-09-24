@@ -80,77 +80,73 @@ class AsciiStringReaderTest extends TestCase {
         $reader->terminate();
 
         $this->assertSame(11, $reader->offset());
+    }
 
-        /** @noinspection PhpVoidFunctionResultUsedInspection */
-        $this->assertVoid($reader->setOffset(7));
-        $this->assertSame('ring', $reader->rest());
+    public function testLookN() {
+        $reader = $this->mkReader("test string");
+
+        $this->assertSame(4, $reader->lookN('/\w+/'));
+        $this->checkState($reader, 0, 'test', ['test']);
+
+        $this->assertSame(4, $reader->lookN('/\w+/'));
+        $this->checkState($reader, 0, 'test', ['test']);
+
+        $this->assertNull($reader->lookN('/\s+/'));
+        $this->checkState($reader, 0, null, null);
     }
 
     public function testLook() {
-        $reader = $this->mkReader("test string");
-
-        $this->assertSame(4, $reader->look('/\w+/'));
-        $this->checkState($reader, 0, 'test', ['test']);
-
-        $this->assertSame(4, $reader->look('/\w+/'));
-        $this->checkState($reader, 0, 'test', ['test']);
-
-        $this->assertNull($reader->look('/\s+/'));
-        $this->checkState($reader, 0, null, null);
-    }
-
-    public function testCheck() {
         $reader = $this->mkReader("Foo Bar Baz");
 
-        $this->assertSame("Foo", $reader->check('/Foo/'));
+        $this->assertSame("Foo", $reader->look('/Foo/'));
         $this->checkState($reader, 0, 'Foo', ['Foo']);
 
-        $this->assertNull($reader->check('/Bar/'));
+        $this->assertNull($reader->look('/Bar/'));
         $this->checkState($reader, 0, null, null);
     }
 
-    public function testSkip() {
+    public function testReadN() {
         $reader = $this->mkReader('stra strb strc');
 
-        $this->assertSame(4, $reader->skip('/\w+/'));
+        $this->assertSame(4, $reader->readN('/\w+/'));
         $this->checkState($reader, 4, 'stra', ['stra']);
 
-        $this->assertSame(1, $reader->skip('/\s+/'));
+        $this->assertSame(1, $reader->readN('/\s+/'));
         $this->checkState($reader, 5, ' ', [' ']);
 
-        $this->assertSame(4, $reader->skip('/\w+/'));
+        $this->assertSame(4, $reader->readN('/\w+/'));
         $this->checkState($reader, 9, 'strb', ['strb']);
 
-        $this->assertSame(1, $reader->skip('/\s+/'));
+        $this->assertSame(1, $reader->readN('/\s+/'));
 
-        $this->assertSame(4, $reader->skip('/\w+/'));
+        $this->assertSame(4, $reader->readN('/\w+/'));
         $this->checkState($reader, 14, 'strc', ['strc']);
 
-        $this->assertNull($reader->skip('/\w+/'));
+        $this->assertNull($reader->readN('/\w+/'));
         $this->checkState($reader, 14, null, null);
 
-        $this->assertNull($reader->skip('/\s+/'));
+        $this->assertNull($reader->readN('/\s+/'));
         $this->checkState($reader, 14, null, null);
 
         $this->assertTrue($reader->isEnd());
         $this->checkState($reader, 14, null, null);
     }
 
-    public function testSkip_EmptyStr() {
+    public function testReadN_EmptyStr() {
         $reader = $this->mkReader("");
 
-        $this->assertSame(0, $reader->skip('//'));
+        $this->assertSame(0, $reader->readN('//'));
         $this->checkState($reader, 0, '', ['']);
 
-        $this->assertSame(0, $reader->skip('//'));
+        $this->assertSame(0, $reader->readN('//'));
         $this->checkState($reader, 0, '', ['']);
     }
 
-    public function testSkip_MultiLineModifier() {
+    public function testReadN_MultiLineModifier() {
         $reader = $this->mkReader("a\nbc");
-        $this->assertSame(2, $reader->skip('/a\n/m'));
-        $this->assertSame(1, $reader->skip('/^b/m'));
-        $this->assertSame(1, $reader->skip('/c/'));
+        $this->assertSame(2, $reader->readN('/a\n/m'));
+        $this->assertSame(1, $reader->readN('/^b/m'));
+        $this->assertSame(1, $reader->readN('/c/'));
     }
 
     public function testRead() {
@@ -185,61 +181,61 @@ class AsciiStringReaderTest extends TestCase {
 
     public function testAllReadMethods() {
         $reader = $this->mkReader("Foo Bar Baz");
-        $this->assertSame(4, $reader->look('/Foo /'));
+        $this->assertSame(4, $reader->lookN('/Foo /'));
+        $this->assertSame(0, $reader->offset());
+        $this->assertNull($reader->lookN('/Baz/'));
+
+        $this->assertSame("Foo ", $reader->look('/Foo /'));
         $this->assertSame(0, $reader->offset());
         $this->assertNull($reader->look('/Baz/'));
 
-        $this->assertSame("Foo ", $reader->check('/Foo /'));
-        $this->assertSame(0, $reader->offset());
-        $this->assertNull($reader->check('/Baz/'));
-
-        $this->assertSame(4, $reader->skip('/Foo /'));
+        $this->assertSame(4, $reader->readN('/Foo /'));
         $this->assertSame(4, $reader->offset());
 
-        $this->assertNull($reader->look('/Baz /'));
+        $this->assertNull($reader->lookN('/Baz /'));
         $this->assertSame("Bar ", $reader->read('/Bar /'));
 
         $this->assertSame(8, $reader->offset());
-        $this->assertNull($reader->look('/az/'));
+        $this->assertNull($reader->lookN('/az/'));
     }
 
-    public function testLookUntil() {
+    public function testLookNUntil() {
         $reader = $this->mkReader("test string");
 
-        $this->assertSame(3, $reader->lookUntil('/s/'));
+        $this->assertSame(3, $reader->lookNUntil('/s/'));
         $this->checkState($reader, 0, 's', ['s']);
 
         $reader->read('/test/');
 
-        $this->assertSame(2, $reader->lookUntil('/s/'));
+        $this->assertSame(2, $reader->lookNUntil('/s/'));
         $this->checkState($reader, 4, 's', ['s']);
 
-        $this->assertNull($reader->lookUntil('/e/'));
+        $this->assertNull($reader->lookNUntil('/e/'));
         $this->checkState($reader, 4, null, null);
     }
 
-    public function testCheckUntil() {
+    public function testLookUntil() {
         $reader = $this->mkReader("Foo Bar Baz");
-        $this->assertSame("Foo", $reader->checkUntil('/Foo/'));
+        $this->assertSame("Foo", $reader->lookUntil('/Foo/'));
         $this->checkState($reader, 0, 'Foo', ['Foo']);
 
-        $this->assertSame("Foo Bar", $reader->checkUntil('/Bar/'));
+        $this->assertSame("Foo Bar", $reader->lookUntil('/Bar/'));
         $this->checkState($reader, 0, 'Bar', ['Bar']);
 
-        $this->assertNull($reader->checkUntil('/Qux/'));
+        $this->assertNull($reader->lookUntil('/Qux/'));
         $this->checkState($reader, 0, null, null);
     }
 
-    public function testSkipUntil() {
+    public function testReadNUntil() {
         $reader = $this->mkReader("Foo Bar Baz");
 
-        $this->assertSame(3, $reader->skipUntil('/Foo/'));
+        $this->assertSame(3, $reader->readNUntil('/Foo/'));
         $this->checkState($reader, 3, 'Foo', ['Foo']);
 
-        $this->assertSame(4, $reader->skipUntil('/Bar/'));
+        $this->assertSame(4, $reader->readNUntil('/Bar/'));
         $this->checkState($reader, 7, 'Bar', ['Bar']);
 
-        $this->assertNull($reader->skipUntil('/Qux/'));
+        $this->assertNull($reader->readNUntil('/Qux/'));
         $this->checkState($reader, 7, null, null);
     }
 
@@ -263,13 +259,13 @@ class AsciiStringReaderTest extends TestCase {
     public function testAllReadUntilMethods() {
         $reader = $this->mkReader("Foo Bar Baz");
 
-        $this->assertSame(8, $reader->lookUntil('/Bar /'));
+        $this->assertSame(8, $reader->lookNUntil('/Bar /'));
         $this->checkState($reader, 0, 'Bar ', ['Bar ']);
 
-        $this->assertSame("Foo Bar ", $reader->checkUntil('/Bar /'));
+        $this->assertSame("Foo Bar ", $reader->lookUntil('/Bar /'));
         $this->checkState($reader, 0, 'Bar ', ['Bar ']);
 
-        $this->assertSame(8, $reader->skipUntil('/Bar /'));
+        $this->assertSame(8, $reader->readNUntil('/Bar /'));
         $this->checkState($reader, 8, 'Bar ', ['Bar ']);
 
         $this->assertSame("Baz", $reader->readUntil('/az/'));
@@ -521,7 +517,7 @@ class AsciiStringReaderTest extends TestCase {
         $this->assertNull($reader->match());
 
         $reader = $this->mkReader('abc');
-        $reader->skip('/./');
+        $reader->readN('/./');
         $this->assertSame('a', $reader->match());
     }
 
@@ -560,7 +556,7 @@ class AsciiStringReaderTest extends TestCase {
         $reader->read('/\w/');
         $this->assertSame('', $reader->preMatch());
 
-        $reader->skip('/\s/');
+        $reader->readN('/\s/');
         $this->assertSame('a', $reader->preMatch());
 
         $reader->read('/b/');
@@ -588,7 +584,7 @@ class AsciiStringReaderTest extends TestCase {
         $reader->read('/\w/');
         $this->assertSame(' b c d e', $reader->postMatch());
 
-        $reader->skip('/\s/');
+        $reader->readN('/\s/');
         $this->assertSame('b c d e', $reader->postMatch());
 
         $reader->read('/b/');

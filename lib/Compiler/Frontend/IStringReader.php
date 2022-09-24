@@ -34,13 +34,6 @@ interface IStringReader {
     public function concat(string $input): void;
 
     /**
-     * Sets the new offset (modifies it) in characters.
-     * @param int $offset The new offset in characters.
-     * @return void
-     */
-    public function setOffset(int $offset): void;
-
-    /**
      * Returns the current offset in characters.
      * @return int The current offset in characters.
      */
@@ -54,20 +47,37 @@ interface IStringReader {
     public function offsetInBytes(): int;
 
     /**
-     * Checks what `read()` will read.
+     * Looks what `read()` will read.
      * Modifes: match, subgroups
      * @param string $re Pattern (PCRE) to match.
      * @return string|null The match substring or null if there is no match.
      */
-    public function check(string $re): ?string;
+    public function look(string $re): ?string;
 
     /**
-     * Checks what `readUntil()` will read.
+     * Looks what `readUntil()` will read.
      * Modifies: match, sugroups
      * @param string $re Pattern (PCRE) to match.
      * @return string|null The match substring from the current offset up to and including the end of the match or null otherwise.
      */
-    public function checkUntil(string $re): ?string;
+    public function lookUntil(string $re): ?string;
+
+    /**
+     * Works like look(), but returns the lenght of match (integer) instead of string.
+     * Ruby method: [match?()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-match-3F)
+     * @param string $re Pattern (PCRE) to match.
+     * @return int|null The length of the match, or null.
+     */
+    public function lookN(string $re): ?int;
+
+    /**
+     * Works like lookUntil(), but returns the length of match (integer) instead of string.
+     * Modifies: match, subgroups
+     * Ruby method: [exist?()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-exist-3F).
+     * @param string $re Pattern (PCRE) to match.
+     * @return int|null
+     */
+    public function lookNUntil(string $re): ?int;
 
     /**
      * Reads the text (input) matching the pattern.
@@ -92,38 +102,20 @@ interface IStringReader {
     public function readUntil(string $re): string|null;
 
     /**
-     * Tests whether the given pattern is match from the current scan pointer.
-     * Modifies: match, subgroups
-     * Ruby method: [match?()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-match-3F)
-     * @param string $re Pattern (PCRE) to match.
-     * @return int|null The length of the match, or null.
-     */
-    public function look(string $re): ?int;
-
-    /**
-     * Looks ahead to see if the pattern exists anywhere in the string.
-     * Modifies: match, subgroups
-     * Ruby method: [exist?()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-exist-3F).
-     * @param string $re Pattern (PCRE) to match.
-     * @return int|null
-     */
-    public function lookUntil(string $re): ?int;
-
-    /**
-     * Skips the matching bytes from the current offset.
+     * Works like read(), but returns the length of the match (integer) instead of string.
      * Modifies: offset, match, subgroups
      * @param string $re Pattern (PCRE) to match.
-     * @return int|null The number of match bytes or null in case of no matching.
+     * @return int|null The number of matched characters or null in case of no matching.
      */
-    public function skip(string $re): ?int;
+    public function readN(string $re): ?int;
 
     /**
-     * Skips the text until the pattern is match.
+     * Works like readUntil(), but returns the length of the match (integer) instead of string.
      * Modifies, offset, match, subgroups
      * @param string $re Pattern (PCRE) to match.
      * @return int|null
      */
-    public function skipUntil(string $re): ?int;
+    public function readNUntil(string $re): ?int;
 
     /**
      * Returns a string with length $n from the current offset.
@@ -164,14 +156,14 @@ interface IStringReader {
     public function reset(): void;
 
     /**
-     * Check either the current offset is at the start of any line.
+     * Look either the current offset is at the start of any line.
      * Ruby method: [beginning_of_line()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-beginning_of_line-3F).
      * @return bool `true` If the offset is at the start of any line.
      */
     public function isLineStart(): bool;
 
     /**
-     * Checks either the current offset is >= the current input string length or not.
+     * Looks either the current offset is >= the current input string length or not.
      * Ruby method: [eos()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-eos-3F)
      * @return bool `true` If the offset is at the end of the input string.
      */
