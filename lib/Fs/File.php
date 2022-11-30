@@ -40,6 +40,14 @@ use function tempnam;
 use function unlink;
 
 class File extends Entry {
+    public static function writeLn(string $filePath, string $line): void {
+        self::write($filePath, $line . "\n");
+    }
+
+    public static function appendLn(string $filePath, string $line): void {
+        self::append($filePath, $line . "\n");
+    }
+
     /**
      * NB: To read a file and then write to it use the construct: File::writeLines($filePath, toArray(File::readLines($filePath))
      */
@@ -77,7 +85,7 @@ class File extends Entry {
                 'lock'           => true,
                 'append'         => false,
                 'context'        => null,
-                'mode'           => Stat::FILE_MODE,
+                'mode'           => Stat::FILE_PERMS,
             ],
             (array) $conf
         );
