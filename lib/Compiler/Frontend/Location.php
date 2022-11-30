@@ -10,24 +10,20 @@ class Location {
     public readonly int $lineNo;
     /**
      * Column number in characters.
-     * @var int
      */
     public readonly int $columnNo;
     /**
      * Offset in characters.
-     * @var int
      */
-    public readonly int $offset;
+    public readonly ?int $offset;
     /**
      * Length in characters.
-     * @var int
+    public readonly ?int $length;
      */
-    public readonly int $length;
-
-    public function __construct(int $lineNo, int $columnNo, int $offset, int $length) {
+    public function __construct(int $lineNo, ?int $columnNo, int $offset = null/*, int $length = null*/) {
         $this->lineNo = $lineNo;
         $this->columnNo = $columnNo;
         $this->offset = $offset;
-        $this->length = $length;
+        //$this->length = $length;
     }
 }

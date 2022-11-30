@@ -6,5 +6,29 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
-class TokenInfo {
+use Morpho\Base\NotImplementedException;
+use Morpho\Compiler\Frontend\Location;
+
+/**
+ * https://github.com/python/cpython/blob/fc94d55ff453a3101e4c00a394d4e38ae2fece13/Lib/tokenize.py#L46
+ */
+class TokenInfo implements \Stringable {
+    public readonly TokenType $type;
+    // @todo: rename to $val
+    public readonly string $string;
+    public readonly Location $start;
+    public readonly Location $end;
+    public readonly string $line;
+
+    public function __construct(TokenType $type, string $string, Location $start, Location $end, string $line) {
+        $this->type = $type;
+        $this->string = $string;
+        $this->start = $start;
+        $this->end = $end;
+        $this->line = $line;
+    }
+
+    public function __toString(): string {
+        throw new NotImplementedException();
+    }
 }

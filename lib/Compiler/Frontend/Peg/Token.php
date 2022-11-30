@@ -8,6 +8,7 @@ namespace Morpho\Compiler\Frontend\Peg;
 
 /**
  * Defines missing details from the `token` Python module
+ *
  */
 class Token {
     public const NAME = 'todo';

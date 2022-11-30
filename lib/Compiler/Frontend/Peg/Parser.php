@@ -10,28 +10,38 @@ use Closure;
 use Morpho\Compiler\Frontend\IParser;
 
 /**
+ * Base class for the PEG parsers
  * https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/parser.py
  */
 abstract class Parser implements IParser {
     private GrammarLexer $lexer;
 
+
+
+
     public function __construct(GrammarLexer $lexer) {
+        // tokenizer in Python
         $this->lexer = $lexer;
-        /*
-                $this->level = 0;
-                $this->cache = [];
-        */
+        //$this->level = 0;
+        //$this->cache = [];
     }
 
-    protected function index(): int {
-        return $this->lexer->index();
+    abstract public function start(): mixed;
+
+    public function showPeek(): string {
+        $tok = $this->lexer->peek();
+        return $tok->start[0] . '.' . $tok->start[1] . ': ' . static::TOKENS[$tok->type] . ':' . $tok->string . '!r';
+    }
+
+    // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+    protected function mark(): int {
+        return $this->lexer->mark();
     }
 
     protected function reset(int $index): void {
         $this->lexer->reset($index);
     }
-
-    protected abstract function start(): mixed;
     /*
     def __init__(self, tokenizer: Tokenizer, *, verbose: bool = False):
         self._tokenizer = tokenizer

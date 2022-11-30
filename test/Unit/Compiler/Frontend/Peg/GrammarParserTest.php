@@ -17,8 +17,11 @@ class GrammarParserTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->markTestIncomplete();
-        $this->parser = new GrammarParser(new GrammarLexer(GrammarLexer::genTokens()));
+        $this->parser = new GrammarParser(
+            new GrammarLexer(
+                GrammarLexer::tokens($this->getTestDirPath() . '/peg.peg')
+            )
+        );
     }
 
     public function testInterface() {
@@ -29,5 +32,27 @@ class GrammarParserTest extends TestCase {
     public function testInvoke() {
         $grammar = $this->parser->start();
         d($grammar);
+        /*
+
+        ##########################################################################
+        # Parser
+
+        PARSER_OBJS =
+            Parser/token.o
+            Parser/pegen.o
+            Parser/pegen_errors.o \
+            Parser/action_helpers.o \
+            Parser/parser.o \
+            Parser/string_parser.o \
+            Parser/peg_api.o
+            Parser/myreadline.o
+            Parser/tokenizer.o
+
+        PARSER_HEADERS =
+            $(srcdir)/Include/internal/pycore_parser.h \
+            $(srcdir)/Parser/pegen.h \
+            $(srcdir)/Parser/string_parser.h
+            $(srcdir)/Parser/tokenizer.h
+        */
     }
 }

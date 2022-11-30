@@ -34,21 +34,21 @@ namespace Morpho\Compiler\Frontend\Peg;
     StringLeaf,
  */
 
+use Morpho\Base\NotImplementedException;
+
 /**
  * https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/grammar_parser.py
  */
 class GrammarParser extends Parser {
-    public function __invoke(mixed $context): mixed {
-        // todo
-        return $context;
+    public function __invoke(mixed $val): mixed {
+        throw new NotImplementedException();
     }
-
     public function start(): ?Grammar {
         return $this->memoize(
             __METHOD__,
             function (): ?Grammar {
                 # start: grammar $
-                $index = $this->index();
+                $index = $this->mark();
                 //$cut = false;
                 if (($grammar = $this->grammar()) && $this->expect('ENDMARKER')) {
                     return $grammar;
@@ -64,7 +64,7 @@ class GrammarParser extends Parser {
             __METHOD__,
             function (): ?Grammar {
                 # grammar: metas rules | rules
-                $index = $this->index();
+                $index = $this->mark();
                 if (($metas = $this->metas()) && ($rules = $this->rules())) {
                     return new Grammar($rules, $metas);
                 }
@@ -78,121 +78,78 @@ class GrammarParser extends Parser {
         );
     }
 
-    private function metas(): ?array/*?MetaList*/ {
+
+    private function metas(): ?MetaList {
         return $this->memoize(
             __METHOD__,
-            function (): ?array/*?MetaList*/ {
+            function (): ?MetaList {
                 # metas: meta metas | meta
-                $index = $this->index();
+                $mark = $this->mark();
                 if ($meta = $this->meta() && $metas = $this->metas()) {
-                    return array_merge([$meta], $metas());
+                    return MetaList(array_merge([$meta], $metas));
                 }
-                $this->reset($index);
+                $this->reset($mark);
                 if ($meta = $this->meta()) {
-                    return [$meta];
+                    return MetaList([$meta]);
                 }
-                $this->reset($index);
+                $this->reset($mark);
                 return null;
             }
         );
     }
 
-    private function meta(): ?array/*?MetaTuple*/ {
+    private function meta(): ?MetaTuple {
         return $this->memoize(
             __METHOD__,
-            function (): ?array /*?MetaTuple*/ {
+            function (): ?MetaTuple {
                 # meta: "@" NAME NEWLINE | "@" NAME NAME NEWLINE | "@" NAME STRING NEWLINE
-                $index = $this->index();
-                $cut = false;
-                if (
-                    ($literal = $this->expect("@"))
-                    &&
-                    ($name = $this->name())
-                    &&
-                    ($newline = $this->expect('NEWLINE'))
-                ) {
-                    return [$name->string, null];
+                $mark = $this->mark();
+                if ($literal = $this->expect('@') && $name = $this->name() && $newline = $this->expect('NEWLINE')) {
+                    return new MetaTuple($name->string, null);
                 }
-                $this->reset($index);
-                if ($cut) {
-                    return null;
+                $this->reset($mark);
+                if ($literal = $this->expect('@') && $a = $this->name() && $b = $this->name() && $newline = $this->expect('NEWLINE')) {
+                    return new MetaTuple($a->string, $b->string);
                 }
-                $cut = false;
-                if (
-                    ($literal = $this->expect("@"))
-                    &&
-                    ($a = $this->name())
-                    &&
-                    ($b = $this->name())
-                    &&
-                    ($newline = $this->expect('NEWLINE'))
-                ) {
-                    return [$a->string, $b->string];
+                $this->reset($mark);
+                if ($literal = $this->expect('@') && $name = $this->name() && $string = $this->string() && $newline = $this->expect('NEWLINE')) {
+                    return new MetaTuple($name->string, literalEval($string->string));
                 }
-                $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
-                if (
-                    ($literal = $this->expect("@"))
-                    &&
-                    ($name = $this->name())
-                    &&
-                    ($string = $this->string())
-                    &&
-                    ($newline = $this->expect('NEWLINE'))
-                ) {
-                    return [$name->string, $this->literalEval($string->string)];
-                }
-                $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
+                $this->reset($mark);
                 return null;
             }
         );
     }
 
-    private function rules(): ?array/*?RuleList*/ {
+    private function rules(): ?RuleList {
         return $this->memoize(
             __METHOD__,
-            function (): ?array/*?RuleList*/ {
+            function (): ?RuleList {
                 # rules: rule rules | rule
-                $index = $this->index();
+                $mark = $this->mark();
                 $cut = false;
                 if (
                     ($rule = $this->rule())
                     &&
                     ($rules = $this->rules())
                 ) {
-                    return array_merge([$rule], $rules);
+                    return new RuleList(array_merge([$rule], $rules));
                 }
-                $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
-                if (
-                ($rule = $this->rule())
-                ) {
-                    return [$rule];
-                }
-                $this->reset($index);
-                if ($cut) {
-                    return null;
+                $this->reset($mark);
+                if ($rule = $this->rule()) {
+                    return new RuleList($rule);
                 }
                 return null;
             }
         );
     }
 
-    private function rule() {
+    private function rule(): ?Rule {
         return $this->memoize(
             __METHOD__,
             function (): ?Rule {
                 # rule: rulename memoflag? ":" alts NEWLINE INDENT more_alts DEDENT | rulename memoflag? ":" NEWLINE INDENT more_alts DEDENT | rulename memoflag? ":" alts NEWLINE
-                $index = $this->index();
+                $mark = $this->mark();
                 $cut = false;
                 if (
                     ($rulename = $this->rulename())
@@ -214,7 +171,7 @@ class GrammarParser extends Parser {
                     return Rule(rulename [0], rulename [1], Rhs($alts->alts + $more_alts->alts), memo: $opt);
                 }
 
-                $this->reset($index);
+                $this->reset($mark);
                 if ($cut) {
                     return null;
                 }
@@ -237,7 +194,7 @@ class GrammarParser extends Parser {
                     return Rule(rulename [0], rulename [1], more_alts, memo: $opt);
                 }
 
-                $this->reset($index);
+                $this->reset($mark);
                 if ($cut) {
                     return null;
                 }
@@ -255,7 +212,7 @@ class GrammarParser extends Parser {
                 ) {
                     return Rule(rulename [0], rulename [1], alts, memo: $opt);
                 }
-                $this->reset($index);
+                $this->reset($mark);
                 if ($cut) {
                     return null;
                 }
@@ -269,7 +226,7 @@ class GrammarParser extends Parser {
             __METHOD__,
             function (): ?RuleName {
                 # rulename: NAME '[' NAME '*' ']' | NAME '[' NAME ']' | NAME
-                $index = $this->index();
+                $index = $this->mark();
                 $cut = false;
                 if (
                     ($name = $this->name())
@@ -319,7 +276,7 @@ class GrammarParser extends Parser {
             __METHOD__,
             function (): ?string {
                 # memoflag: '(' 'memo' ')'
-                $index = $this->index();
+                $index = $this->mark();
                 $cut = false;
                 if (
                     ($literal = $this->expect('('))
@@ -344,7 +301,7 @@ class GrammarParser extends Parser {
             __METHOD__,
             function (): ?Rhs {
                 # alts: alt "|" alts | alt
-                $index = $this->index();
+                $index = $this->mark();
                 $cut = false;
                 if (
                     ($alt = $this->alt())
@@ -377,7 +334,7 @@ class GrammarParser extends Parser {
             __METHOD__,
             function (): ?Rhs {
                 # more_alts: "|" alts NEWLINE more_alts | "|" alts NEWLINE
-                $index = $this->index();
+                $index = $this->mark();
                 $cut = false;
                 if (
                     ($literal = $this->expect("|"))
@@ -419,7 +376,7 @@ class GrammarParser extends Parser {
             function (): ?Alt {
                 # alt: items '$' action | items '$' | items action | items
 
-                $index = $this->index();
+                $index = $this->mark();
                 $cut = false;
                 if (
                     ($items = $this->items())
@@ -479,7 +436,7 @@ class GrammarParser extends Parser {
             function (): ?NamedItemList {
                 # items: named_item items | named_item
 
-                $index = $this->index();
+                $index = $this->mark();
                 $cut = false;
                 if (
                     ($named_item = $this->named_item())
@@ -509,7 +466,7 @@ class GrammarParser extends Parser {
             __METHOD__,
             function (): ?NamedItem {
                 # named_item: NAME '[' NAME '*' ']' '=' ~ item | NAME '[' NAME ']' '=' ~ item | NAME '=' ~ item | item | forced_atom | lookahead
-                $index = $this->index();
+                $index = $this->mark();
                 $cut = false;
                 if (
                     ($name = $this->name())
@@ -609,7 +566,7 @@ class GrammarParser extends Parser {
             __METHOD__,
             function (): ?NamedItem {
                 # forced_atom: '&' '&' ~ atom
-                $index = $this->index();
+                $index = $this->mark();
                 $cut = false;
                 if (
                     ($literal = $this->expect('&'))
@@ -633,7 +590,7 @@ class GrammarParser extends Parser {
             __METHOD__,
             function (): ?LookaheadOrCut {
                 # lookahead: '&' ~ atom | '!' ~ atom | '~'
-                $index = $this->index();
+                $index = $this->mark();
                 $cut = false;
                 if (
                     ($literal = $this->expect('&'))
@@ -677,7 +634,7 @@ class GrammarParser extends Parser {
             __METHOD__,
             function (): ?Item {
                 # item: '[' ~ alts ']' | atom '?' | atom '*' | atom '+' | atom '.' atom '+' | atom
-                $index = $this->index();
+                $index = $this->mark();
                 $cut = false;
                 if (
                     ($literal = $this->expect('['))
@@ -762,7 +719,7 @@ class GrammarParser extends Parser {
             function (): ?Plain {
                 # atom: '(' ~ alts ')' | NAME | STRING
 
-                $index = $this->index();
+                $index = $this->mark();
                 $cut = false;
                 if (
                     ($literal = $this->expect('('))
@@ -802,7 +759,7 @@ class GrammarParser extends Parser {
             __METHOD__,
             function (): ?string {
                 # action: "{" ~ targetAtoms "}"
-                $index = $this->index();
+                $index = $this->mark();
                 if (($literal = $this->expect("{")) && ($cut = true) && ($targetAtoms = $this->targetAtoms(
                     )) && ($literal_1 = $this->expect("}"))) {
                     return $targetAtoms;
@@ -818,7 +775,7 @@ class GrammarParser extends Parser {
             __METHOD__,
             function (): ?string {
                 # targetAtoms: targetAtom targetAtoms | targetAtom
-                $index = $this->index();
+                $index = $this->mark();
                 $cut = false;
                 if (
                     ($targetAtom = $this->targetAtom())
@@ -849,7 +806,7 @@ class GrammarParser extends Parser {
             __METHOD__,
             function (): ?string {
                 # targetAtom: "{" ~ targetAtoms "}" | NAME | NUMBER | STRING | "?" | ":" | !"}" OP
-                $index = $this->index();
+                $index = $this->mark();
                 $cut = false;
                 if (($literal = $this->expect("{"))
                     &&

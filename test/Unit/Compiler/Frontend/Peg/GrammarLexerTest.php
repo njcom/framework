@@ -8,6 +8,7 @@ namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
 use Morpho\Compiler\Frontend\ILexer;
 use Morpho\Compiler\Frontend\Peg\GrammarLexer;
+use Morpho\Compiler\Frontend\Peg\TokenInfo;
 use Morpho\Testing\TestCase;
 
 class GrammarLexerTest extends TestCase {
@@ -15,8 +16,9 @@ class GrammarLexerTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->markTestIncomplete();
-        $this->lexer = new GrammarLexer(GrammarLexer::genTokens());
+        $this->lexer = new GrammarLexer((function () {
+            yield throw new \RuntimeException();
+        })());
     }
 
     public function testInterface() {
@@ -27,10 +29,28 @@ class GrammarLexerTest extends TestCase {
         $this->assertSame(0, $this->lexer->mark());
     }
 
-    public function testGenTokens() {
-        $grammarFile = $this->getTestDirPath() . '/grammar.peg';
+    public function testTokens_EmptyFile() {
+        $grammarFile = $this->getTestDirPath() . '/empty.peg';
+        $tokens = GrammarLexer::tokens($grammarFile);
+        $this->assertInstanceOf(\Generator::class, $tokens);
+        $tokens->rewind();
+        $this->assertFalse($tokens->valid());
+        /** @noinspection PhpVoidFunctionResultUsedInspection */
+        $this->assertVoid($tokens->next());
+        $this->assertNull($tokens->current());
+    }
 
-
-        d(GrammarLexer::genTokens());
+    public function testTokens() {
+        $grammarFile = $this->getTestDirPath() . '/peg.peg';
+        $tokens = GrammarLexer::tokens($grammarFile);
+        $i = 0;
+        $actual = '';
+        foreach ($tokens as $token) {
+            $this->assertInstanceOf(TokenInfo::class, $token);
+            $actual .= (string) $token;
+        }
+        $expected = file_get_contents($this->getTestDirPath() . '/peg-tokens');
+        $this->assertSame($expected, $actual);
+        $this->assertGreaterThan(0, $i);
     }
 }

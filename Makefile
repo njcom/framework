@@ -80,12 +80,12 @@ init:
 	npm install -g --save typescript@next concurrently
 
 pull-peg:
-	curl -L 'https://raw.githubusercontent.com/python/cpython/main/Grammar/Tokens' -o $(CURDIR)/lib/Tech/Python/Tokens
-	curl -L 'https://raw.githubusercontent.com/python/cpython/main/Grammar/python.gram' -o $(CURDIR)/lib/Tech/Python/python.peg
-	curl -L 'https://raw.githubusercontent.com/python/cpython/main/Tools/peg_generator/pegen/metagrammar.gram' -o $(CURDIR)/lib/Compiler/Frontend/Peg/peg.peg
+	curl -fLo $(CURDIR)/lib/Tech/Python/Tokens 'https://raw.githubusercontent.com/python/cpython/main/Grammar/Tokens'
+	curl -fLo $(CURDIR)/lib/Tech/Python/python.peg 'https://raw.githubusercontent.com/python/cpython/main/Grammar/python.gram'
+	curl -fLo $(CURDIR)/lib/Compiler/Frontend/Peg/peg.peg 'https://raw.githubusercontent.com/python/cpython/main/Tools/peg_generator/pegen/metagrammar.gram'
 	mkdir -p $(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data
 	cp $(CURDIR)/lib/Tech/Python/python.peg $(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data
-	cp $(CURDIR)/lib/Compiler/Frontend/Peg/peg.peg $(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data
+	cp $(CURDIR)/lib/Compiler/Frontend/Peg/peg.peg $(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data/GrammarLexerTest
 
 ###############################################################################
 # Help

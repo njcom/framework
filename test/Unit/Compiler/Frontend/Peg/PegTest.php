@@ -6,7 +6,6 @@
  */
 namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
-use Morpho\Compiler\Frontend\Peg\Grammar;
 use Morpho\Compiler\Frontend\Peg\Peg;
 use Morpho\Compiler\ICompiler;
 use Morpho\Testing\TestCase;
@@ -21,6 +20,7 @@ class PegTest extends TestCase {
 
     public function testInterface() {
         $this->assertInstanceOf(ICompiler::class, $this->peg);
+
     }
 
     public function testInvoke() {
