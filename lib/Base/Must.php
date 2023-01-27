@@ -7,7 +7,6 @@
 
 namespace Morpho\Base;
 
-use InvalidArgumentException;
 use OutOfRangeException;
 use RuntimeException;
 use UnexpectedValueException;
@@ -21,47 +20,54 @@ use function implode;
 
 class Must {
     /**
-     * @return mixed
+     * @param mixed       $result
+     * @param string|null $errMessage
+     * @return void
+     * @todo: add tests
      */
-    public static function beNotEmpty(...$args) {
-        $n = count($args);
-        if (!$n) {
-            throw new InvalidArgumentException("Empty arguments");
-        }
-        foreach ($args as $v) {
-            self::beTrue(!empty($v), 'The value must be non empty');
-        }
-        return $n == 1 ? $args[0] : $args;
-    }
-
-    public static function beTrue($result, string $errMessage = null): void {
-        $result = (bool) $result;
+    public static function beTruthy(mixed $result, string $errMessage = null): void {
+        $result = (bool)$result;
         if (false === $result) {
-            throw new RuntimeException((string) $errMessage);
+            throw new RuntimeException((string)$errMessage);
         }
     }
 
     /**
-     * @return mixed
+     * @param mixed $val
+     * @return mixed @todo: change to null type
      */
-    public static function beEmpty(...$args) {
-        $n = count($args);
-        if (!$n) {
-            throw new InvalidArgumentException("Empty arguments");
-        }
-        foreach ($args as $v) {
-            self::beTrue(empty($v), 'The value must be empty');
-        }
-        return $n == 1 ? $args[0] : $args;
+    public static function beNull(mixed $val): mixed {
+        self::beTruthy($val === null);
+        return $val;
     }
 
-    public static function haveOnlyKeys(array $arr, array $allowedKeys): void {
+    /**
+     * @param mixed $val
+     * @return mixed
+     */
+    public static function beNotNull(mixed $val): mixed {
+        self::beTruthy($val !== null);
+        return $val;
+    }
+
+    public static function beNotEmpty(mixed $val): mixed {
+        self::beTruthy(!empty($v), 'The value must be non empty');
+        return $val;
+    }
+
+    public static function beEmpty(mixed $val): mixed {
+        self::beTruthy($val, 'The value must be empty');
+        return $val;
+    }
+
+    public static function haveOnlyKeys(array $arr, array $allowedKeys): array {
         $diff = array_diff_key($arr, array_flip($allowedKeys));
         if (count($diff)) {
             throw new RuntimeException(
                 'Not allowed items are present: ' . shorten(implode(', ', array_keys($diff)), 80)
             );
         }
+        return $arr;
     }
 
     public static function haveItems(
@@ -97,35 +103,12 @@ class Must {
     }
 
     /**
-     * @param $val
-     * @return mixed
+     * @param             $haystack
+     * @param             $needle
+     * @param string|null $errMessage
+     * @return void
      */
-    public static function beNull($val) {
-        self::beTrue($val === null);
-        return $val;
-    }
-
-    /**
-     * @param $val
-     * @return mixed
-     */
-    public static function beNotNull($val) {
-        self::beTrue($val !== null);
-        return $val;
-    }
-
-    /**
-     * @param mixed $result
-     * @return mixed
-     */
-    public static function beNotFalse($result, string $errMessage = null) {
-        if (false === $result) {
-            throw new RuntimeException((string) $errMessage);
-        }
-        return $result;
-    }
-
     public static function contain($haystack, $needle, string $errMessage = null): void {
-        self::beTrue(contains($haystack, $needle), $errMessage ?: 'A haystack does not contain a needle');
+        self::beTruthy(contains($haystack, $needle), $errMessage ?: 'A haystack does not contain a needle');
     }
 }

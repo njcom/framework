@@ -6,24 +6,20 @@
  */
 namespace Morpho\Compiler\Frontend;
 
-class Location {
-    public readonly int $lineNo;
+readonly class Location {
+    public int $lineNo;
     /**
      * Column number in characters.
      */
-    public readonly int $columnNo;
+    public int $columnNo;
     /**
      * Offset in characters.
      */
-    public readonly ?int $offset;
-    /**
-     * Length in characters.
-    public readonly ?int $length;
-     */
-    public function __construct(int $lineNo, ?int $columnNo, int $offset = null/*, int $length = null*/) {
+    public ?int $offset;
+
+    public function __construct(int $lineNo, int $columnNo, int $offset = null) {
         $this->lineNo = $lineNo;
         $this->columnNo = $columnNo;
         $this->offset = $offset;
-        //$this->length = $length;
     }
 }

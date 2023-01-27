@@ -8,8 +8,6 @@ namespace Morpho\Tech\MySql;
 
 use Morpho\Tech\Sql\Schema as BaseSchema;
 
-use function Morpho\Base\toArr;
-
 class Schema extends BaseSchema {
     public const ENGINE = 'InnoDB';
     public const CHARSET = 'utf8';
@@ -61,7 +59,7 @@ class Schema extends BaseSchema {
             $this->db->exec(
                 'SET FOREIGN_KEY_CHECKS=0; DROP TABLE IF EXISTS ' . implode(
                     ', ',
-                    $this->db->quoteIdentifier(toArr($tableNames))
+                    $this->db->quoteIdentifier(iterator_to_array($tableNames, false))
                 ) . '; SET FOREIGN_KEY_CHECKS=1'
             );
         }

@@ -9,7 +9,6 @@ namespace Morpho\Fs;
 use function basename;
 use function dirname;
 use function file_exists;
-use function is_dir;
 use function is_file;
 use function is_link;
 use function symlink;
@@ -19,7 +18,7 @@ class Link extends Entry {
         // @TODO: Handle the case when the \dirname($linkPath) is symlink to some directory
         // it can be link to file, but in this case it is an error.
         Dir::create(dirname($linkPath));
-        if (is_file($targetPath) && is_dir($linkPath)) {
+        if (is_file($targetPath) && Stat::isDir($linkPath)) {
             $linkPath = $linkPath . '/' . basename($targetPath);
         }
         if (!@symlink($targetPath, $linkPath)) {

@@ -8,7 +8,7 @@ namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
 use Morpho\Compiler\Frontend\IParser;
 use Morpho\Compiler\Frontend\Peg\Parser;
-use Morpho\Compiler\Frontend\Peg\GrammarLexer;
+use Morpho\Compiler\Frontend\Peg\GrammarTokenizer;
 use Morpho\Compiler\Frontend\Peg\GrammarParser;
 use Morpho\Testing\TestCase;
 
@@ -18,8 +18,8 @@ class GrammarParserTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->parser = new GrammarParser(
-            new GrammarLexer(
-                GrammarLexer::tokens($this->getTestDirPath() . '/peg.peg')
+            new GrammarTokenizer(
+                GrammarTokenizer::tokens($this->getTestDirPath() . '/peg.peg')
             )
         );
     }

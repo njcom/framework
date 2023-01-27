@@ -7,16 +7,13 @@
 namespace Morpho\App\Web\View;
 
 use Countable;
-use Morpho\Base\{IHasServiceManager, IServiceManager};
 
 use function Morpho\Base\{dasherize, format};
 use function implode;
 use function nl2br;
 
-class MessengerPlugin extends Plugin implements Countable, IHasServiceManager {
-    private $serviceManager;
-
-    public function renderPageMessages(): string {
+class MessengerPlugin extends WidgetPlugin implements Countable {
+        public function renderPageMessages(): string {
         $html = '';
         $messenger = $this->messenger();
         if ($this->count()) {
@@ -75,8 +72,7 @@ class MessengerPlugin extends Plugin implements Countable, IHasServiceManager {
         return '<div id="page-messages">' . implode("\n", $renderedMessages) . '</div>';
     }
 
-    public function setServiceManager(IServiceManager $serviceManager): static {
-        $this->serviceManager = $serviceManager;
-        return $this;
+    public function __toString(): string {
+        return $this->renderPageMessages();
     }
 }

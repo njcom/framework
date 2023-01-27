@@ -14,12 +14,12 @@ use Morpho\Compiler\Frontend\IParser;
  * https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/parser.py
  */
 abstract class Parser implements IParser {
-    private GrammarLexer $lexer;
+    private GrammarTokenizer $lexer;
 
 
 
 
-    public function __construct(GrammarLexer $lexer) {
+    public function __construct(GrammarTokenizer $lexer) {
         // tokenizer in Python
         $this->lexer = $lexer;
         //$this->level = 0;

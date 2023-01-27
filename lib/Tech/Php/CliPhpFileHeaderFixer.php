@@ -12,10 +12,10 @@ use Morpho\Base\Ok;
 use Morpho\Base\Result;
 
 use function Morpho\App\Cli\errorLn;
+use function Morpho\App\Cli\showLine;
+use function Morpho\App\Cli\showOk;
 use function Morpho\Base\indent;
 use function Morpho\Base\q;
-use function Morpho\Base\showLn;
-use function Morpho\Base\showOk;
 
 class CliPhpFileHeaderFixer implements IFn {
     public function __invoke(mixed $conf): mixed {
@@ -38,13 +38,13 @@ class CliPhpFileHeaderFixer implements IFn {
             $ok = true;
         }
         foreach ($files as $filePath) {
-            showLn("Processing file " . q($filePath) . '...');
+            showLine("Processing file " . q($filePath) . '...');
             $result = $fixer->__invoke(array_merge($context, ['filePath' => $filePath]));
             if (!$result->isOk()) {
                 errorLn("Unable to fix the file " . q($filePath) . "\n" . print_r($result, true));
             }
             if (isset($result->val()['text'])) {
-                showLn(indent($result->val()['text']));
+                showLine(indent($result->val()['text']));
                 $stats['fixed']['num']++;
                 $stats['fixed']['filePaths'][] = $filePath;
             }
@@ -56,9 +56,9 @@ class CliPhpFileHeaderFixer implements IFn {
     }
 
     public function showResult(Result $result): void {
-        showLn("\nNumber of processed files: " . $result->val()['processed']['num']);
-        showLn("Number of fixed files: " . $result->val()['fixed']['num']);
-        showLn(
+        showLine("\nNumber of processed files: " . $result->val()['processed']['num']);
+        showLine("Number of fixed files: " . $result->val()['fixed']['num']);
+        showLine(
             "List of fixed files: " . ($result->val()['fixed']['num'] > 0 ? "\n" . indent(
                     implode("\n", $result->val()['fixed']['filePaths']),
                     4

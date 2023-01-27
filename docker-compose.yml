@@ -1,0 +1,41 @@
+# [Compose file version 3 reference](https://docs.docker.com/compose/compose-file/compose-file-v3/)
+version: "3.9"
+
+services:
+  nginx:
+    build: src/nginx
+    container_name: ${COMPOSE_PROJECT_NAME}_nginx
+    ports:
+      - ${HOST}$NGINX_HOST_PORT:$NGINX_CONTAINER_PORT
+    volumes:
+      - $MNT_DIR_PATH/nginx/etc:/etc/nginx
+      - $MNT_DIR_PATH/project:/project
+
+  php:
+    build: src/php
+    container_name: ${COMPOSE_PROJECT_NAME}_php
+    ports:
+      - $PHP_HOST_PORT:$PHP_CONTAINER_PORT
+    volumes:
+      - $MNT_DIR_PATH/php/etc:/usr/local/etc
+      - $MNT_DIR_PATH/project:/project
+    depends_on:
+      - nginx
+      - mysql
+
+  mysql:
+    build: src/mysql
+    container_name: ${COMPOSE_PROJECT_NAME}_mysql
+    ports:
+      - ${HOST}$MYSQL_HOST_PORT:$MYSQL_CONTAINER_PORT
+    volumes:
+      - mysql:/var/lib/mysql
+      - $MNT_DIR_PATH/mysql/etc:/etc/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
+      MYSQL_DATABASE: $MYSQL_DATABASE
+      MYSQL_USER: $MYSQL_USER
+      MYSQL_PASSWORD: $MYSQL_PASSWORD
+
+volumes:
+  mysql:

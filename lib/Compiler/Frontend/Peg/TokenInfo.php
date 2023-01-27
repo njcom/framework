@@ -6,13 +6,16 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
-use Morpho\Base\NotImplementedException;
 use Morpho\Compiler\Frontend\Location;
+
+use Stringable;
+
+use function Morpho\Base\q;
 
 /**
  * https://github.com/python/cpython/blob/fc94d55ff453a3101e4c00a394d4e38ae2fece13/Lib/tokenize.py#L46
  */
-class TokenInfo implements \Stringable {
+class TokenInfo implements Stringable {
     public readonly TokenType $type;
     // @todo: rename to $val
     public readonly string $string;
@@ -29,6 +32,13 @@ class TokenInfo implements \Stringable {
     }
 
     public function __toString(): string {
-        throw new NotImplementedException();
+        $escape = function (string $line) {
+            return strtr($line,
+                [
+                    "\\" => "\\\\",
+                    "\n" =>"\\n",
+                ]);
+        };
+        return 'TokenInfo(type=' . $this->type->value . ' (' . ($this->type->name) . '), string=' . q($this->string) . ', start=(' . $this->start->lineNo . ', ' . $this->start->columnNo . '), end=(' . $this->end->lineNo . ', ' . $this->end->columnNo . '), line=' . q($escape($this->line)) . ")\n";
     }
 }

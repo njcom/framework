@@ -2,7 +2,7 @@ backendDirPath := $(CURDIR)/backend
 frontendDirPath := $(CURDIR)/frontend
 
 # Default target
-all: help
+all: targets
 
 ################################################################################
 # Tests
@@ -83,9 +83,14 @@ pull-peg:
 	curl -fLo $(CURDIR)/lib/Tech/Python/Tokens 'https://raw.githubusercontent.com/python/cpython/main/Grammar/Tokens'
 	curl -fLo $(CURDIR)/lib/Tech/Python/python.peg 'https://raw.githubusercontent.com/python/cpython/main/Grammar/python.gram'
 	curl -fLo $(CURDIR)/lib/Compiler/Frontend/Peg/peg.peg 'https://raw.githubusercontent.com/python/cpython/main/Tools/peg_generator/pegen/metagrammar.gram'
-	mkdir -p $(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data
-	cp $(CURDIR)/lib/Tech/Python/python.peg $(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data
-	cp $(CURDIR)/lib/Compiler/Frontend/Peg/peg.peg $(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data/GrammarLexerTest
+	#mkdir -p $(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data
+	#cp $(CURDIR)/lib/Tech/Python/python.peg $(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data
+	#cp $(CURDIR)/lib/Compiler/Frontend/Peg/peg.peg $(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data/GrammarLexerTest
+
+gen-tokens-file:
+	target_file_path=$(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data/GrammarLexerTest/peg.peg.tokens \
+		&& cat $(CURDIR)/lib/Compiler/Frontend/Peg/peg.peg | $(CURDIR)/bin/gen-tokens > "$$target_file_path" \
+		&& echo "Written '$$target_file_path'"
 
 ###############################################################################
 # Help
@@ -94,13 +99,16 @@ pull-peg:
 help: ## This help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-targets:
+targets: ## Show available targets
 	echo Targets:
-	grep -oP '^[A-Za-z0-9_-]+:' $(CURDIR)/$(MAKEFILE_LIST) | cut -d: -f2 | perl -WpE 's/^/  /g'
+	grep -oP '^[A-Za-z0-9_-]+:' $(MAKEFILE_LIST) | awk -F':' '{print $$(NF-1)}' | perl -WpE 's/^/    /g'
 
 ###############################################################################
-# make tweaks
+# `make` tweaks
 
+unexport _JAVA_OPTIONS
+
+.PHONY: all test unit-test integration-test backend-test module-test frontend-test lint assets js watch-js css watch-css clean-css clean-js clean-assets build clean clean-routes update init pull-peg gen-tokens-file help targets
 .SILENT:
 # Do not use make's built-in rules and variables (this increases performance and avoids hard-to-debug behaviour).
 MAKEFLAGS += -rR
@@ -108,12 +116,12 @@ MAKEFLAGS += -rR
 MAKEFLAGS += --warn-undefined-variables
 # Suppress "Entering directory ..." unless we are changing the work directory.
 MAKEFLAGS += --no-print-directory
-# Enable Bash features like brace expansion
+# Use bash as SHELL in recipes
 SHELL := /bin/bash
 
 ###############################################################################
 
-.PHONY: all test unit-test integration-test backend-test module-test frontend-test lint assets js watch-js css watch-css clean-css clean-js clean-assets build clean clean-routes update init pull-peg help targets
+.PHONY: all test unit-test integration-test backend-test module-test frontend-test lint assets js watch-js css watch-css clean-css clean-js clean-assets build clean clean-routes update init pull-peg gen-tokens-file help targets
 
 define dl
 	curl -sSfL $(1) -o $(2)

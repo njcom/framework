@@ -6,6 +6,7 @@
  */
 namespace Morpho\Test\Unit\App\Cli;
 
+use ArrayIterator;
 use ArrayObject;
 use Morpho\Base\InvalidConfException;
 use Morpho\Testing\TestCase;
@@ -17,26 +18,68 @@ use function fclose;
 use function file_put_contents;
 use function fwrite;
 use function md5;
-use function Morpho\App\Cli\{arg, envVarsStr, earg, sh, showSep, stylize};
+use function Morpho\App\Cli\{arg, envVarsStr, earg, sh, showLine, showOk, showSep, stylize};
 use function ob_get_clean;
 use function ob_start;
 use function proc_close;
 use function proc_open;
 use function stream_get_contents;
 
+use const Morpho\Base\CODE_WIDTH_1;
 use const Morpho\Test\BASE_DIR_PATH;
 
 class FunctionsTest extends TestCase {
+    public function testShowLn_NoArgsWritesSingleLine() {
+        ob_start();
+        showLine();
+        $this->assertEquals("\n", ob_get_clean());
+    }
+
+    public function testShowLn_SingleArg() {
+        ob_start();
+        showLine("Printed");
+        $this->assertEquals("Printed\n", ob_get_clean());
+    }
+
+    public function testShowLn_IterableArg() {
+        $val = new ArrayIterator(['foo', 'bar', 'baz']);
+        ob_start();
+        showLine($val);
+        $this->assertEquals("foo\nbar\nbaz\n", ob_get_clean());
+    }
+
+    public function testShowOk_WithoutArgs() {
+        ob_start();
+        showOk();
+        $this->assertEquals("OK\n", ob_get_clean());
+    }
+
+    public function testShowOk_WithArgs() {
+        ob_start();
+        showOk("Test");
+        $this->assertSame("OK: Test\n", ob_get_clean());
+    }
+
     public function testShowSep_DefaultSep() {
         ob_start();
         showSep();
-        $this->assertSame("--------------------------------------------------------------------------------\n", ob_get_clean());
+        $output = ob_get_clean();
+        $this->assertSame("--------------------------------------------------------------------------------\n", $output);
+        $this->assertSame(CODE_WIDTH_1 + 1, strlen($output));
     }
 
     public function testShowSep_CustomSep() {
         ob_start();
         showSep('#', 3);
         $this->assertSame("###\n", ob_get_clean());
+    }
+
+    public function testShowSepWithPrefixAndSuffix() {
+        ob_start();
+        showSep(prefix: '/*', suffix: '*/');
+        $output = ob_get_clean();
+        $this->assertSame("/*----------------------------------------------------------------------------*/\n", $output);
+        $this->assertSame(CODE_WIDTH_1 + 1, strlen($output));
     }
 
     public function dataWriteErrorAndWriteErrorLn() {

@@ -1,0 +1,343 @@
+<?php declare(strict_types=1);
+/**
+ * This file is part of morpho-os/framework
+ * It is distributed under the 'Apache License Version 2.0' license.
+ * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
+ */
+/**
+ * The implementation is based on Python's PEG:
+ * 1. https://medium.com/@gvanrossum_83706/peg-parsing-series-de5d41b2ed60
+ * 2. https://www.python.org/dev/peps/pep-0617/
+ * 3. https://www.youtube.com/watch?v=QppWTvh7_sI
+ */
+namespace Morpho\Compiler\Frontend\Peg;
+
+use Generator;
+use Morpho\Base\Must;
+use Morpho\Base\NotImplementedException;
+use Morpho\Compiler\Frontend\ITokenizer;
+use Morpho\Compiler\Frontend\Location;
+use RuntimeException;
+
+use function Morpho\Base\last;
+
+/**
+ * https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/tokenizer.py
+ */
+class GrammarTokenizer implements ITokenizer {
+    private int $index = 0;
+
+    /**
+     * @var array TokenInfo[]
+     */
+    private array $tokens = [];
+
+    private Generator $tokenGen;
+
+    //_tokens: List[tokenize.TokenInfo]
+
+    public function __construct(Generator $tokenGen) {
+        $this->tokenGen = $tokenGen;
+    }
+
+    /**
+     * https://github.com/python/cpython/blob/fc94d55ff453a3101e4c00a394d4e38ae2fece13/Lib/tokenize.py#L433
+     * @param resource $stream
+     * @return \Generator
+     */
+    public static function tokenize($stream): Generator {
+        $lnum = $parenlev = $continued = 0;
+        $numchars = '0123456789';
+        $contstr = '';
+        $needcont = 0;
+        $contline = null;
+        $indents = [0];
+        $lastLine = '';
+        $line = '';
+        $endprogRe = null;
+        $strStart = new Location(0, 0);
+        $tabsize = 4;
+        rewind($stream);
+        while (true) { // loop over lines in stream
+            $line = fgets($stream);
+            $lnum++;
+            $pos = $max = 0;
+            if (false !== $line) {
+                $max = mb_strlen($line);
+            }
+
+            if ($contstr) { // continued string
+                if (false === $line) {
+                    throw new TokenException("EOF in multi-line string", $strStart);
+                }
+                if (preg_match($endprogRe, $line)) {
+                    throw new NotImplementedException();
+                    /*
+                            pos = end = endmatch.end(0)
+                            yield TokenInfo(STRING, contstr + line[:end],
+                                   strstart, (lnum, end), contline + line)
+                            contstr, needcont = '', 0
+                            contline = None
+*/
+                } elseif ($needcont && !str_ends_with($line, "\\\n") && !str_ends_with($line, "\\\r\n")) {
+                    yield new TokenInfo(TokenType::ERRORTOKEN, $contstr . $line, $strStart, new Location($lnum, mb_strlen($line)), $contline);
+                    $contstr = '';
+                    $contline = null;
+                    continue;
+                } else {
+                    $contstr .= $line;
+                    $contline = $contline . $line;
+                    continue;
+                }
+            } elseif ($parenlev === 0 && !$continued) { // new statement
+                if ($line === '') {
+                    break;
+                }
+                $column = 0;
+                while ($pos < $max) { // measure leading whitespace
+                    if ($line[$pos] === ' ') {
+                        $column++;
+                    } elseif ($line[$pos] === "\t") {
+                        $column = (floor($column / $tabsize) + 1) * $tabsize;
+                    } elseif ($line[$pos] === "\f") {
+                        $column = 0;
+                    } else {
+                        break;
+                    }
+                    $pos++;
+                }
+                if ($pos === $max) {
+                    break;
+                }
+                if (str_contains("#\r\n", $line[$pos])) { // skip comments or blank lines
+                    if ($line[$pos] === '#') {
+                        $commentToken = rtrim(mb_substr($line, $pos), "\r\n");
+                        yield new TokenInfo(TokenType::COMMENT, $commentToken, new Location($lnum, $pos), new Location($lnum, $pos + mb_strlen($commentToken)), $line);
+                        $pos += mb_strlen($commentToken);
+                    }
+                    yield new TokenInfo(TokenType::NL, mb_substr($line, $pos), new Location($lnum, $pos), new Location($lnum, mb_strlen($line)), $line);
+                    continue;
+                }
+                if ($column > last($indents)) { // count indents or dedents
+                    $indents[] = $column;
+                    yield new TokenInfo(TokenType::INDENT, mb_substr($line, 0, $pos), new Location($lnum, 0), new Location($lnum, $pos), $line);
+                }
+                while ($column < last($indents)) {
+                    if (!in_array($column, $indents)) {
+                        throw new IndentationException("Unindent does not match any outer indentation level", $lnum, $pos, $line);
+                    }
+                    $indents = array_slice($indents, 0, -1);
+                    yield new TokenInfo(TokenType::INDENT, '', new Location($lnum, $pos), new Location($lnum, $pos), $line);
+                }
+            } else { // continued statement
+                if ('' !== $line) {
+                    throw new TokenException("EOF in multi-line statement", new Location($lnum, 0));
+                }
+                $continued = 0;
+            }
+
+            $pseudoTokenRe = GrammarTokenizerRe::pseudoTokenRe();
+            $tripleQuoted = GrammarTokenizerRe::tripleQuotedPrefixes();
+            $singleQuoted = GrammarTokenizerRe::singleQuotedPrefixes();
+            $endPatterns = GrammarTokenizerRe::endPatterns();
+            $isIdentifier = function (string $v): bool {
+                // @todo: support non ASCII identifiers https://docs.python.org/3/reference/lexical_analysis.html#identifiers
+                return (bool) preg_match('~^[a-z_][a-zA-Z_0-9]*$~sD', $v);
+            };
+
+            while ($pos < $max) {
+                if (preg_match('~' . $pseudoTokenRe . '~AsDu', $line, $match, PREG_OFFSET_CAPTURE, $pos)) {
+                    /** @var int $start $start */
+                    $start = $match[0][1];
+                    $end = $start + mb_strlen($match[0][0]);
+                    // start, end = pseudomatch.span(1)
+                    $spos = new Location($lnum, $start);
+                    $epos = new Location($lnum, $end);
+                    $pos = $end;
+                    if ($start === $end) {
+                        continue;
+                    }
+                    $token = mb_substr($line, $start, $end - $start);
+                    $initial = mb_substr($line, $start, 1);
+
+                    if (str_contains($numchars, $initial) || ($initial === '.' && $token != '.' && $token != '...')) {
+                        yield new TokenInfo(TokenType::NUMBER, $token, $spos, $epos, $line);
+                    } elseif (str_contains("\r\n", $initial)) {
+                        if ($parenlev > 0) {
+                            yield new TokenInfo(TokenType::NL, $token, $spos, $epos, $line);
+                        } else {
+                            yield new TokenInfo(TokenType::NEWLINE, $token, $spos, $epos, $line);
+                        }
+                    } elseif ($initial == '#') {
+                        Must::beTruthy(!str_ends_with($token, "\n"));
+                        yield new TokenInfo(TokenType::COMMENT, $token, $spos, $epos, $line);
+                    } elseif (in_array($token, $tripleQuoted)) {
+                        $endprogRe = $endPatterns[$token];
+                        if (preg_match('~' . $endprogRe . '~sDA', $line, $match, 0, $pos))  { # all on one line
+                            d($match);
+                            /*
+                            pos = endmatch.end(0)
+                            token = line[start:pos]
+                            yield TokenInfo(STRING, token, spos, (lnum, pos), line)
+                             */
+                        } else {
+                            $strStart = new Location($lnum, $start); # multiple lines
+                            $contstr = mb_substr($line, $start);
+                            $contline = $line;
+                            break;
+                        }
+                    # Check up to the first 3 chars of the token to see if
+                    #  they're in the single_quoted set. If so, they start
+                    #  a string.
+                    # We're using the first 3, because we're looking for
+                    #  "rb'" (for example) at the start of the token. If
+                    #  we switch to longer prefixes, this needs to be
+                    #  adjusted.
+                    # Note that initial == token[:1].
+                    # Also note that single quote checking must come after
+                    #  triple quote checking (above).
+                    } elseif (in_array($initial, $singleQuoted) || in_array(mb_substr($token, 0, 2), $singleQuoted) || in_array(mb_substr($token, 0, 3), $singleQuoted)) {
+                        if (str_ends_with($token, "\n")) { # continued string
+                            $strStart = new Location($lnum, $start);
+                            # Again, using the first 3 chars of the
+                            #  token. This is looking for the matching end
+                            #  regex for the correct type of quote
+                            #  character. So it's really looking for
+                            #  endpats["'"] or endpats['"'], by trying to
+                            #  skip string prefix characters, if any.
+                            if (isset($endPatterns[$initial])) {
+                                $endprogRe = $endPatterns[$initial];
+                            } elseif (isset($endPatterns[$token[1]])) {
+                                $endprogRe = $endPatterns[$token[1]];
+                            } elseif (isset($endPatterns[$token[2]])) {
+                                $endprogRe = $endPatterns[$token[2]];
+                            } else {
+                                throw new \UnexpectedValueException();
+                            }
+                            $contstr = mb_substr($line, $start);
+                            $needcont = 1;
+                            $contline = $line;
+                            break;
+                        } else {
+                            yield new TokenInfo(TokenType::STRING, $token, $spos, $epos, $line); # ordinary string
+                        }
+                    } elseif ($isIdentifier($initial)) { # ordinary name
+                        yield new TokenInfo(TokenType::NAME, $token, $spos, $epos, $line);
+                    } elseif ($initial == '\\') { # continued stmt
+                        $continued = 1;
+                    }
+                    else {
+                        if (str_contains('([{', $initial)) {
+                            $parenlev++;
+                        } elseif (str_contains(')]}', $initial)) {
+                            $parenlev--;
+                        }
+                        yield new TokenInfo(TokenType::OP, $token, $spos, $epos, $line);
+                    }
+                } else {
+                    yield new TokenInfo(TokenType::ERRORTOKEN, $line[$pos], new Location($lnum, $pos), new Location($lnum, $pos + 1), $line);
+                    $pos++;
+                }
+                // Add an implicit NEWLINE if the input doesn't end in one
+                if (mb_strlen($lastLine) && !in_array(last($lastLine), ["\r", "\n"]) && !str_starts_with(trim($lastLine), '#')) {
+                    yield new TokenInfo(TokenTYpe::NEWLINE, '', new Location($lnum - 1, mb_strlen($lastLine)), new Location($lnum - 1, mb_strlen($lastLine) + 1), '');
+                }
+                foreach (array_slice($indents, 1) as $_) { // pop remaining indent levels
+                    yield new TokenInfo(TokenType::DEDENT, '', new Location($lnum, 0), new Location($lnum, 0), '');
+                }
+                yield new TokenInfo(TokenType::ENDMARKER, '', new Location($lnum, 0), new Location($lnum, 0), '');
+            }
+        }
+        if (!feof($stream)) {
+            throw new RuntimeException('Unexpected end of the stream');
+        }
+    }
+
+    /*
+
+    def shorttok(tok: tokenize.TokenInfo) -> str:
+        return "%-25.25s" % f"{tok.start[0]}.{tok.start[1]}: {token.tok_name[tok.type]}:{tok.string!r}"
+    */
+
+    /**
+     * getnext() in Python
+     */
+    public function nextToken(): TokenInfo {
+        /*"""Return the next token and updates the index."""
+        cached = True
+        while self._index == len(self._tokens):
+            tok = next(self._tokengen)
+            if tok.type in (tokenize.NL, tokenize.COMMENT):
+                continue
+            if tok.type == token.ERRORTOKEN and tok.string.isspace():
+                continue
+            self._tokens.append(tok)
+            cached = False
+        tok = self._tokens[self._index]
+        self._index += 1
+        if self._verbose:
+            self.report(cached, False)
+        return tok
+
+    def peek(self) -> tokenize.TokenInfo:*/
+    }
+
+    /**
+     * Return the next token *without* updating the index.
+     * @return TokenInfo
+     */
+    public function peek(): TokenInfo {
+        while ($this->index === count($this->tokens)) {
+            $this->tokenGen->next();
+            $tok = $this->tokenGen->current();
+            if (in_array($tok->type, [Tokenize . NL, Tokenize . COMMENT])) {
+                continue;
+            }
+            if ($tok->type === Token . ERRORTOKEN && $tok->string->isSpace()) {
+                continue;
+            }
+            $this->tokens[] = $tok;
+        }
+        return $this->tokens[$this->index];
+    }
+    /*        def diagnose(self) -> tokenize.TokenInfo:
+                if not self._tokens:
+                    self.getnext()
+                return self._tokens[-1]*/
+
+    # get_last_non_whitespace_token()
+    public function lastNonWhitespaceToken(): TokenInfo {
+        /*
+        for tok in reversed(self._tokens[: self._index]):
+            if tok.type != tokenize.ENDMARKER and (
+                tok.type < tokenize.NEWLINE or tok.type > tokenize.DEDENT
+            ):
+                break
+        return tok
+        */
+    }
+
+    /**
+     * def get_lines(self, line_numbers: List[int]) -> List[str]:
+     * @return void
+     */
+    public function lines() {
+        throw new NotImplementedException();
+    }
+
+    // mark() in Python
+    public function mark(): int {
+        return $this->index;
+    }
+
+    public function reset(int $index): void {
+        $this->index = $index;
+    }
+    /*
+        public function __invoke(mixed $context): mixed {
+            throw new NotImplementedException();
+        }*/
+    public function __invoke(mixed $val): mixed {
+        throw new NotImplementedException();
+    }
+}

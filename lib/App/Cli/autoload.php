@@ -19,6 +19,7 @@ use Morpho\Base\Conf;
 use Morpho\Tech\Php\DumpListener;
 use Morpho\Tech\Php\ErrorHandler;
 use RuntimeException;
+use Stringable;
 use UnexpectedValueException;
 
 use function count;
@@ -29,7 +30,6 @@ use function implode;
 use function is_int;
 use function is_string;
 use function Morpho\Base\capture;
-use function Morpho\Base\showLn;
 use function passthru;
 use function pcntl_exec;
 use function pcntl_fork;
@@ -40,6 +40,8 @@ use function strtolower;
 use function substr;
 use function trim;
 
+use const Morpho\Base\CODE_WIDTH_1;
+
 /**
  * Useful to call from simple CLI applications, not involving the AppInitializer.
  */
@@ -48,18 +50,49 @@ function bootstrap(): void {
     (new ErrorHandler([new DumpListener()]))->register();
 }
 
-function error(string $errMessage = null, int $exitCode = null): void {
-    if ($errMessage) {
-        showError($errMessage);
+function showLine(string|Stringable|iterable|int|float $text = null): void {
+    if (null === $text) {
+        echo "\n";
+    } else {
+        if (is_scalar($text) || $text instanceof Stringable) {
+            echo (string)$text . "\n";
+        } else {
+            foreach ($text as $line) {
+                echo $line . "\n";
+            }
+        }
     }
-    exit(null !== $exitCode && 0 !== $exitCode ? $exitCode : Env::FAILURE_CODE);
 }
 
-function errorLn(string $errMessage = null, int $exitCode = null): void {
-    if ($errMessage) {
-        showErrorLn($errMessage);
+function showOk(string|Stringable $prefix = null, string|Stringable $suffix = null): void {
+    showLine(
+        (null !== $prefix ? $prefix . ' ' : '')
+        . 'OK'
+        . (null !== $suffix ? ' ' . $suffix : '')
+    );
+}
+
+/**
+ * @param string      $ch Character to output
+ * @param int         $n Number of times to output the character
+ * @param string|null $prefix
+ * @param string|null $suffix
+ * @param bool        $stdErr
+ * @return void
+ */
+function showSep(string $ch = '-', int $n = CODE_WIDTH_1, string $prefix = null, string $suffix = null, bool $stdErr = false): void {
+    if (null !== $prefix) {
+        $n -= mb_strlen($prefix);
     }
-    exit(null !== $exitCode && 0 !== $exitCode ? $exitCode : Env::FAILURE_CODE);
+    if (null !== $suffix) {
+        $n -= mb_strlen($suffix);
+    }
+    $msg = $prefix . str_repeat($ch, $n) . $suffix;
+    if ($stdErr) {
+        showErrorLn($msg);
+    } else {
+        showLine($msg);
+    }
 }
 
 function showError(string $errMessage): void {
@@ -71,12 +104,35 @@ function showErrorLn(string $errMessage = null): void {
 }
 
 /**
- * @param string $ch
- * @param int    $n
- * @return void
+ * Like showError() but exits with the non-zero exit code.
+ * @param string|null $errMessage
+ * @param int|null    $exitCode
  */
-function showSep(string $ch = '-', int $n = 80): void {
-    showLn(str_repeat($ch, $n));
+function error(string $errMessage = null, int $exitCode = null): never {
+    if ($errMessage) {
+        showError($errMessage);
+    }
+    exit(null !== $exitCode && 0 !== $exitCode ? $exitCode : Env::FAILURE_CODE);
+}
+
+/**
+ * Like showErrorLn() but exits with the non-zero exit code.
+ * @param string|null $errMessage
+ * @param int|null    $exitCode
+ */
+function errorLn(string $errMessage = null, int $exitCode = null): never {
+    if ($errMessage) {
+        showErrorLn($errMessage);
+    }
+    exit(null !== $exitCode && 0 !== $exitCode ? $exitCode : Env::FAILURE_CODE);
+}
+
+/**
+ * @param bool $success true => 0, false => 1
+ * @return never
+ */
+function exitBool(bool $success): never {
+    exit($success ? Env::SUCCESS_CODE : Env::FAILURE_CODE);
 }
 
 function stylize(string $text, $codes): string {
@@ -106,36 +162,28 @@ function stylize(string $text, $codes): string {
     // \033 is ASCII-code of the ESC.
     static $escapeSeqPrefix = "\033[";
     static $escapeSeqSuffix = "\033[0m";
-    $textStyle = implode(';', (array) $codes) . 'm';
+    $textStyle = implode(';', (array)$codes) . 'm';
     return $escapeSeqPrefix
         . $textStyle
         . $text
         . $escapeSeqSuffix;
 }
 
-/**
- * @param int|string|iterable $args
- * @return array
- */
-function earg($args): array {
+function earg(int|string|iterable $args): array {
     if (!is_iterable($args)) {
         if (is_string($args) || is_int($args)) {
-            return [escapeshellarg((string) $args)];
+            return [escapeshellarg((string)$args)];
         }
         throw new UnexpectedValueException();
     }
     $res = [];
     foreach ($args as $arg) {
-        $res[] = escapeshellarg((string) $arg);
+        $res[] = escapeshellarg((string)$arg);
     }
     return $res;
 }
 
-/**
- * @param int|string|iterable $args
- * @return string
- */
-function arg($args): string {
+function arg(int|string|iterable $args): string {
     if ($args === '') {
         return '';
     }
@@ -149,7 +197,7 @@ function envVarsStr(array $envVars): string {
     }
     $str = '';
     foreach ($envVars as $name => $value) {
-        if (!preg_match('~^[a-z][a-z0-9_]*$~si', (string) $name)) {
+        if (!preg_match('~^[a-z][a-z0-9_]*$~si', (string)$name)) {
             throw new RuntimeException('Invalid variable name');
         }
         $str .= ' ' . $name . '=' . escapeshellarg($value);
@@ -165,7 +213,7 @@ function mv(string $args, array $conf = null): ICommandResult {
     return sh('mv ' . $args, $conf);
 }
 
-function cp($args, array $conf = null): ICommandResult {
+function cp(string $args, array $conf = null): ICommandResult {
     return sh('cp -r ' . $args, $conf);
 }
 
@@ -189,7 +237,7 @@ function sh(string $command, array $conf = null): ICommandResult {
             'capture' => false,
             'envVars' => null,
         ],
-        (array) $conf
+        (array)$conf
     );
     if (!$showSet && $conf['capture']) {
         $conf['show'] = false;
@@ -259,13 +307,13 @@ function rawSh(string $cmd, $env = null) {
 function checkExitCode(int $exitCode, string $errMessage = null): int {
     if ($exitCode !== 0) {
         throw new RuntimeException(
-            "Command returned non-zero exit code: " . (int) $exitCode . (null !== $errMessage ? '. ' . $errMessage : '')
+            "Command returned non-zero exit code: " . (int)$exitCode . (null !== $errMessage ? '. ' . $errMessage : '')
         );
     }
     return $exitCode;
 }
 
-function checkResult(ICommandResult $result) {
+function checkResult(ICommandResult $result): void {
     if ($result->isError()) {
         errorLn($result->error() . ' Exit code: ' . $result->exitCode());
     }
@@ -290,7 +338,7 @@ function askYesNo(string $question): bool {
         } elseif ($answer === 'n') {
             return false;
         } else {
-            showLn("Invalid choice, please type y or n");
+            showLine("Invalid choice, please type y or n");
         }
     } while (true);
 }

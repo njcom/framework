@@ -225,6 +225,7 @@ class PhpTemplateEngine extends ArrPipe {
      * @param array|null $context
      * @return string
      * @throws Throwable
+     */
     public function evalFile(string $sourceAbsFilePath, array $context = null): string {
         $candidateDirPaths = [];
         for ($i = count($this->baseSourceDirPaths) - 1; $i >= 0; $i--) {
@@ -250,7 +251,6 @@ class PhpTemplateEngine extends ArrPipe {
         $this->compileFile($sourceAbsFilePath, $targetAbsFilePath, []);
         return $this->evalPhpFile($targetAbsFilePath, (array)$context);
     }
-    */
 
     public function pageHtmlId(): string {
         $handler = $this->request->handler();

@@ -4,12 +4,10 @@
  * It is distributed under the 'Apache License Version 2.0' license.
  * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
  */
-namespace Morpho\Test\Manual;
+namespace Morpho\Base;
 
-use Morpho\App\Cli\Dialog;
-use Morpho\Fs\Dir;
-
-require __DIR__ . '/init.php';
-
-//Dialog::fselect(__DIR__);
-Dialog::radiolist(['foo', 'bar']);
+abstract class Disposable implements IDisposable {
+    public function __destruct() {
+        $this->dispose();
+    }
+}

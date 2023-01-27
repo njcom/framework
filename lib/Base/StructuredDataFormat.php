@@ -4,10 +4,10 @@
  * It is distributed under the 'Apache License Version 2.0' license.
  * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
  */
-namespace Morpho\Compiler;
+namespace Morpho\Base;
 
-use Morpho\Base\IFn;
-
-// Aka phase. Each compiler step can contain other steps and therefore it is a recursive data type.
-interface ICompilerStep extends IFn {
+enum StructuredDataFormat: string {
+    case Json = 'json';
+    case Xml = 'xml';
+    case Yaml = 'yaml';
 }

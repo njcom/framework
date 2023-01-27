@@ -23,7 +23,7 @@ use function count;
 use function fclose;
 use function file_put_contents;
 use function get_class_methods;
-use function Morpho\Base\{all, append, appendFn, camelize, camelizeKeys, capture, cartesianProduct, classify, compose, dasherize, deleteDups, enumVals, formatBytes, formatFloat, fromJson, humanize, indent, index, isEnumCase, isSubset, isUtf8Text, last, lastPos, lines, memoize, merge, normalizeEols, not, op, partial, permutations, pipe, prepend, prependFn, q, qq, sanitize, setProps, setsEqual, shorten, showLn, showOk, subsets, symDiff, titleize, toIt, toJson, tpl, etrim, ucfirst, underscore, underscoreKeys, unindent, union, uniqueName, unsetMany, unsetOne, unsetRecursive, using, caseVal, waitUntilNumOfAttempts, waitUntilTimeout, words, wrap, wrapFn};
+use function Morpho\Base\{all, append, appendFn, camelize, camelizeKeys, capture, cartesianProduct, classify, compose, dasherize, deleteDups, enumVals, formatBytes, formatFloat, fromJson, humanize, indent, index, isEnumCase, isSubset, isUtf8Text, last, lastPos, lines, memoize, merge, normalizeEols, not, op, partial, permutations, pipe, prepend, prependFn, q, qq, sanitize, setProps, setsEqual, shorten, subsets, symDiff, titleize, toIt, toJson, tpl, etrim, ucfirst, underscore, underscoreKeys, unindent, union, uniqueName, unsetMany, unsetOne, unsetRecursive, with, caseVal, waitUntilNumOfAttempts, waitUntilTimeout, words, wrap, wrapFn};
 use function ob_get_clean;
 use function ob_start;
 use function property_exists;
@@ -290,37 +290,6 @@ class FunctionsTest extends TestCase {
     public function testNormalizeEols() {
         $this->assertEquals("foo\nbar\nbaz\n", normalizeEols("foo\r\nbar\rbaz\r\n"));
         $this->assertEquals("", normalizeEols(""));
-    }
-
-    public function testShowLn_NoArgsWritesSingleLine() {
-        ob_start();
-        showLn();
-        $this->assertEquals("\n", ob_get_clean());
-    }
-
-    public function testShowLn_SingleArg() {
-        ob_start();
-        showLn("Printed");
-        $this->assertEquals("Printed\n", ob_get_clean());
-    }
-
-    public function testShowLn_IterableArg() {
-        $val = new ArrayIterator(['foo', 'bar', 'baz']);
-        ob_start();
-        showLn($val);
-        $this->assertEquals("foo\nbar\nbaz\n", ob_get_clean());
-    }
-
-    public function testShowOk_WithoutArgs() {
-        ob_start();
-        showOk();
-        $this->assertEquals("OK\n", ob_get_clean());
-    }
-
-    public function testShowOk_WithArgs() {
-        ob_start();
-        showOk("Test");
-        $this->assertSame("OK: Test\n", ob_get_clean());
     }
 
     public function testShorten() {
@@ -717,7 +686,7 @@ class FunctionsTest extends TestCase {
         $this->assertSame($result, $fn2($a));
     }
 
-    public function testUsing_CallsInvoke() {
+    public function testWith_CallsInvoke() {
         $disposable = new class implements IDisposable {
             public $disposeArgs;
             public $invokeArgs;
@@ -732,12 +701,12 @@ class FunctionsTest extends TestCase {
             }
         };
         $val = 'foo';
-        $this->assertSame('returnedFromInvoke', using($disposable, $val));
+        $this->assertSame('returnedFromInvoke', with($disposable, $val));
         $this->assertSame([$val], $disposable->invokeArgs);
         $this->assertSame([], $disposable->disposeArgs);
     }
 
-    public function testUsing_CallsDispose() {
+    public function testWith_CallsDispose() {
         $disposable = new class implements IDisposable {
             public $disposeArgs;
             public $invokeArgs;
@@ -752,7 +721,7 @@ class FunctionsTest extends TestCase {
         };
         $val = 'bar';
         try {
-            using($disposable, $val);
+            with($disposable, $val);
             $this->fail();
         } catch (RuntimeException $e) {
             $this->assertSame('Some error', $e->getMessage());

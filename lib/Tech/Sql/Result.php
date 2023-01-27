@@ -28,7 +28,7 @@ class Result extends PDOStatement implements Countable {
      * @return array|false
      */
     public function row(int $mode = PDO::FETCH_ASSOC): array|false {
-        return $this->fetch(PDO::FETCH_ASSOC);
+        return $this->fetch($mode);
     }
 
     public function column(): array {

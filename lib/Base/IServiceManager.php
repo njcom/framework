@@ -8,8 +8,10 @@ namespace Morpho\Base;
 
 use ArrayAccess;
 
+//implements IteratorAggregate, ArrayAccess, Serializable, Countable
 interface IServiceManager extends ArrayAccess {
     public function setConf(mixed $conf): static;
 
     public function conf(): mixed;
 }
+

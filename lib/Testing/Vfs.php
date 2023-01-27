@@ -139,7 +139,7 @@ class Vfs implements IFs {
         return self::$root;
     }
 
-    private function dirMode(int $mode = Stat::DIR_BASE_MODE): int {
+    private function dirMode(int $mode = Stat::DIR_BASE_PERMS): int {
         return ($mode & ~umask()) | Stat::DIR;
     }
 
@@ -175,7 +175,7 @@ class Vfs implements IFs {
         return self::URI_PREFIX . $uri;
     }
 
-    private function fileMode(int $mode = Stat::FILE_BASE_MODE): int {
+    private function fileMode(int $mode = Stat::FILE_BASE_PERMS): int {
         return ($mode & ~umask()) | Stat::FILE;
     }
 

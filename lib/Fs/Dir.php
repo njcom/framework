@@ -38,7 +38,7 @@ class Dir {
             (array)$conf
         );
 
-        if (is_dir($targetDirPath)) {
+        if (Stat::isDir($targetDirPath)) {
             $sourceDirName = basename($sourceDirPath);
             if ($sourceDirName !== basename($targetDirPath)) {
                 $targetDirPath .= '/' . $sourceDirName;
@@ -89,7 +89,7 @@ class Dir {
         if ('' === $dirPath) {
             throw new Exception("The directory path is empty");
         }
-        if (is_dir($dirPath)) {
+        if (Stat::isDir($dirPath)) {
             return $dirPath;
         }
         if (!mkdir($dirPath, $perms, $recursive)) {
@@ -108,7 +108,7 @@ class Dir {
         if (null === $perms) {
             $perms = Stat::DIR_PERMS;
         }
-        if (is_dir($dirPath)) {
+        if (Stat::isDir($dirPath)) {
             self::delete($dirPath);
         }
         self::create($dirPath, $perms, $recursive);
@@ -163,7 +163,7 @@ class Dir {
 
     public static function dirPaths(string $dirPath, bool $recursive = false, int $flags = null): iterable {
         foreach (self::paths($dirPath, $recursive, $flags) as $path) {
-            if (is_dir($path) && !is_link($path)) {
+            if (Stat::isDir($path)) {
                 yield $path;
             }
         }
@@ -205,6 +205,12 @@ class Dir {
         }
     }
 
+    public static function names(string $dirPath, bool $recursive = false): iterable {
+        foreach (self::paths($dirPath, $recursive) as $path) {
+            yield basename($path);
+        }
+    }
+
 /*    public static function names(string|iterable $dirPath, bool $recursive): iterable {
     }*/
 
@@ -230,7 +236,7 @@ class Dir {
         if ('' === $dirPath) {
             throw new Exception("The directory path is empty");
         }
-        if (!is_dir($dirPath)) {
+        if (!Stat::isDir($dirPath)) {
             throw new Exception("The '$dirPath' directory does not exist");
         }
         return $dirPath;

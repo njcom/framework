@@ -7,9 +7,11 @@
 namespace Morpho\Compiler\Frontend\Peg;
 
 // TokenError
+use Morpho\Compiler\Frontend\Location;
+
 class TokenException extends PegException {
-    public function __construct(string $msg, array $args) {
+    public function __construct(string $msg, Location $location) {
         // @todo: handle $args
-        parent::__construct($msg);
+        parent::__construct($msg . ', (' . $location->lineNo . ', ' . $location->columnNo . ')');
     }
 }

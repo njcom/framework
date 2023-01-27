@@ -56,7 +56,7 @@ abstract class Env {
             ''      => false,
             '0'     => false,
         ];
-        return $map[strtolower((string) $value)] ?? (bool) $value;
+        return $map[strtolower((string)$value)] ?? (bool)$value;
     }
 
     public static function is64BitCpu(): bool {
@@ -93,7 +93,7 @@ abstract class Env {
      */
     public static function isBoolIniVal(int|string|float|bool $value): bool {
         return in_array(
-            strtolower((string) $value),
+            strtolower((string)$value),
             ['on', 'true', 'yes', '1', 1, 'off', 'false', 'none', '', '0', 0],
             true
         );
@@ -105,10 +105,7 @@ abstract class Env {
 
     public static function enableExpectations(): void {
         // http://php.net/assert#function.assert.expectations
-        Must::beTrue(
-            ini_get('zend.assertions') === '1',
-            "The 'zend.assertions' ini parameter must be set to 1 for expectations"
-        );
+        Must::beTruthy(ini_get('zend.assertions') === '1', "The 'zend.assertions' ini parameter must be set to 1 for expectations");
         ini_set('assert.active', '1');
         ini_set('assert.exception', '1');
     }

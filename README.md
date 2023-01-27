@@ -6,6 +6,8 @@ Framework for building web-sites, web-applications, web-IDEs, command-line appli
 
 Not ready (WIP). API is not stable.
 
+* [![.github/workflows/test.yml](https://github.com/morpho-os/framework/actions/workflows/test.yml/badge.svg)](https://github.com/morpho-os/framework/actions/workflows/test.yml)
+
 ## Used technologies
 
 ### For development
@@ -43,11 +45,6 @@ Only Linux, other OSs are not supported.
 ## Documentation
 
 Documentation does not exist yet.
-
-## Automation and QA
-
-* [![.github/workflows/test.yml](https://github.com/morpho-os/framework/actions/workflows/test.yml/badge.svg)](https://github.com/morpho-os/framework/actions/workflows/test.yml)
-* [![.github/workflows/handle-issues.yml](https://github.com/morpho-os/framework/actions/workflows/handle-issues.yml/badge.svg)](https://github.com/morpho-os/framework/actions/workflows/handle-issues.yml)
 
 ## Third-party code
 

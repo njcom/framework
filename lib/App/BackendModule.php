@@ -129,7 +129,11 @@ class BackendModule extends Module {
             if (!is_dir($controllerDirPath)) {
                 continue;
             }
-            yield from Dir::filePaths($controllerDirPath, '~\w' . CONTROLLER_SUFFIX . '\.php$~', true);
+            foreach (Dir::filePaths($controllerDirPath, true) as $filePath) {
+                if (preg_match('~\w' . CONTROLLER_SUFFIX . '\.php$~', $filePath)) {
+                    yield $filePath;
+                }
+            }
         }
     }
 

@@ -8,29 +8,22 @@ namespace Morpho\App\Web\View;
 
 use Morpho\Base\IHasServiceManager;
 use Morpho\Base\IServiceManager;
-use Morpho\Base\NotImplementedException;
+use Stringable;
 
-class WidgetPlugin extends Plugin implements IHasServiceManager {
-    private $serviceManager;
-
-    public function __invoke($value) {
-        throw new NotImplementedException();
-        /*
-        $name = $args[0];
-        if ($name !== 'Menu') {
-        }
-        $request = $this->serviceManager['request'];
-        return new MenuWidget(
-            $this->serviceManager['db'],
-            $request->baseRelUri(),
-            $request->requestUri()
-        );
-        */
-    }
+abstract class WidgetPlugin extends Plugin implements IHasServiceManager, Stringable {
+    protected IServiceManager $serviceManager;
 
     public function setServiceManager(IServiceManager $serviceManager): static {
         $this->serviceManager = $serviceManager;
         return $this;
     }
-}
 
+    public function __invoke(mixed $value = null): mixed {
+        return $this;
+    }
+
+    protected function e(string|int|Stringable $text): string {
+        $templateEngine = $this->serviceManager['templateEngine'];
+        return $templateEngine->e($text);
+    }
+}

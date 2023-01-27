@@ -18,11 +18,11 @@ interface IQuery extends Stringable {
     public function args(): array;
 
     /**
-     * @param $condition
-     * @param $args If not null will be casted to array
+     * @param array|\Stringable|string $condition
+     * @param array|string|int|null    $args If not null will be casted to array
      * @return $this
      */
-    public function where(array|\Stringable|string $condition, null|array|string|int $args = null): static;
+    public function where(array|Stringable|string $condition, null|array|string|int $args = null): static;
 
     public function eval(): Result;
 

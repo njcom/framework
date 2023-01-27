@@ -6,9 +6,6 @@
  */
 namespace Morpho\Base;
 
-/**
- * This interface is inspired by IDisposable from .NET but with adding extending the IFn. See [Overview](https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/unmanaged#in-this-section)
- */
-interface IDisposable extends IFn {
+interface IDisposable {
     public function dispose(): void;
 }

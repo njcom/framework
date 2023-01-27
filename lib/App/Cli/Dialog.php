@@ -59,6 +59,10 @@ class Dialog {
         throw new NotImplementedException();
     }
 
+    /**
+     * Text editor
+     * @return mixed
+     */
     public static function editBox() {
         throw new NotImplementedException();
     }
@@ -88,7 +92,7 @@ class Dialog {
         throw new NotImplementedException();
     }
 
-    public static function inputBox(string $title = null, string $defaultVal = null, string $helpText = null): string|false {
+    public static function inputBox(string $title = null, string|int $defaultVal = null, string $helpText = null): string|false {
         return self::run($title, '--inputbox ' . escapeshellarg((string)$helpText) . ' 0 0 ' . escapeshellarg((string)$defaultVal));
     }
 
@@ -96,7 +100,7 @@ class Dialog {
         throw new NotImplementedException();
     }
 
-    public static function menu(iterable $items, $defaultKey = null, string $title = null, string $text = null): array {
+    public static function menu(iterable $items, $defaultKey = null, string $title = null, string $text = null): array|false {
         $normalizedItems = [];
         foreach ($items as $key => $val) {
             $normalizedItems[$key] = caseVal($val);
@@ -109,10 +113,13 @@ class Dialog {
             'dialog --stdout --no-items --title ' . escapeshellarg((string)$title) . ' --default-item ' . escapeshellarg(
                 (string)$defaultItem
             ) . ' --menu ' . escapeshellarg((string)$text) . ' 0 0 0 ' . arg($normalizedItems),
-            ['capture' => true]
+            ['capture' => true, 'check' => false]
         );
         sh('clear');
         $key = array_search($el, $normalizedItems, true);
+        if (false === $key) {
+            return false;
+        }
         return [$key, $el];
     }
 
@@ -152,7 +159,29 @@ class Dialog {
         throw new NotImplementedException();
     }
 
-    public static function radiolist() {
+    public static function radiolist(iterable $items, $defaultKey = null, string $title = null, string $text = null) {
+        /*
+        $normalizedItems = [];
+        foreach ($items as $key => $val) {
+            $normalizedItems[$key] = caseVal($val);
+        }
+        $defaultItem = null;
+        if (null !== $defaultKey) {
+            $defaultItem = $normalizedItems[$defaultKey];
+        }
+        $el = (string)sh(
+            'dialog --stdout --no-items --title ' . escapeshellarg((string)$title) . ' --default-item ' . escapeshellarg(
+                (string)$defaultItem
+            ) . ' --radiolist ' . escapeshellarg((string)$text) . ' 0 0 0 ' . arg($normalizedItems),
+            ['capture' => true, 'check' => false]
+        );
+        sh('clear');
+        $key = array_search($el, $normalizedItems, true);
+        if (false === $key) {
+            return false;
+        }
+        return [$key, $el];
+        */
         throw new NotImplementedException();
     }
 

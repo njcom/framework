@@ -27,7 +27,6 @@ use function fopen;
 use function fwrite;
 use function implode;
 use function is_array;
-use function is_dir;
 use function is_file;
 use function is_iterable;
 use function is_readable;
@@ -344,10 +343,10 @@ class File extends Entry {
             throw new Exception("Unable to copy: the source '$sourceFilePath' is not a file");
         }
         $targetDirPath = Path::dirPath($targetFilePath);
-        if (!is_dir($targetDirPath)) {
+        if (!Stat::isDir($targetDirPath)) {
             Dir::create($targetDirPath);
         }
-        if (is_dir($targetFilePath)) {
+        if (Stat::isDir($targetFilePath)) {
             $targetFilePath = $targetFilePath . '/' . basename($sourceFilePath);
         }
         if (is_file($targetFilePath) && !$overwrite) {

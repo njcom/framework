@@ -81,7 +81,12 @@ define(__NAMESPACE__ . '\\INDENT', str_repeat(' ', INDENT_SIZE));
 const SHORTEN_TAIL = '...';
 const SHORTEN_LENGTH = 30;
 
+const CODE_WIDTH_1 = 80;
+const CODE_WIDTH_2 = 120;
+
 const TPL_FILE_EXT = '.php.tpl';
+
+const PHP_FILE_FULL_RE = '~\.php$~si';
 
 // https://stackoverflow.com/questions/23837286/why-does-php-not-provide-an-epsilon-constant-for-floating-point-comparisons
 // Can be used in comparison operations with real numbers.
@@ -114,20 +119,6 @@ function enumVals(string $enumName, bool $preserveNames = true): array {
         return array_values($vals);
     }
     return $vals;
-}
-
-function showLn(string|Stringable|iterable|int|float $text = null): void {
-    if (null === $text) {
-        echo "\n";
-    } else {
-        if (is_scalar($text) || $text instanceof Stringable) {
-            echo (string) $text . "\n";
-        } else {
-            foreach ($text as $line) {
-                echo $line . "\n";
-            }
-        }
-    }
 }
 
 function lines(string|Stringable|iterable $text, bool $filterEmpty = true, bool $trim = true): Traversable {
@@ -193,25 +184,6 @@ function e(string|Stringable|int|float $s): string {
 
 function de(string|Stringable|int|float $s): string {
     return htmlspecialchars_decode((string)$s, ENT_QUOTES);
-}
-
-
-function showOk(string|Stringable $msg = null): void {
-    showLn('OK' . (null !== $msg ? ': ' . $msg : ''));
-}
-
-/**
- * @param IDisposable $disposable
- * @param mixed       $val Will be passed to IFn::__invoke()
- * @return mixed
- */
-function using(IDisposable $disposable, mixed $val = null): mixed {
-    try {
-        $result = $disposable($val);
-    } finally {
-        $disposable->dispose();
-    }
-    return $result;
 }
 
 function unpackArgs(array $args): array {
@@ -788,18 +760,14 @@ function waitUntilNumOfAttempts(callable $predicate, int $waitIntervalMicroSec =
  * @return mixed The truthy result from the predicate
  */
 function waitUntilTimeout(callable $predicate, int $timeoutMicroSec) {
-    $time = microtime(true);
-    while (true) {
+    for ($time = microtime(true); $time < $timeoutMicroSec; $time += microtime(true)) {
         $res = $predicate();
         if ($res) {
             return $res;
         }
-        $time += microtime(true);
-        if ($time >= $timeoutMicroSec) {
-            throw new RuntimeException('The timeout has been reached');
-        }
         usleep($timeoutMicroSec);
     }
+    throw new RuntimeException('The timeout has been reached');
 }
 
 function any(callable $predicate, iterable $list): bool {
@@ -1203,48 +1171,14 @@ function unindent(string|Stringable|int|float $text, int $indent = INDENT_SIZE):
 }
 
 /**
- * @param iterable $it
- * @return array
- * @deprecated should be removed after PHP 8.2 and replaced with iterator_to_array()
- * Alternative to iterator_to_array(), as the iterator_to_array() does not support arrays as the first argument
- */
-function toArr(iterable $it): array {
-    if (is_array($it)) {
-        return $it;
-    }
-    if ($it instanceof ArrayObject) {
-        return $it->getArrayCopy();
-    }
-    $arr = [];
-    $i = 0;
-    $intKeys = true;
-    foreach ($it as $key => $val) {
-        if (!preg_match('~^\d+$~s', (string)$key)) {
-            $intKeys = false;
-            break;
-        }
-        $arr[$i] = $val;
-        $i++;
-    }
-    if ($intKeys) {
-        return $arr;
-    }
-    $arr = [];
-    foreach ($it as $key => $val) {
-        $arr[$key] = $val;
-    }
-    return $arr;
-}
-
-/**
  * Returns an array (set, order is not important) of all subsets having size 2^count($arr).
  * If $k >= 0 then will generate only k-subsets (subsets of size $k).
  *
  * of all subsets,the number of elements of the output is 2^count($arr).
  * The $arr must be either empty or non-empty and have numeric keys.
  *
- * @psalm-param array<string, mixed> $set
- * @psalm-param int $arr
+ * @param array $set
+ * @param int   $k
  * @return array
  */
 function subsets(array $set, int $k = -1): array {
@@ -1391,7 +1325,7 @@ function symDiff(array $arrA, array $arrB): array {
     return union($diffA, $diffB);
 }
 
-function unsetOne(array $arr, $val, bool $resetIntKeys = true, bool $allOccur = false, bool $strict = true): array {
+function unsetOne(array $arr, mixed $val, bool $resetIntKeys = true, bool $allOccur = false, bool $strict = true): array {
     while (true) {
         $key = array_search($val, $arr, $strict);
         if (false === $key) {
@@ -1448,11 +1382,20 @@ function unsetRecursive(array &$arr, $key): array {
 }
 
 function flatten(array $arr): array {
+    /*
+    @todo: compare with
+    $a = array(1,2,array(3,4, array(5,6,7), 8), 9);
+    $it = new RecursiveIteratorIterator(new RecursiveArrayIterator($a));
+    foreach($it as $v) {
+    echo $v, " ";
+    }
+    */
     $result = [];
     foreach ($arr as $val) {
         if (is_array($val)) {
             $result = array_merge($result, flatten($val));
         } else {
+            // @todo: add $preserveKeys argument or $asList, normalize argument name across all base functions: $result[$key] = $val;
             $result[] = $val;
         }
     }
@@ -1520,3 +1463,44 @@ function compileRe(array $regexes, string $subpatternOpts = null): string {
 function isUtf8Text(string $text): bool {
     return (bool)preg_match('/.*/us', $text); // [u/PCRE_UTF8](https://www.php.net/manual/en/reference.pcre.pattern.modifiers.php)
 }
+
+function with(IDisposable & IFn $disposable, mixed $val = null): mixed {
+    try {
+        $result = $disposable($val);
+    } finally {
+        $disposable->dispose();
+    }
+    return $result;
+}
+
+function withStream(callable $fn, string $bytes, string $source = null): mixed {
+    try {
+        $stream = mkStream($bytes, $source);
+        return $fn($stream);
+    } finally {
+        if (isset($stream) && is_resource($stream)) {
+            fclose($stream);
+        }
+    }
+}
+
+/**
+ * @param string      $bytes
+ * @param string|null $source
+ * @return resource
+ */
+function mkStream(string $bytes, string $source = null) {
+    if (null === $source) {
+        $source = 'php://memory';
+    } else {
+        Must::beTruthy(str_starts_with($source, 'php://'), 'The source must start with php://');
+    }
+    $stream = fopen($source, 'r+');
+    if (!$stream) {
+        throw new \RuntimeException('Unable to allocate memory');
+    }
+    fwrite($stream, $bytes);
+    rewind($stream);
+    return $stream;
+}
+

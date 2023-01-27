@@ -22,7 +22,7 @@ class Peg implements IParserGen {
                 // todo
                 yield [];
             };
-            $context = (new GrammarParser(new GrammarLexer($tokenGen())))($context);
+            $context = (new GrammarParser(new GrammarTokenizer($tokenGen())))($context);
             return (new GrammarChecker())($context);
         };
     }

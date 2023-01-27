@@ -254,7 +254,11 @@ abstract class TestCase extends BaseTestCase {
                         RecursiveIteratorIterator::CHILD_FIRST
                     ) as $path => $_
                 ) {
-                    if (false !== strpos($path, $sysTmpDirPath) && $path !== $sysTmpDirPath) {
+                    if (str_contains($path, $sysTmpDirPath) && $path !== $sysTmpDirPath) {
+                        if (is_link($path)) {
+                            unlink($path);
+                            continue;
+                        }
                         if (is_dir($path)) {
                             if (false === $this->tryDeleteDir($path)) {
                                 $parentDirPath = realpath($path . '/..');
@@ -276,7 +280,7 @@ abstract class TestCase extends BaseTestCase {
                         }
                     }
                 }
-                if (false !== strpos($tmpDirPath, $sysTmpDirPath)) {
+                if (str_contains($tmpDirPath, $sysTmpDirPath)) {
                     rmdir($tmpDirPath);
                 }
             }
