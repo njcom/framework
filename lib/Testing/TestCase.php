@@ -33,7 +33,6 @@ use function preg_replace;
 use function realpath;
 use function rmdir;
 use function str_replace;
-use function strpos;
 use function sys_get_temp_dir;
 use function tempnam;
 use function touch;

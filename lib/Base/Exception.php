@@ -4,12 +4,9 @@
  * It is distributed under the 'Apache License Version 2.0' license.
  * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
  */
-namespace Morpho\Tech\Sql;
+namespace Morpho\Base;
 
-abstract class Repo {
-    protected IClient $db;
+use RuntimeException;
 
-    public function __construct(IClient $db) {
-        $this->db = $db;
-    }
+class Exception extends RuntimeException {
 }

@@ -140,7 +140,7 @@ class RcProcessor extends HtmlProcessor {
             unset($tag[self::SKIP_ATTR]);
             return $tag;
         }
-        if (!isset($tag['type']) || (isset($tag['type']) && $tag['type'] == 'text/javascript')) {
+        if (!isset($tag['type']) || $tag['type'] == 'text/javascript') {
             $this->scripts[] = $tag;
             return false;  // remove the original tag, we will add it later.
         }
@@ -151,8 +151,9 @@ class RcProcessor extends HtmlProcessor {
         $scripts = $this->sortScripts($scripts);
 
         $event = new Event('beforeRenderScripts', $scripts);
-        $event->sender = $this;
+        $event->args['sender'] = $this;
         $this->trigger($event);
+        unset($event->args['sender']);
 
         return $event->args;
     }

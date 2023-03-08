@@ -1,0 +1,29 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+namespace Morpho\Infra;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use Morpho\Compiler\Frontend\Peg\GrammarTokenizer;
+
+use function Morpho\App\Cli\showLine;
+
+function process($stream): void {
+    foreach (GrammarTokenizer::tokenize($stream) as $token) {
+        showLine($token);
+    }
+}
+
+if ($argc === 1) {
+    process(STDIN);
+} else {
+    foreach ($argv as $arg) {
+        if ($arg == '-') {
+            process(STDIN);
+        } else {
+            $stream = fopen($arg, 'r');
+            process($stream);
+            fclose($stream);
+        }
+    }
+}

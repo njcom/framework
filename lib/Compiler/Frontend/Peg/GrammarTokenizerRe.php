@@ -6,7 +6,7 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
-use function iter\product;
+use function iter\rewindable\product;
 use function Morpho\Base\permutations;
 
 /**
@@ -23,16 +23,26 @@ class GrammarTokenizerRe {
     public const OCT_NUMBER_RE = '0[oO](?:_?[0-7])+';
     public const DEC_NUMBER_RE = '(?:0(?:_?0)*|[1-9](?:_?[0-9])*)';
 
+    # Tail end of ' string.
+    public const TAIL_END_OF_SINGLE_QUOTE = "[^'\\\\]*(?:\\\\.[^'\\\\]*)*'";
+    # Tail end of " string.
+    public const TAIL_END_OF_DOUBLE_QUOTE = '[^"\\\\]*(?:\\\\.[^"\\\\]*)*"';
+    # Tail end of ''' string.
+    public const TAIL_END_OF_SINGLE3_QUOTE = "[^'\\\\]*(?:(?:\\\\.|'(?!''))[^'\\\\]*)*'''";
+    # Tail end of """ string.
+    public const TAIL_END_OF_DOUBLE3_QUOTE = '[^"\\\\]*(?:(?:\\\\.|"(?!""))[^"\\\\]*)*"""';
+
+    public static function isIdentifier(string $v): bool {
+        // @todo: support non ASCII identifiers https://docs.python.org/3/reference/lexical_analysis.html#identifiers
+        return (bool) preg_match('~^[a-z_][a-z_0-9]*$~AsDui', $v);
+    }
+
     public static function endPatterns(): array {
         $endpats = [];
-        # Tail end of ' string.
-        $single = "[^'\\]*(?:\\.[^'\\]*)*'";
-        # Tail end of " string.
-        $double = '[^"\\]*(?:\\.[^"\\]*)*"';
-        # Tail end of ''' string.
-        $single3 = "[^'\\]*(?:(?:\\.|'(?!''))[^'\\]*)*'''";
-        # Tail end of """ string.
-        $double3 = '[^"\\]*(?:(?:\\.|"(?!""))[^"\\]*)*"""';
+        $single = self::TAIL_END_OF_SINGLE_QUOTE;
+        $double = self::TAIL_END_OF_DOUBLE_QUOTE;
+        $single3 = self::TAIL_END_OF_SINGLE3_QUOTE;
+        $double3 = self::TAIL_END_OF_DOUBLE3_QUOTE;
         foreach (self::allStringPrefixes() as $prefix) {
             $endpats[$prefix . "'"] = $single;
             $endpats[$prefix . '"'] = $double;
@@ -96,7 +106,7 @@ class GrammarTokenizerRe {
 
     public static function floatNumberRe(): string {
         $exponentRe = '[eE][-+]?[0-9](?:_?[0-9])*';
-        $pointFloatRe = self::groupRe('[0-9](?:_?[0-9])*\.(?:[0-9](?:_?[0-9])*)?', '\.[0-9](?:_?[0-9])*') . self::maybeRe($exponentRe);
+        $pointFloatRe = self::groupRe('[0-9](?:_?[0-9])*\\.(?:[0-9](?:_?[0-9])*)?', '\\.[0-9](?:_?[0-9])*') . self::maybeRe($exponentRe);
         $expFloatRe = '[0-9](?:_?[0-9])*' . $exponentRe;
         return self::groupRe($pointFloatRe, $expFloatRe);
     }
@@ -111,7 +121,7 @@ class GrammarTokenizerRe {
                 self::pseudoExtrasRe(),
                 self::numberRe(),
                 self::funnyRe(),
-                self::constStrRe(),
+                self::contStr(),
                 self::NAME_RE
             );
     }
@@ -137,18 +147,10 @@ class GrammarTokenizerRe {
     }
 
     public static function stringPrefixRe(): string {
-        /*# Tail end of ' string.
-        Single = r"[^'\\]*(?:\\.[^'\\]*)*'"
-        # Tail end of " string.
-        Double = r'[^"\\]*(?:\\.[^"\\]*)*"'
-        # Tail end of ''' string.
-        Single3 = r"[^'\\]*(?:(?:\\.|'(?!''))[^'\\]*)*'''"
-        # Tail end of """ string.
-        Double3 = r'[^"\\]*(?:(?:\\.|"(?!""))[^"\\]*)*"""'*/
         return self::groupRe(...self::allStringPrefixes());
     }
 
-    public static function constStrRe(): string {
+    public static function contStr(): string {
         // First (or only) line of ' or " string.
         $stringPrefixRe = self::stringPrefixRe();
         return self::groupRe(
@@ -157,8 +159,23 @@ class GrammarTokenizerRe {
         );
     }
 
-    private static function pseudoExtrasRe(): string {
-        return self::groupRe("\\\r?\n|\Z", self::COMMENT_RE, self::tripleRe()); // @todo: \Z
+    public static function funnyRe(): string {
+        /* Not used
+                # Single-line ' or " string.
+                String = group(StringPrefix + r"'[^\n'\\]*(?:\\.[^\n'\\]*)*'",
+                               StringPrefix + r'"[^\n"\\]*(?:\\.[^\n"\\]*)*"')*/
+        // Sorting in reverse order puts the long operators before their prefixes. Otherwise if = came before ==, == would get recognized as two instances of =.
+        $exactTokenTypes = array_keys(TokenType::exactTypes());
+        rsort($exactTokenTypes);
+        $escapeReSpecialChars = function (string $re): string {
+            return preg_quote($re, '~');
+        };
+        $specialRe = self::groupRe(...\Morpho\Base\map($escapeReSpecialChars, $exactTokenTypes));
+        return self::groupRe('\\r?\\n', $specialRe);
+    }
+
+    public static function pseudoExtrasRe(): string {
+        return self::groupRe('\\r?\\n|\\Z', self::COMMENT_RE, self::tripleRe());
     }
 
     private static function numberRe(): string {
@@ -168,50 +185,5 @@ class GrammarTokenizerRe {
     private static function tripleRe(): string {
         $stringPrefixRe = self::stringPrefixRe();
         return self::groupRe($stringPrefixRe . "'''", $stringPrefixRe . '"""');
-    }
-
-    private static function funnyRe(): string {
-        /* Not used
-                # Single-line ' or " string.
-                String = group(StringPrefix + r"'[^\n'\\]*(?:\\.[^\n'\\]*)*'",
-                               StringPrefix + r'"[^\n"\\]*(?:\\.[^\n"\\]*)*"')*/
-
-        // Sorting in reverse order puts the long operators before their prefixes. Otherwise if = came before ==, == would get recognized as two instances of =.
-        $exactTokenTypes = array_keys(TokenType::exactTypes());
-        sort($exactTokenTypes);
-        $exactTokenTypes = array_reverse($exactTokenTypes, true);
-        // Port of `import re.escape`
-        // https://github.com/python/cpython/blob/fc94d55ff453a3101e4c00a394d4e38ae2fece13/Lib/re/__init__.py#L253
-        $escapeReSpecialChars = function (string $re): string {
-            static $specialCharsMap = [
-                '('    => "\\(",
-                ')'    => "\\)",
-                '['    => "\\[",
-                ']'    => "\\]",
-                '{'    => "\\{",
-                '}'    => "\\}",
-                '?'    => "\\?",
-                '*'    => "\\*",
-                '+'    => "\\+",
-                '-'    => "\\-",
-                '|'    => "\\|",
-                '^'    => "\\^",
-                '$'    => "\\$",
-                '\\'   => "\\\\",
-                '.'    => "\\.",
-                '&'    => "\\&",
-                '~'    => "\\~",
-                '#'    => "\\#",
-                ' '    => "\\ ",
-                "\t"   => "\\\t",
-                "\n"   => "\\\n",
-                "\r"   => "\\\r",
-                "\x0b" => "\\\x0b",
-                "\x0c" => "\\\x0c",
-            ];
-            return strtr($re, $specialCharsMap);
-        };
-        $specialRe = self::groupRe(...\Morpho\Base\map($escapeReSpecialChars, $exactTokenTypes));
-        return self::groupRe('\r?\n', $specialRe);
     }
 }

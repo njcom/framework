@@ -7,9 +7,9 @@
 namespace Morpho\Tech\Sql;
 
 abstract class Schema implements ISchema {
-    protected IDbClient $db;
+    protected IClient $db;
 
-    public function __construct(IDbClient $db) {
+    public function __construct(IClient $db) {
         $this->db = $db;
     }
     /*

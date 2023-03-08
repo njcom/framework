@@ -29,19 +29,19 @@ use const Morpho\Base\CODE_WIDTH_1;
 use const Morpho\Test\BASE_DIR_PATH;
 
 class FunctionsTest extends TestCase {
-    public function testShowLn_NoArgsWritesSingleLine() {
+    public function testShowLine_NoArgsWritesSingleLine() {
         ob_start();
         showLine();
         $this->assertEquals("\n", ob_get_clean());
     }
 
-    public function testShowLn_SingleArg() {
+    public function testShowLine_SingleArg() {
         ob_start();
         showLine("Printed");
         $this->assertEquals("Printed\n", ob_get_clean());
     }
 
-    public function testShowLn_IterableArg() {
+    public function testShowLine_IterableArg() {
         $val = new ArrayIterator(['foo', 'bar', 'baz']);
         ob_start();
         showLine($val);
@@ -57,7 +57,7 @@ class FunctionsTest extends TestCase {
     public function testShowOk_WithArgs() {
         ob_start();
         showOk("Test");
-        $this->assertSame("OK: Test\n", ob_get_clean());
+        $this->assertSame("Test OK\n", ob_get_clean());
     }
 
     public function testShowSep_DefaultSep() {
@@ -82,17 +82,17 @@ class FunctionsTest extends TestCase {
         $this->assertSame(CODE_WIDTH_1 + 1, strlen($output));
     }
 
-    public function dataWriteErrorAndWriteErrorLn() {
+    public function dataWriteErrorAndWriteErrorLine(): iterable {
         return [
             ['showError', 'Something went wrong', 'Something went wrong'],
-            ['showErrorLn', "Space cow has arrived!\n", 'Space cow has arrived!'],
+            ['showErrorLine', "Space cow has arrived!\n", 'Space cow has arrived!'],
         ];
     }
 
     /**
-     * @dataProvider dataWriteErrorAndWriteErrorLn
+     * @dataProvider dataWriteErrorAndWriteErrorLine
      */
-    public function testWriteErrorAndWriteErrorLn($fn, $expectedMessage, $error) {
+    public function testWriteErrorAndWriteErrorLine($fn, $expectedMessage, $error) {
         $tmpFilePath = $this->createTmpFile();
         $autoloadFilePath = BASE_DIR_PATH. '/vendor/autoload.php';
         file_put_contents(
@@ -154,7 +154,7 @@ OUT
         sh('ls', ['some invalid option' => 'value of invalid option']);
     }
 
-    public function dataShell_CaptureAndShowConfOptions() {
+    public function dataShell_CaptureAndShowConfOptions(): iterable {
         yield [false, false];
         yield [false, true];
         yield [true, false];

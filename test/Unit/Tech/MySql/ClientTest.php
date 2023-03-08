@@ -6,25 +6,25 @@
  */
 namespace Morpho\Test\Unit\Tech\MySql;
 
-use Morpho\Tech\MySql\DbClient;
+use Morpho\Tech\MySql\Client;
 use Morpho\Tech\Sql\Expr;
-use Morpho\Tech\Sql\IDbClient;
+use Morpho\Tech\Sql\IClient;
 use Morpho\Tech\Sql\IQuery;
 use Morpho\Tech\Sql\ISchema;
 use Morpho\Tech\Sql\Result;
 use PDOException;
 use Throwable;
 
-class DbClientTest extends DbTestCase {
+class ClientTest extends DbTestCase {
     public function testInterface() {
-        $this->assertInstanceOf(IDbClient::class, $this->db);
+        $this->assertInstanceOf(IClient::class, $this->db);
     }
 
     public function testConnectDisconnect() {
         $dbConf = $this->dbConf();
         unset($dbConf['driver']);
 
-        $dbClient = new DbClient($dbConf);
+        $dbClient = new Client($dbConf);
 
         $selectVersion = fn () => $dbClient->eval('SELECT VERSION()')->field();
 

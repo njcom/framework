@@ -7,7 +7,7 @@
 namespace Morpho\Tech\MySql;
 
 use Morpho\Base\Conf;
-use Morpho\Tech\Sql\DbClient as BaseDbClient;
+use Morpho\Tech\Sql\Client as BaseClient;
 use Morpho\Tech\Sql\IDeleteQuery;
 use Morpho\Tech\Sql\IInsertQuery;
 use Morpho\Tech\Sql\IReplaceQuery;
@@ -16,7 +16,7 @@ use Morpho\Tech\Sql\ISelectQuery;
 use Morpho\Tech\Sql\IUpdateQuery;
 use PDO;
 
-class DbClient extends BaseDbClient {
+class Client extends BaseClient {
     public const DEFAULT_HOST = '127.0.0.1';
     public const DEFAULT_PORT = 3306;
     public const DEFAULT_USER = 'root';
@@ -29,7 +29,7 @@ class DbClient extends BaseDbClient {
     public function connect(): void {
         $conf = $this->conf;
         $transportStr = null !== $conf['sockFilePath'] ? 'unix_socket=' . $conf['sockFilePath'] : "host={$conf['host']};port={$conf['port']}";
-        $dsn = "mysql:{$transportStr};dbname={$conf['db']};charset={$conf['charset']}";
+        $dsn = "mysql:$transportStr;dbname={$conf['db']};charset={$conf['charset']}";
         $pdo = new PDO($dsn, $conf['user'], $conf['password']);
         foreach ($conf['pdoConf'] ?? $this->pdoConf as $name => $val) {
             $pdo->setAttribute($name, $val);

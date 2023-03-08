@@ -6,14 +6,14 @@
  */
 namespace Morpho\Test\Unit\Tech\MySql;
 
-use Morpho\Tech\Sql\IDbClient;
+use Morpho\Tech\Sql\IClient;
 use Morpho\Testing\DbTestCase as BaseDbTestCase;
 use PDO;
 
 use function Morpho\Tech\Sql\mkDbClient;
 
 abstract class DbTestCase extends BaseDbTestCase {
-    protected IDbClient $db;
+    protected IClient $db;
     protected PDO $pdo;
 
     protected function setUp(): void {

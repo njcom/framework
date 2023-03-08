@@ -24,7 +24,7 @@ use function implode;
  * @method getAttribute(int $attribute): bool|int|string|array|null
  * @method quote(string $string, int $type = PDO::PARAM_STR): string|false
  */
-abstract class DbClient implements IDbClient {
+abstract class Client implements IClient {
     /**
      * @var PDO|null If null then disconnected.
      */

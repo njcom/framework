@@ -15,13 +15,13 @@ use function Morpho\Base\q;
 /**
  * https://github.com/python/cpython/blob/fc94d55ff453a3101e4c00a394d4e38ae2fece13/Lib/tokenize.py#L46
  */
-class TokenInfo implements Stringable {
-    public readonly TokenType $type;
+readonly class TokenInfo implements Stringable {
+    public TokenType $type;
     // @todo: rename to $val
-    public readonly string $string;
-    public readonly Location $start;
-    public readonly Location $end;
-    public readonly string $line;
+    public string $string;
+    public Location $start;
+    public Location $end;
+    public string $line;
 
     public function __construct(TokenType $type, string $string, Location $start, Location $end, string $line) {
         $this->type = $type;
@@ -33,12 +33,14 @@ class TokenInfo implements Stringable {
 
     public function __toString(): string {
         $escape = function (string $line) {
-            return strtr($line,
+            return strtr(
+                $line,
                 [
+                    "\n" => "\\n",
                     "\\" => "\\\\",
-                    "\n" =>"\\n",
-                ]);
+                ]
+            );
         };
-        return 'TokenInfo(type=' . $this->type->value . ' (' . ($this->type->name) . '), string=' . q($this->string) . ', start=(' . $this->start->lineNo . ', ' . $this->start->columnNo . '), end=(' . $this->end->lineNo . ', ' . $this->end->columnNo . '), line=' . q($escape($this->line)) . ")\n";
+        return 'TokenInfo(type=' . $this->type->value . ' (' . ($this->type->name) . '), string=' . q($escape($this->string)) . ', start=(' . $this->start->lineNo . ', ' . $this->start->columnNo . '), end=(' . $this->end->lineNo . ', ' . $this->end->columnNo . '), line=' . q($escape($this->line)) . ")";
     }
 }

@@ -6,25 +6,98 @@
  */
 namespace Morpho\Test\Unit\Base;
 
-use InvalidArgumentException;
 use Morpho\Base\Must;
+use Morpho\Base\MustException;
 use Morpho\Testing\TestCase;
-use RuntimeException;
-
-use function implode;
 
 class MustTest extends TestCase {
+    public function testBeTruthy_Valid() {
+        $this->assertSame(STDERR, Must::beTruthy(STDERR));
+    }
+
+    public function testBeTruthy_Invalid() {
+        $this->expectException(MustException::class);
+        Must::beTruthy(false);
+    }
+
+    public function testBeNull_Valid() {
+        $this->assertNull(Must::beNull(null));
+    }
+
+    public function testBeNull_Invalid() {
+        $this->expectException(MustException::class);
+        Must::beNull(false);
+    }
+
+    public function testBeNotNull_Valid() {
+        $this->assertSame(123, Must::beNotNull(123));
+    }
+
+    public function testBeNotNull_Invalid() {
+        $this->expectException(MustException::class);
+        Must::beNotNull(null);
+    }
+
+    public function testBeEmpty_Invalid() {
+        $this->expectExceptionObject(new MustException('The value must be empty'));
+        Must::beEmpty('abc');
+    }
+
+    public static function dataBeEmpty_Valid(): iterable {
+        yield [''];
+        yield [null];
+        yield [0];
+        yield [false];
+        yield [[]];
+        yield [0.0];
+    }
+
+    /**
+     * @dataProvider dataBeEmpty_Valid
+     */
+    public function testBeEmpty_Valid($v) {
+        $this->assertSame($v, Must::beEmpty($v));
+    }
+
+    public static function dataBeNotEmpty_Invalid(): iterable {
+        return [
+            [
+                '',
+                false,
+                null,
+                0,
+                0.0,
+                [],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider dataBeNotEmpty_Invalid
+     */
+    public function testBeNotEmpty_Invalid($v) {
+        $this->expectExceptionObject(new MustException("The value must be non empty"));
+        Must::beNotEmpty($v);
+    }
+
+    public function testBeNotEmpty_Valid() {
+        $v = ['foo', 123, 3.14, ["Hello"]];
+        $this->assertSame($v, Must::beNotEmpty($v));
+        $v = 'abc';
+        $this->assertSame($v, Must::beNotEmpty($v));
+    }
+
     public function testContain_String_Valid() {
         /** @noinspection PhpVoidFunctionResultUsedInspection */
         $this->assertNull(Must::contain('foo/bar', '/'));
     }
 
     public function testContain_String_Invalid() {
-        $this->expectException(RuntimeException::class, 'A haystack does not contain a needle');
+        $this->expectExceptionObject(new MustException('A haystack does not contain a needle'));
         Must::contain('foo-bar', '/');
     }
 
-    public function dataContain_Array_Valid() {
+    public static function dataContain_Array_Valid(): iterable {
         return [
             [
                 [null, 0, '', false],
@@ -49,7 +122,7 @@ class MustTest extends TestCase {
         $this->assertNull(Must::contain($haystack, $needle));
     }
 
-    public function dataContain_Array_Invalid() {
+    public static function dataContain_Array_Invalid(): iterable {
         return [
             [
                 [],
@@ -70,99 +143,11 @@ class MustTest extends TestCase {
      * @dataProvider dataContain_Array_Invalid
      */
     public function testContain_Array_Invalid($haystack, $needle) {
-        $this->expectException(RuntimeException::class, 'A haystack does not contain a needle');
+        $this->expectExceptionObject(new MustException('A haystack does not contain a needle'));
         Must::contain($haystack, $needle);
     }
 
-    public function testBeNotFalse_ReturnsPassedArgumentIfNotFalse() {
-        $this->assertSame(STDERR, Must::beNotFalse(STDERR));
-    }
-
-    public function testBeNotFalse_ThrowsExceptionIfFalse() {
-        $this->expectException(RuntimeException::class);
-        Must::beNotFalse(false);
-    }
-
-    public function testBeEmpty_SingleArg_ThrowsExceptionOnNonEmptyValue() {
-        $this->expectException(RuntimeException::class, "The value must be empty");
-        Must::beEmpty('abc');
-    }
-
-    public function testBeEmpty_MultipleArgs_ThrowsExceptionOnNonEmptyValue() {
-        $this->expectException(RuntimeException::class, "The value must be empty");
-        Must::beEmpty("", "abc");
-    }
-
-    public function testBeEmpty_ReturnsEmptyValues() {
-        $v = ['', null, 0, false];
-        $this->assertSame($v, Must::beEmpty(...$v));
-
-        $v = '';
-        $this->assertSame($v, Must::beEmpty($v));
-
-        $v = null;
-        $this->assertSame($v, Must::beEmpty($v));
-
-        $v = 0;
-        $this->assertSame($v, Must::beEmpty($v));
-
-        $v = false;
-        $this->assertSame($v, Must::beEmpty($v));
-
-        $v = [];
-        $this->assertSame($v, Must::beEmpty($v));
-
-        $v = 0.0;
-        $this->assertSame($v, Must::beEmpty($v));
-    }
-
-    public function testBeEmpty_ThrowsExceptionOnEmptyArgs() {
-        $this->expectException(InvalidArgumentException::class, "Empty arguments");
-        Must::beEmpty();
-    }
-
-    public function dataBeNotEmpty_SingleArg_ThrowsExceptionOnEmptyValue() {
-        return [
-            [
-                '',
-                false,
-                null,
-                0,
-                0.0,
-                [],
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider dataBeNotEmpty_SingleArg_ThrowsExceptionOnEmptyValue
-     */
-    public function testBeNotEmpty_SingleArg_ThrowsExceptionOnEmptyValue($v) {
-        $this->expectException(RuntimeException::class, "The value must be non empty");
-        Must::beNotEmpty($v);
-    }
-
-    public function testBeNotEmpty_MultipleArgs_ThrowsExceptionOnEmptyValue() {
-        $this->expectException(RuntimeException::class, "The value must be non empty");
-        Must::beNotEmpty("abc", "");
-    }
-
-    public function testBeNotEmpty_ReturnsValues() {
-        $v = ['foo', 123, 3.14, ["Hello"]];
-        $this->assertSame($v, Must::beNotEmpty(...$v));
-        $this->assertSame($v, Must::beNotEmpty($v));
-
-
-        $v = 'abc';
-        $this->assertSame($v, Must::beNotEmpty($v));
-    }
-
-    public function testBeNotEmpty_ThrowsExceptionOnEmptyArgs() {
-        $this->expectException(InvalidArgumentException::class, "Empty arguments");
-        Must::beNotEmpty();
-    }
-
-    public function dataHasKeys_Invalid() {
+    public static function dataHaveAtLeastKeys_Invalid(): iterable {
         return [
             [
                 ['foo' => 1, 'baz' => 2],
@@ -180,14 +165,14 @@ class MustTest extends TestCase {
     }
 
     /**
-     * @dataProvider dataHasKeys_Invalid
+     * @dataProvider dataHaveAtLeastKeys_Invalid
      */
-    public function testHasKeys_Invalid($actual, $requiredKeys) {
-        $this->expectException('\RuntimeException', 'Required items are missing');
-        Must::haveKeys($actual, $requiredKeys);
+    public function testHaveAtLeastKeys_Invalid($actual, $requiredKeys) {
+        $this->expectExceptionObject(new MustException('The array must have the items with the specified keys'));
+        Must::haveAtLeastKeys($actual, $requiredKeys);
     }
 
-    public function dataHasKeys_Valid_DoesNotThrowException() {
+    public static function dataHaveAtLeastKeys_Valid(): iterable {
         return [
             [
                 ['foo' => 1, 'bar' => 2],
@@ -205,40 +190,35 @@ class MustTest extends TestCase {
     }
 
     /**
-     * @dataProvider dataHasKeys_Valid_DoesNotThrowException
+     * @dataProvider dataHaveAtLeastKeys_Valid
      */
-    public function testHasKeys_Valid_DoesNotThrowException($actual, $requiredKeys) {
-        Must::haveKeys($actual, $requiredKeys);
+    public function testHaveAtLeastKeys_Valid($actual, $requiredKeys) {
+        Must::haveAtLeastKeys($actual, $requiredKeys);
         $this->markTestAsNotRisky();
     }
 
-    public function dataHasOnlyKeys_Invalid() {
+    public static function dataHaveExactKeys_Invalid(): iterable {
         return [
             [
                 ['foo' => '1', 'something' => 2],
-                ['foo', 'bar', 'baz'],
-                ['something'],
+                ['foo', 'bar', 'baz'], // less
             ],
             [
                 ['foo' => '2', 'bar' => 2, 'baz' => 3, 'something' => 4],
-                ['foo', 'bar', 'baz'],
-                ['something'],
+                ['foo', 'bar', 'baz'], // more
             ],
         ];
     }
 
     /**
-     * @dataProvider dataHasOnlyKeys_Invalid
+     * @dataProvider dataHaveExactKeys_Invalid
      */
-    public function testCheckAllowed_Invalid($actual, $allowedKeys, $notAllowedItems) {
-        $this->expectException(
-            '\RuntimeException',
-            'Not allowed items are present: ' . implode(', ', $notAllowedItems)
-        );
-        Must::haveOnlyKeys($actual, $allowedKeys);
+    public function testHaveExactKeys_Invalid($val, $keys) {
+        $this->expectExceptionObject(new MustException('The array must have the items with the specified keys and no other items'));
+        Must::haveExactKeys($val, $keys);
     }
 
-    public function dataHasOnlyKeys_Valid_DoesNotThrowException() {
+    public static function dataHaveExactKeys_Valid(): iterable {
         return [
             [
                 ['foo' => '1', 'bar' => 2, 'baz' => 3],
@@ -246,11 +226,7 @@ class MustTest extends TestCase {
             ],
             [
                 ['foo' => 1],
-                ['foo', 'bar'],
-            ],
-            [
-                [],
-                ['foo', 'bar'],
+                ['foo'],
             ],
             [
                 [],
@@ -260,10 +236,19 @@ class MustTest extends TestCase {
     }
 
     /**
-     * @dataProvider dataHasOnlyKeys_Valid_DoesNotThrowException
+     * @dataProvider dataHaveExactKeys_Valid
      */
-    public function testHasOnlyKeys_Valid_DoesNotThrowException($actual, $allowedKeys) {
-        Must::haveOnlyKeys($actual, $allowedKeys);
+    public function testHaveExactKeys_Valid($actual, $allowedKeys) {
+        Must::haveExactKeys($actual, $allowedKeys);
         $this->markTestAsNotRisky();
     }
+
+/*
+    public function testHaveItems() {
+        $this->markTestIncomplete();
+    }
+
+    public function testBeInRange() {
+        $this->markTestIncomplete();
+    }*/
 }

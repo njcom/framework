@@ -11,7 +11,7 @@ use Morpho\Base\IFn;
 use Morpho\Base\Ok;
 use Morpho\Base\Result;
 
-use function Morpho\App\Cli\errorLn;
+use function Morpho\App\Cli\errorLine;
 use function Morpho\App\Cli\showLine;
 use function Morpho\App\Cli\showOk;
 use function Morpho\Base\indent;
@@ -41,7 +41,7 @@ class CliPhpFileHeaderFixer implements IFn {
             showLine("Processing file " . q($filePath) . '...');
             $result = $fixer->__invoke(array_merge($context, ['filePath' => $filePath]));
             if (!$result->isOk()) {
-                errorLn("Unable to fix the file " . q($filePath) . "\n" . print_r($result, true));
+                errorLine("Unable to fix the file " . q($filePath) . "\n" . print_r($result, true));
             }
             if (isset($result->val()['text'])) {
                 showLine(indent($result->val()['text']));

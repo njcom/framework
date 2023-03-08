@@ -43,9 +43,9 @@ class GrammarTokenizer implements ITokenizer {
     /**
      * https://github.com/python/cpython/blob/fc94d55ff453a3101e4c00a394d4e38ae2fece13/Lib/tokenize.py#L433
      * @param resource $stream
-     * @return \Generator
+     * @return iterable
      */
-    public static function tokenize($stream): Generator {
+    public static function tokenize($stream): iterable {
         $lnum = $parenlev = $continued = 0;
         $numchars = '0123456789';
         $contstr = '';
@@ -53,11 +53,18 @@ class GrammarTokenizer implements ITokenizer {
         $contline = null;
         $indents = [0];
         $lastLine = '';
-        $line = '';
         $endprogRe = null;
         $strStart = new Location(0, 0);
         $tabsize = 4;
-        rewind($stream);
+        if (stream_get_meta_data($stream)['seekable']) {
+            rewind($stream);
+        }
+
+        $pseudoTokenRe = GrammarTokenizerRe::pseudoTokenRe();
+        $tripleQuoted = GrammarTokenizerRe::tripleQuotedPrefixes();
+        $singleQuoted = GrammarTokenizerRe::singleQuotedPrefixes();
+        $endPatterns = GrammarTokenizerRe::endPatterns();
+
         while (true) { // loop over lines in stream
             $line = fgets($stream);
             $lnum++;
@@ -70,15 +77,13 @@ class GrammarTokenizer implements ITokenizer {
                 if (false === $line) {
                     throw new TokenException("EOF in multi-line string", $strStart);
                 }
-                if (preg_match($endprogRe, $line)) {
-                    throw new NotImplementedException();
-                    /*
-                            pos = end = endmatch.end(0)
-                            yield TokenInfo(STRING, contstr + line[:end],
-                                   strstart, (lnum, end), contline + line)
-                            contstr, needcont = '', 0
-                            contline = None
-*/
+                if (preg_match('~' . $endprogRe . '~AsDu', $line, $match, 0, $pos)) {
+                    $pos = $end = mb_strlen($match[0]);
+                    /** @var int $end */
+                    yield new TokenInfo(TokenType::STRING, $contstr . mb_substr($line, 0, $end), $strStart, new Location($lnum, $end), $contline . $line);
+                    $contstr = '';
+                    $needcont = 0;
+                    $contline = null;
                 } elseif ($needcont && !str_ends_with($line, "\\\n") && !str_ends_with($line, "\\\r\n")) {
                     yield new TokenInfo(TokenType::ERRORTOKEN, $contstr . $line, $strStart, new Location($lnum, mb_strlen($line)), $contline);
                     $contstr = '';
@@ -130,27 +135,17 @@ class GrammarTokenizer implements ITokenizer {
                     yield new TokenInfo(TokenType::INDENT, '', new Location($lnum, $pos), new Location($lnum, $pos), $line);
                 }
             } else { // continued statement
-                if ('' !== $line) {
+                if ('' === $line) {
                     throw new TokenException("EOF in multi-line statement", new Location($lnum, 0));
                 }
                 $continued = 0;
             }
 
-            $pseudoTokenRe = GrammarTokenizerRe::pseudoTokenRe();
-            $tripleQuoted = GrammarTokenizerRe::tripleQuotedPrefixes();
-            $singleQuoted = GrammarTokenizerRe::singleQuotedPrefixes();
-            $endPatterns = GrammarTokenizerRe::endPatterns();
-            $isIdentifier = function (string $v): bool {
-                // @todo: support non ASCII identifiers https://docs.python.org/3/reference/lexical_analysis.html#identifiers
-                return (bool) preg_match('~^[a-z_][a-zA-Z_0-9]*$~sD', $v);
-            };
-
             while ($pos < $max) {
                 if (preg_match('~' . $pseudoTokenRe . '~AsDu', $line, $match, PREG_OFFSET_CAPTURE, $pos)) {
                     /** @var int $start $start */
-                    $start = $match[0][1];
-                    $end = $start + mb_strlen($match[0][0]);
-                    // start, end = pseudomatch.span(1)
+                    $start = $match[1][1];
+                    $end = $start + mb_strlen($match[1][0]);
                     $spos = new Location($lnum, $start);
                     $epos = new Location($lnum, $end);
                     $pos = $end;
@@ -173,13 +168,13 @@ class GrammarTokenizer implements ITokenizer {
                         yield new TokenInfo(TokenType::COMMENT, $token, $spos, $epos, $line);
                     } elseif (in_array($token, $tripleQuoted)) {
                         $endprogRe = $endPatterns[$token];
-                        if (preg_match('~' . $endprogRe . '~sDA', $line, $match, 0, $pos))  { # all on one line
-                            d($match);
-                            /*
-                            pos = endmatch.end(0)
-                            token = line[start:pos]
-                            yield TokenInfo(STRING, token, spos, (lnum, pos), line)
-                             */
+                        if (preg_match('~' . $endprogRe . '~AsDu', $line, $match, PREG_OFFSET_CAPTURE, $pos))  { # all on one line
+                            if (count($match) !== 1) {
+                                throw new \UnexpectedValueException();
+                            }
+                            $pos = mb_strlen($match[0]);
+                            $token = mb_substr($line, $start, $end - $start);
+                            yield new TokenInfo(TokenType::STRING, $token, $spos, new Location($lnum, $pos), $line);
                         } else {
                             $strStart = new Location($lnum, $start); # multiple lines
                             $contstr = mb_substr($line, $start);
@@ -221,7 +216,7 @@ class GrammarTokenizer implements ITokenizer {
                         } else {
                             yield new TokenInfo(TokenType::STRING, $token, $spos, $epos, $line); # ordinary string
                         }
-                    } elseif ($isIdentifier($initial)) { # ordinary name
+                    } elseif (GrammarTokenizerRe::isIdentifier($initial)) { # ordinary name
                         yield new TokenInfo(TokenType::NAME, $token, $spos, $epos, $line);
                     } elseif ($initial == '\\') { # continued stmt
                         $continued = 1;
@@ -238,16 +233,16 @@ class GrammarTokenizer implements ITokenizer {
                     yield new TokenInfo(TokenType::ERRORTOKEN, $line[$pos], new Location($lnum, $pos), new Location($lnum, $pos + 1), $line);
                     $pos++;
                 }
-                // Add an implicit NEWLINE if the input doesn't end in one
-                if (mb_strlen($lastLine) && !in_array(last($lastLine), ["\r", "\n"]) && !str_starts_with(trim($lastLine), '#')) {
-                    yield new TokenInfo(TokenTYpe::NEWLINE, '', new Location($lnum - 1, mb_strlen($lastLine)), new Location($lnum - 1, mb_strlen($lastLine) + 1), '');
-                }
-                foreach (array_slice($indents, 1) as $_) { // pop remaining indent levels
-                    yield new TokenInfo(TokenType::DEDENT, '', new Location($lnum, 0), new Location($lnum, 0), '');
-                }
-                yield new TokenInfo(TokenType::ENDMARKER, '', new Location($lnum, 0), new Location($lnum, 0), '');
             }
         }
+        // Add an implicit NEWLINE if the input doesn't end in one
+        if ($lastLine && !in_array(last($lastLine), ["\r", "\n"]) && !str_starts_with(trim($lastLine), '#')) {
+            yield new TokenInfo(TokenTYpe::NEWLINE, '', new Location($lnum - 1, mb_strlen($lastLine)), new Location($lnum - 1, mb_strlen($lastLine) + 1), '');
+        }
+        foreach (array_slice($indents, 1) as $_) { // pop remaining indent levels
+            yield new TokenInfo(TokenType::DEDENT, '', new Location($lnum, 0), new Location($lnum, 0), '');
+        }
+        yield new TokenInfo(TokenType::ENDMARKER, '', new Location($lnum, 0), new Location($lnum, 0), '');
         if (!feof($stream)) {
             throw new RuntimeException('Unexpected end of the stream');
         }

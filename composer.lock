@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5b2fe6367650ad555b949d2340f777bc",
+    "content-hash": "5667989c6e2882ad262238b83386eefc",
     "packages": [
         {
             "name": "monolog/monolog",
@@ -175,6 +175,57 @@
             "time": "2021-06-21T15:01:25+00:00"
         },
         {
+            "name": "nikic/iter",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nikic/iter.git",
+                "reference": "a8423fa315d5a540406aed7a770f09ee34c1fd03"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nikic/iter/zipball/a8423fa315d5a540406aed7a770f09ee34c1fd03",
+                "reference": "a8423fa315d5a540406aed7a770f09ee34c1fd03",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^7.0 || ^8.0 || ^9.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/iter.func.php",
+                    "src/iter.php",
+                    "src/iter.rewindable.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Nikita Popov",
+                    "email": "nikic@php.net"
+                }
+            ],
+            "description": "Iteration primitives using generators",
+            "keywords": [
+                "functional",
+                "generator",
+                "iterator"
+            ],
+            "support": {
+                "issues": "https://github.com/nikic/iter/issues",
+                "source": "https://github.com/nikic/iter/tree/master"
+            },
+            "time": "2021-11-27T20:15:28+00:00"
+        },
+        {
             "name": "nikic/php-parser",
             "version": "4.x-dev",
             "source": {
@@ -339,76 +390,6 @@
         }
     ],
     "packages-dev": [
-        {
-            "name": "doctrine/instantiator",
-            "version": "1.5.x-dev",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/doctrine/instantiator.git",
-                "reference": "10dcfce151b967d20fde1b34ae6640712c3891bc"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/10dcfce151b967d20fde1b34ae6640712c3891bc",
-                "reference": "10dcfce151b967d20fde1b34ae6640712c3891bc",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.1 || ^8.0"
-            },
-            "require-dev": {
-                "doctrine/coding-standard": "^9",
-                "ext-pdo": "*",
-                "ext-phar": "*",
-                "phpbench/phpbench": "^0.16 || ^1",
-                "phpstan/phpstan": "^1.4",
-                "phpstan/phpstan-phpunit": "^1",
-                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.5",
-                "vimeo/psalm": "^4.22"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Doctrine\\Instantiator\\": "src/Doctrine/Instantiator/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Marco Pivetta",
-                    "email": "ocramius@gmail.com",
-                    "homepage": "https://ocramius.github.io/"
-                }
-            ],
-            "description": "A small, lightweight utility to instantiate objects in PHP without invoking their constructors",
-            "homepage": "https://www.doctrine-project.org/projects/instantiator.html",
-            "keywords": [
-                "constructor",
-                "instantiate"
-            ],
-            "support": {
-                "issues": "https://github.com/doctrine/instantiator/issues",
-                "source": "https://github.com/doctrine/instantiator/tree/1.4.x"
-            },
-            "funding": [
-                {
-                    "url": "https://www.doctrine-project.org/sponsorship.html",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://www.patreon.com/phpdoctrine",
-                    "type": "patreon"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/doctrine%2Finstantiator",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2022-03-03T08:28:38+00:00"
-        },
         {
             "name": "myclabs/deep-copy",
             "version": "1.x-dev",
@@ -917,16 +898,15 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "3d60d1074b0f9a1aec70d3be018c634d7d5b88d1"
+                "reference": "fc044dd9d696575b257c692c76f941e6bf0f0d3d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/3d60d1074b0f9a1aec70d3be018c634d7d5b88d1",
-                "reference": "3d60d1074b0f9a1aec70d3be018c634d7d5b88d1",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/fc044dd9d696575b257c692c76f941e6bf0f0d3d",
+                "reference": "fc044dd9d696575b257c692c76f941e6bf0f0d3d",
                 "shasum": ""
             },
             "require": {
-                "doctrine/instantiator": "^1.3.1",
                 "ext-dom": "*",
                 "ext-json": "*",
                 "ext-libxml": "*",
@@ -950,6 +930,7 @@
                 "sebastian/exporter": "^5.0",
                 "sebastian/global-state": "^6.0",
                 "sebastian/object-enumerator": "^5.0",
+                "sebastian/recursion-context": "^5.0",
                 "sebastian/type": "^4.0",
                 "sebastian/version": "^4.0"
             },
@@ -963,7 +944,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "10.0-dev"
+                    "dev-main": "10.1-dev"
                 }
             },
             "autoload": {
@@ -1004,9 +985,13 @@
                 {
                     "url": "https://github.com/sebastianbergmann",
                     "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/phpunit/phpunit",
+                    "type": "tidelift"
                 }
             ],
-            "time": "2022-08-05T07:16:05+00:00"
+            "time": "2023-02-05T16:24:18+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -1883,16 +1868,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/version.git",
-                "reference": "77ac4c1df887d971a0cb47fedbfe363e58e32da6"
+                "reference": "5facf5a20311ac44f79221274cdeb6c569ca11dd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/version/zipball/77ac4c1df887d971a0cb47fedbfe363e58e32da6",
-                "reference": "77ac4c1df887d971a0cb47fedbfe363e58e32da6",
+                "url": "https://api.github.com/repos/sebastianbergmann/version/zipball/5facf5a20311ac44f79221274cdeb6c569ca11dd",
+                "reference": "5facf5a20311ac44f79221274cdeb6c569ca11dd",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.0"
+                "php": ">=8.1"
             },
             "default-branch": true,
             "type": "library",
@@ -1921,7 +1906,7 @@
             "homepage": "https://github.com/sebastianbergmann/version",
             "support": {
                 "issues": "https://github.com/sebastianbergmann/version/issues",
-                "source": "https://github.com/sebastianbergmann/version/tree/main"
+                "source": "https://github.com/sebastianbergmann/version/tree/4.0.0"
             },
             "funding": [
                 {
@@ -1929,7 +1914,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-06-14T05:06:08+00:00"
+            "time": "2023-02-03T07:11:37+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -1987,12 +1972,14 @@
     "stability-flags": {
         "monolog/monolog": 20,
         "nikic/fast-route": 20,
-        "willdurand/negotiation": 20
+        "nikic/iter": 20,
+        "willdurand/negotiation": 20,
+        "phpunit/phpunit": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php-64bit": ">=8.1",
+        "php-64bit": ">=8.2",
         "ext-ctype": "*",
         "ext-date": "*",
         "ext-dom": "*",

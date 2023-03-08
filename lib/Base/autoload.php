@@ -9,7 +9,6 @@
  */
 namespace Morpho\Base;
 
-use ArrayObject;
 use Closure;
 use Generator;
 use InvalidArgumentException;
@@ -121,15 +120,29 @@ function enumVals(string $enumName, bool $preserveNames = true): array {
     return $vals;
 }
 
-function lines(string|Stringable|iterable $text, bool $filterEmpty = true, bool $trim = true): Traversable {
-    if (!is_iterable($text)) {
-        $text = (string)$text;
+// todo: review functions below #12
+
+/**
+ * @param iterable|Stringable|string|resource $source
+ * @param bool                       $filterEmpty
+ * @param bool                       $trim
+ * @return \Traversable
+ */
+function lines($source, bool $filterEmpty = true, bool $trim = true): Traversable {
+    if (is_resource($source)) {
+        $source = (function () use ($source) {
+            while (false !== ($line = fgets($source))) {
+                yield $line;
+            }
+        })();
+    } elseif (!is_iterable($source)) {
+        $text = (string)$source;
         if ($text === '') {
             return;
         }
-        $text = preg_split(EOL_FULL_RE, $text, -1, $filterEmpty ? PREG_SPLIT_NO_EMPTY : 0);
+        $source = preg_split(EOL_FULL_RE, $text, -1, $filterEmpty ? PREG_SPLIT_NO_EMPTY : 0);
     }
-    foreach ($text as $line) {
+    foreach ($source as $line) {
         if ($trim) {
             $line = trim($line);
         }
@@ -145,8 +158,6 @@ function partial(callable $fn, ...$args1): Closure {
         return $fn(...array_merge($args1, $args2));
     };
 }
-
-// todo: review functions below #12
 
 /**
  * @psalm-param callable(mixed, mixed): bool $predicate

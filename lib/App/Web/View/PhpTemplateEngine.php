@@ -58,7 +58,7 @@ class PhpTemplateEngine extends ArrPipe {
 
     private ?Uri $uri = null;
 
-    //protected array $vars = [];
+    protected array $vars = [];
 
     public function __construct(array $conf = null) {
         $this->init();
@@ -93,7 +93,6 @@ class PhpTemplateEngine extends ArrPipe {
         return $this->request;
     }
 
-    /*
     public function __set(string $varName, $value): void {
         $this->vars[$varName] = $value;
     }
@@ -124,7 +123,7 @@ class PhpTemplateEngine extends ArrPipe {
     public function vars(): array {
         return $this->vars;
     }
-
+/*
     public function isUserLoggedIn(): bool {
         return $this->serviceManager['userManager']->isUserLoggedIn();
     }

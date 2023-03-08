@@ -89,7 +89,7 @@ function showSep(string $ch = '-', int $n = CODE_WIDTH_1, string $prefix = null,
     }
     $msg = $prefix . str_repeat($ch, $n) . $suffix;
     if ($stdErr) {
-        showErrorLn($msg);
+        showErrorLine($msg);
     } else {
         showLine($msg);
     }
@@ -99,7 +99,7 @@ function showError(string $errMessage): void {
     fwrite(STDERR, $errMessage);
 }
 
-function showErrorLn(string $errMessage = null): void {
+function showErrorLine(string $errMessage = null): void {
     showError($errMessage . "\n");
 }
 
@@ -120,9 +120,9 @@ function error(string $errMessage = null, int $exitCode = null): never {
  * @param string|null $errMessage
  * @param int|null    $exitCode
  */
-function errorLn(string $errMessage = null, int $exitCode = null): never {
+function errorLine(string $errMessage = null, int $exitCode = null): never {
     if ($errMessage) {
-        showErrorLn($errMessage);
+        showErrorLine($errMessage);
     }
     exit(null !== $exitCode && 0 !== $exitCode ? $exitCode : Env::FAILURE_CODE);
 }
@@ -315,7 +315,7 @@ function checkExitCode(int $exitCode, string $errMessage = null): int {
 
 function checkResult(ICommandResult $result): void {
     if ($result->isError()) {
-        errorLn($result->error() . ' Exit code: ' . $result->exitCode());
+        errorLine($result->error() . ' Exit code: ' . $result->exitCode());
     }
 }
 

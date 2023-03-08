@@ -12,6 +12,29 @@ use Morpho\Testing\TestCase;
 use UnexpectedValueException;
 
 class GrammarTokenizerReTest extends TestCase {
+    public function testIsIdentifier() {
+        $this->assertTrue(GrammarTokenizerRe::isIdentifier('Grammar'));
+        $this->assertFalse(GrammarTokenizerRe::isIdentifier('0'));
+        $this->assertFalse(GrammarTokenizerRe::isIdentifier('123test'));
+        $this->assertTrue(GrammarTokenizerRe::isIdentifier('test123'));
+        $this->assertTrue(GrammarTokenizerRe::isIdentifier('_test123'));
+        $this->assertTrue(GrammarTokenizerRe::isIdentifier('_123'));
+    }
+
+    public function testEndPatterns_EndProgRe() {
+        $re = GrammarTokenizerRe::endPatterns()['"""'];
+        $this->assertMatchesRegularExpression('~' . $re . '~', '"""' . "\n");
+    }
+
+    public function testTailEndOfSingleQuote() {
+        $re = '~' . GrammarTokenizerRe::TAIL_END_OF_SINGLE_QUOTE . '~s';
+        preg_match($re, "pre1\\.\\.pre2'post", $match);
+        $this->assertSame(["pre1\\.\\.pre2'"], $match);
+
+        preg_match($re, "pre1\\.\\.pre2\"post", $match);
+        $this->assertSame([], $match);
+    }
+
     public function testTripleQuotedPrefixesAndSingleQuotedPrefixes() {
         $prefixes = GrammarTokenizerRe::allStringPrefixes();
         $this->assertIsArray($prefixes);
@@ -49,8 +72,8 @@ class GrammarTokenizerReTest extends TestCase {
         }
     }
 
-    public function dataSimpleRes(): iterable {
-        yield from $this->genSamples([
+    public static function dataSimpleRes(): iterable {
+        yield from self::genSamples([
             GrammarTokenizerRe::HEX_NUMBER_RE => [
                 [
                     '0x_0f',
@@ -243,7 +266,7 @@ class GrammarTokenizerReTest extends TestCase {
         $this->checkRe($re, $input, $mustMatch);
     }
 
-    public function dataIntNumberRe(): iterable {
+    public static function dataIntNumberRe(): iterable {
         return [
             [
                 '0x_0f',
@@ -379,7 +402,7 @@ class GrammarTokenizerReTest extends TestCase {
         $this->checkRe(GrammarTokenizerRe::intNumberRe(), $input, $mustMatch);
     }
 
-    public function dataStringPrefixRe(): iterable {
+    public static function dataStringPrefixRe(): iterable {
         foreach (['', 'Br', 'rF', 'rb', 'r', 'F', 'fR', 'U', 'R', 'br', 'FR', 'B', 'Fr', 'f', 'b', 'u', 'rf', 'Rb', 'BR', 'RF', 'bR', 'RB', 'rB', 'fr', 'Rf'] as $prefix) {
             yield [$prefix, true];
         }
@@ -395,15 +418,34 @@ class GrammarTokenizerReTest extends TestCase {
         $this->checkRe(GrammarTokenizerRe::stringPrefixRe(), $prefix, $mustMatch);
     }
 
-    public function testConstStrRe() {
-        $re = GrammarTokenizerRe::constStrRe();
+    public function testContStrRe() {
+        $re = GrammarTokenizerRe::contStr();
         $this->checkRe($re, '""', true);
         $this->checkRe($re, '"123"', true);
         $this->checkRe($re, '"', false);
     }
 
+    public function testFunnyRe() {
+        $line = '"""' . "\n";
+        $re = GrammarTokenizerRe::funnyRe();
+        preg_match($this->toFullRe($re), $line, $match, PREG_OFFSET_CAPTURE, 3);
+        $this->assertSame(["\n", 3], $match[0]);
+    }
+
+    public function testPseudoExtrasRe() {
+        $re = GrammarTokenizerRe::pseudoExtrasRe();
+        preg_match($this->toFullRe($re), '"""' . "\n", $match, PREG_OFFSET_CAPTURE, 3);
+        $this->assertSame(["\n", 3], $match[0]);
+    }
+
     public function testPseudoTokenRe(): void {
-        $this->assertMatchesRegularExpression($this->toLineRe(GrammarTokenizerRe::pseudoTokenRe()), 'abc');
+        $re = GrammarTokenizerRe::pseudoTokenRe();
+
+        $this->assertMatchesRegularExpression($this->toLineRe($re), 'abc');
+
+        $line = '"""' . "\n";
+        preg_match($this->toFullRe($re), $line, $match, PREG_OFFSET_CAPTURE, 3);
+        $this->assertSame("\n", $match[1][0]);
     }
 
     private function toLineRe(string $re): string {
@@ -411,7 +453,7 @@ class GrammarTokenizerReTest extends TestCase {
     }
 
     private function toFullRe(string $re): string {
-        return '~' . $re . '~sAD';
+        return '~' . $re . '~sADu';
     }
 
     private function checkRe(string $re, string $input, bool $mustMatch): void {
@@ -423,7 +465,7 @@ class GrammarTokenizerReTest extends TestCase {
         }
     }
 
-    private function genSamples(array $samples): Generator {
+    private static function genSamples(array $samples): Generator {
         foreach ($samples as $re => $pairs) {
             foreach ($pairs as $pair) {
                 yield [

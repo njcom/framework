@@ -15,7 +15,7 @@ use Morpho\Fs\Dir;
 use Morpho\Tech\Php\CliPhpFileHeaderFixer;
 
 use function Morpho\App\Cli\bootstrap;
-use function Morpho\App\Cli\showErrorLn;
+use function Morpho\App\Cli\showErrorLine;
 
 use const Morpho\App\BIN_DIR_NAME;
 use const Morpho\App\CONF_DIR_NAME;
@@ -112,6 +112,6 @@ $dryRun = false;
 if (fixFileHeaders($dryRun)->isOk()) {
     fixFormatting($dryRun);
 } else {
-    showErrorLn("Errors found!");
+    showErrorLine("Errors found!");
     exit(1);
 }

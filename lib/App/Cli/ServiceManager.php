@@ -32,7 +32,7 @@ class ServiceManager extends BaseServiceManager {
         $logger->pushHandler(
             new class extends AbstractProcessingHandler {
                 protected function write(LogRecord $record): void {
-                    errorLn($record['message']);
+                    errorLine($record['message']);
                 }
             }
         );

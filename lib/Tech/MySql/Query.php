@@ -8,18 +8,18 @@ namespace Morpho\Tech\MySql;
 
 use Morpho\Base\NotImplementedException;
 use Morpho\Tech\Sql\Expr;
-use Morpho\Tech\Sql\IDbClient;
+use Morpho\Tech\Sql\IClient;
 use Morpho\Tech\Sql\IQuery;
 use Morpho\Tech\Sql\Result;
 use Stringable;
 
 abstract class Query implements IQuery {
-    protected IDbClient $db;
+    protected IClient $db;
     protected array $tables = [];
     protected array $where = [];
     protected array $args = [];
 
-    public function __construct(IDbClient $db, array $spec = null) {
+    public function __construct(IClient $db, array $spec = null) {
         $this->db = $db;
         if (null !== $spec) {
             $this->build($spec);

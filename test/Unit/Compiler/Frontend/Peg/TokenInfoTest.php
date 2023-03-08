@@ -1,0 +1,23 @@
+<?php declare(strict_types=1);
+/**
+ * This file is part of morpho-os/framework
+ * It is distributed under the 'Apache License Version 2.0' license.
+ * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
+ */
+namespace Morpho\test\Unit\Compiler\Frontend\Peg;
+
+use Morpho\Compiler\Frontend\Peg\TokenInfo;
+use Morpho\Compiler\Frontend\Peg\TokenType;
+use Morpho\Compiler\Frontend\Location;
+use Morpho\Testing\TestCase;
+
+class TokenInfoTest extends TestCase {
+    public function testApi() {
+        $tokenInfo = new TokenInfo(TokenType::NL, "\n", new Location(1, 1), new Location(1, 2), "foo\n");
+        $this->assertSame(TokenType::NL, $tokenInfo->type);
+        $this->assertEquals(new Location(1, 1), $tokenInfo->start);
+        $this->assertEquals(new Location(1, 2), $tokenInfo->end);
+        $this->assertSame("foo\n", $tokenInfo->line);
+        $this->assertSame('TokenInfo(type=62 (NL), string=\'\\n\', start=(1, 1), end=(1, 2), line=\'foo\\n\')', (string) $tokenInfo);
+    }
+}

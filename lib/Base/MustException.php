@@ -4,9 +4,7 @@
  * It is distributed under the 'Apache License Version 2.0' license.
  * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
  */
-namespace Morpho\Tech\Sqlite;
+namespace Morpho\Base;
 
-use Morpho\Tech\Sql\DbClient as BaseDbClient;
-
-class DbClient extends BaseDbClient {
+class MustException extends Exception {
 }

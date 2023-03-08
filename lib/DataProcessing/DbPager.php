@@ -8,13 +8,13 @@ namespace Morpho\DataProcessing;
 
 use Morpho\Base\IHasServiceManager;
 use Morpho\Base\IServiceManager;
-use Morpho\Tech\Sql\IDbClient;
+use Morpho\Tech\Sql\IClient;
 
 use function intval;
 
 abstract class DbPager extends Pager implements IHasServiceManager {
     protected IServiceManager $serviceManager;
-    protected ?IDbClient $db;
+    protected ?IClient $db;
 
     public function setServiceManager(IServiceManager $serviceManager): static {
         $this->serviceManager = $serviceManager;

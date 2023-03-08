@@ -6,7 +6,7 @@
  */
 namespace Morpho\Tech\Sql;
 
-interface IDbClient {
+interface IClient {
     public function setConf(array $conf): static;
 
     public function conf(): array;

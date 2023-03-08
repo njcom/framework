@@ -6,14 +6,14 @@
  */
 namespace Morpho\Tech\Sql;
 
-use Morpho\Tech\MySql\DbClient as MySqlClient;
-use Morpho\Tech\Sqlite\DbClient as SqliteClient;
+use Morpho\Tech\MySql\Client as MySqlClient;
+use Morpho\Tech\Sqlite\Client as SqliteClient;
 use UnexpectedValueException;
 
 const SQL_TRUE = 1;
 const SQL_FALSE = 0;
 
-function mkDbClient(array $conf = null): IDbClient {
+function mkDbClient(array $conf = null): IClient {
     $driverName = $conf['driver'] ?? 'mysql';
     unset($conf['driver']);
     switch ($driverName) {

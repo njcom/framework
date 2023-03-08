@@ -11,25 +11,17 @@ use OutOfRangeException;
 use RuntimeException;
 use UnexpectedValueException;
 
-use function array_diff_key;
 use function array_flip;
 use function array_intersect_key;
 use function array_keys;
 use function count;
-use function implode;
 
 class Must {
-    /**
-     * @param mixed       $result
-     * @param string|null $errMessage
-     * @return void
-     * @todo: add tests
-     */
-    public static function beTruthy(mixed $result, string $errMessage = null): void {
-        $result = (bool)$result;
-        if (false === $result) {
-            throw new RuntimeException((string)$errMessage);
+    public static function beTruthy(mixed $val, string $errorMessage = null): mixed {
+        if (!$val) {
+            throw new MustException((string)$errorMessage);
         }
+        return $val;
     }
 
     /**
@@ -50,27 +42,41 @@ class Must {
         return $val;
     }
 
-    public static function beNotEmpty(mixed $val): mixed {
-        self::beTruthy(!empty($v), 'The value must be non empty');
-        return $val;
-    }
-
     public static function beEmpty(mixed $val): mixed {
-        self::beTruthy($val, 'The value must be empty');
+        self::beTruthy(empty($val), 'The value must be empty');
         return $val;
     }
 
-    public static function haveOnlyKeys(array $arr, array $allowedKeys): array {
-        $diff = array_diff_key($arr, array_flip($allowedKeys));
-        if (count($diff)) {
-            throw new RuntimeException(
-                'Not allowed items are present: ' . shorten(implode(', ', array_keys($diff)), 80)
-            );
+    public static function beNotEmpty(mixed $val): mixed {
+        self::beTruthy(!empty($val), 'The value must be non empty');
+        return $val;
+    }
+
+    /**
+     * @param             $haystack
+     * @param             $needle
+     * @param string|null $errMessage
+     * @return void
+     */
+    public static function contain($haystack, $needle, string $errMessage = null): void {
+        self::beTruthy(contains($haystack, $needle), $errMessage ?: 'A haystack does not contain a needle');
+    }
+
+    public static function haveAtLeastKeys(array $arr, array $keys): void {
+        $intersection = array_intersect_key(array_flip($keys), $arr);
+        if (count($intersection) != count($keys)) {
+            throw new MustException('The array must have the items with the specified keys');
+        }
+    }
+
+    public static function haveExactKeys(array $arr, array $keys): array {
+        if (array_keys($arr) !== $keys) {
+            throw new MustException('The array must have the items with the specified keys and no other items');
         }
         return $arr;
     }
 
-    public static function haveItems(
+/*    public static function haveItems(
         array $arr,
         array $requiredKeys,
         bool $returnOnlyRequired = true,
@@ -87,28 +93,11 @@ class Must {
             $newArr[$key] = $arr[$key];
         }
         return $returnOnlyRequired ? $newArr : $arr;
-    }
+    }*/
 
-    public static function haveKeys(array $arr, array $requiredKeys): void {
-        $intersection = array_intersect_key(array_flip($requiredKeys), $arr);
-        if (count($intersection) != count($requiredKeys)) {
-            throw new RuntimeException("Required items are missing");
+/*    public static function beInRange(int $val, int $start, int $end): void {
+        if ($val < $start || $val > $end) {
+            throw new OutOfRangeException("The value $val is out of range");
         }
-    }
-
-    public static function beInRange($value, $start, $end): void {
-        if ($value < $start || $value > $end) {
-            throw new OutOfRangeException("The value $value is out of range");
-        }
-    }
-
-    /**
-     * @param             $haystack
-     * @param             $needle
-     * @param string|null $errMessage
-     * @return void
-     */
-    public static function contain($haystack, $needle, string $errMessage = null): void {
-        self::beTruthy(contains($haystack, $needle), $errMessage ?: 'A haystack does not contain a needle');
-    }
+    }*/
 }
