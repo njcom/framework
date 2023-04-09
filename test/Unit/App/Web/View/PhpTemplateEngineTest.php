@@ -50,7 +50,7 @@ class PhpTemplateEngineTest extends TestCase {
         $this->assertInstanceOf(IPipe::class, $this->templateEngine);
     }
 
-    public function dataEval() {
+    public static function dataEval() {
         yield [
             '',
             '',
@@ -205,7 +205,7 @@ class PhpTemplateEngineTest extends TestCase {
         $this->assertHtmlEquals('<select name="task[id]" id="task-id"></select>', $html);
     }
 
-    public function dataAttribs(): iterable {
+    public static function dataAttribs(): iterable {
         yield [
             '',
             [],

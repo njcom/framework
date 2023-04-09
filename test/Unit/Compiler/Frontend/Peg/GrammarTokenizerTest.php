@@ -12,11 +12,9 @@ use Morpho\Compiler\Frontend\Peg\GrammarTokenizer;
 use Morpho\Compiler\Frontend\Peg\TokenException;
 use Morpho\Compiler\Frontend\Peg\TokenInfo;
 use Morpho\Testing\TestCase;
-
 use RuntimeException;
 use Throwable;
 
-use const Morpho\App\Cli\OUT_FD;
 use const Morpho\App\LIB_DIR_NAME;
 use const Morpho\Test\BASE_DIR_PATH;
 
@@ -60,20 +58,49 @@ class GrammarTokenizerTest extends TestCase {
         $doubleQuote3 = '"""';
         $stream = $this->mkStream("@subheader $doubleQuote3\n");
         $tokens = GrammarTokenizer::tokenize($stream);
-        $this->assertTokensStr(<<<'EOF'
+        $this->assertTokensStr(
+            <<<'EOF'
         TokenInfo(type=54 (OP), string='@', start=(1, 0), end=(1, 1), line='@subheader """\n')
         TokenInfo(type=1 (NAME), string='subheader', start=(1, 1), end=(1, 10), line='@subheader """\n')
-        EOF, $tokens, new TokenException('EOF in multi-line string', new Location(1, 11)));
+        EOF,
+            $tokens,
+            new TokenException('EOF in multi-line string', new Location(1, 11))
+        );
+    }
+
+    public function testTokenize_Sample2() {
+        $s = <<<'EOF'
+'(' "memo" ')' { "memo" }
+
+EOF;
+        $stream = $this->mkStream($s);
+        $tokens = GrammarTokenizer::tokenize($stream);
+        $this->assertTokensStr(
+            <<<'EOF'
+TokenInfo(type=3 (STRING), string="'('", start=(1, 0), end=(1, 3), line='\'(\' "memo" \')\' { "memo" }\n')
+TokenInfo(type=3 (STRING), string='"memo"', start=(1, 4), end=(1, 10), line='\'(\' "memo" \')\' { "memo" }\n')
+TokenInfo(type=3 (STRING), string="')'", start=(1, 11), end=(1, 14), line='\'(\' "memo" \')\' { "memo" }\n')
+TokenInfo(type=54 (OP), string='{', start=(1, 15), end=(1, 16), line='\'(\' "memo" \')\' { "memo" }\n')
+TokenInfo(type=3 (STRING), string='"memo"', start=(1, 17), end=(1, 23), line='\'(\' "memo" \')\' { "memo" }\n')
+TokenInfo(type=54 (OP), string='}', start=(1, 24), end=(1, 25), line='\'(\' "memo" \')\' { "memo" }\n')
+TokenInfo(type=4 (NEWLINE), string='\n', start=(1, 25), end=(1, 26), line='\'(\' "memo" \')\' { "memo" }\n')
+TokenInfo(type=0 (ENDMARKER), string='', start=(2, 0), end=(2, 0), line='')
+EOF,
+            $tokens
+        );
     }
 
     public function testTokenize_NewLine() {
         $stream = $this->mkStream("\n\n");
         $tokens = GrammarTokenizer::tokenize($stream);
-        $this->assertTokensStr(<<<'EOF'
+        $this->assertTokensStr(
+            <<<'EOF'
         TokenInfo(type=62 (NL), string='\n', start=(1, 0), end=(1, 1), line='\n')
         TokenInfo(type=62 (NL), string='\n', start=(2, 0), end=(2, 1), line='\n')
         TokenInfo(type=0 (ENDMARKER), string='', start=(3, 0), end=(3, 0), line='')
-        EOF, $tokens);
+        EOF,
+            $tokens
+        );
     }
 
     public function testTokenize_PegGrammar() {
@@ -123,7 +150,7 @@ class GrammarTokenizerTest extends TestCase {
         $j = 0;
         try {
             foreach ($tokens as $i => $token) {
-                $this->assertSame($expected[$i], (string) $token);
+                $this->assertSame($expected[$i], (string)$token);
                 $j++;
             }
         } catch (TokenException $actualEx) {

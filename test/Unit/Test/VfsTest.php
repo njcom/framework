@@ -174,7 +174,7 @@ class VfsTest extends TestCase {
         $this->assertFalse(is_dir($uri));
     }
 
-    public function dataEntryName() {
+    public static function dataEntryName() {
         $prefix = Vfs::URI_PREFIX;
         yield [
             '',
@@ -269,7 +269,7 @@ class VfsTest extends TestCase {
         $this->assertSame(0400 | Stat::DIR, $stat['mode']);
     }
 
-    public function dataReadingAfterWriting() {
+    public static function dataReadingAfterWriting() {
         yield [
             '',
         ];

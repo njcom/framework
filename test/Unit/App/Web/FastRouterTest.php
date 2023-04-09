@@ -20,7 +20,7 @@ use Morpho\Caching\ICache;
 use Morpho\Testing\TestCase;
 
 class FastRouterTest extends TestCase {
-    public function dataRoute() {
+    public static function dataRoute(): iterable {
         // valid HTTP method and path
         yield [
             HttpMethod::Get,

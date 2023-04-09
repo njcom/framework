@@ -20,7 +20,7 @@ class SelectQueryTest extends QueryTest {
         $this->assertInstanceOf(ISelectQuery::class, $this->query);
     }
 
-    public function dataColumns() {
+    public static function dataColumns() {
         yield [
             'SELECT p.*',
             'p.*',
@@ -102,7 +102,7 @@ class SelectQueryTest extends QueryTest {
         );
     }
 
-    public function dataJoin() {
+    public static function dataJoin() {
         yield ['INNER'];
         yield ['LEFT'];
         yield ['RIGHT'];

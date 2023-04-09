@@ -13,8 +13,8 @@ use Closure;
 use Generator;
 use InvalidArgumentException;
 use OutOfBoundsException;
-use RuntimeException;
 use Stringable;
+use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use Traversable;
 use UnexpectedValueException;
@@ -60,7 +60,6 @@ use function strpos;
 use function strrpos;
 use function strtolower;
 use function strtoupper;
-use function strtr;
 use function substr;
 use function trim;
 use function ucwords;
@@ -109,9 +108,9 @@ function caseVal(mixed $val): mixed {
     return isEnumCase($val) ? $val->value : $val;
 }
 
-function enumVals(string $enumName, bool $preserveNames = true): array {
+function enumVals(string $enumClass, bool $preserveNames = true): array {
     $vals = [];
-    foreach ($enumName::cases() as $case) {
+    foreach ($enumClass::cases() as $case) {
         $vals[$case->name] = $case->value;
     }
     if (!$preserveNames) {
@@ -470,12 +469,13 @@ function deleteDups(string|Stringable|int $list, Stringable|int|string $chars, b
     return preg_replace($regExp, '\1', (string)$list);
 }
 
-function format($string, array $args, callable $format): string {
-    $fromToMap = [];
+function format(string $s, array $args, callable $format): string {
+    $from = $to = [];
     foreach ($args as $key => $value) {
-        $fromToMap['{' . $key . '}'] = $format($value);
+        $from[] = '{' . $key . '}';
+        $to[] = $format($value);
     }
-    return strtr($string, $fromToMap);
+    return str_replace($from, $to, $s);
 }
 
 function shorten(string $text, int $length = SHORTEN_LENGTH, $tail = null): string {
@@ -492,7 +492,7 @@ function normalizeEols(string $list): string {
     return str_replace(["\r\n", "\n", "\r"], "\n", $list);
     /*$res = \preg_replace(EOL_FULL_RE, "\n", $list);
     if (null === $res) {
-        throw new RuntimeException("Unable to replace EOLs");
+        throw new Exception("Unable to replace EOLs");
     }
     return $res;*/
 }
@@ -507,9 +507,17 @@ function toJson(mixed $val, int $flags = null): string {
 function fromJson(string $json, bool $objectsToArrays = true): mixed {
     $res = json_decode($json, $objectsToArrays);
     if (null === $res) {
-        throw new RuntimeException("Invalid JSON or too deep data");
+        throw new Exception("Invalid JSON or too deep data");
     }
     return $res;
+}
+
+function toYaml(mixed $val): string {
+    return Yaml::dump($val, 9999, 2);
+}
+
+function fromYaml(string $yaml): mixed {
+    return Yaml::parse($yaml);
 }
 
 /**
@@ -764,21 +772,23 @@ function waitUntilNumOfAttempts(callable $predicate, int $waitIntervalMicroSec =
         }
         usleep($waitIntervalMicroSec);
     }
-    throw new RuntimeException('The number of attempts has been reached');
+    throw new Exception('The number of attempts has been reached');
 }
 
 /**
  * @return mixed The truthy result from the predicate
  */
 function waitUntilTimeout(callable $predicate, int $timeoutMicroSec) {
-    for ($time = microtime(true); $time < $timeoutMicroSec; $time += microtime(true)) {
+    $now = microtime(true);
+    $limitMicroSec = $now + $timeoutMicroSec;
+    for ($timeMicroSec = $now; $timeMicroSec < $limitMicroSec; $timeMicroSec += microtime(true)) {
         $res = $predicate();
         if ($res) {
             return $res;
         }
         usleep($timeoutMicroSec);
     }
-    throw new RuntimeException('The timeout has been reached');
+    throw new Exception('The timeout has been reached');
 }
 
 function any(callable $predicate, iterable $list): bool {
@@ -946,12 +956,12 @@ function flatMap(callable $fn, $iter) {
 function head($list, string $separator = null) {
     if (is_array($list)) {
         if (!count($list)) {
-            throw new RuntimeException('Empty list');
+            throw new Exception('Empty list');
         }
         return array_shift($list);
     } elseif (is_string($list)) {
         if ($list === '') {
-            throw new RuntimeException('Empty list');
+            throw new Exception('Empty list');
         }
         // @TODO, mb_substr()
         if (null === $separator) {
@@ -970,7 +980,7 @@ function head($list, string $separator = null) {
             break;
         }
         if ($empty) {
-            throw new RuntimeException('Empty list');
+            throw new Exception('Empty list');
         }
         return $head;
     }
@@ -982,12 +992,12 @@ function head($list, string $separator = null) {
 function init($list, string $separator = null) {
     if (is_array($list)) {
         if (!count($list)) {
-            throw new RuntimeException('Empty list');
+            throw new Exception('Empty list');
         }
         return array_slice($list, 0, -1, true);
     } elseif (is_string($list)) {
         if ($list === '') {
-            throw new RuntimeException('Empty list');
+            throw new Exception('Empty list');
         }
         /*
         $parts = explode($separator, $list);
@@ -1005,7 +1015,7 @@ function init($list, string $separator = null) {
             $empty = false;
         }
         if ($empty) {
-            throw new RuntimeException('Empty list');
+            throw new Exception('Empty list');
         }
         throw new NotImplementedException();
     }
@@ -1017,12 +1027,12 @@ function init($list, string $separator = null) {
 function last($list, string $separator = null) {
     if (is_array($list)) {
         if (!count($list)) {
-            throw new RuntimeException('Empty list');
+            throw new Exception('Empty list');
         }
         return array_pop($list);
     } elseif (is_string($list)) {
         if ($list === '') {
-            throw new RuntimeException('Empty list');
+            throw new Exception('Empty list');
         }
         // @TODO, mb_substr()
         if (null === $separator) {
@@ -1040,7 +1050,7 @@ function last($list, string $separator = null) {
             $last = $v;
         }
         if ($empty) {
-            throw new RuntimeException('Empty list');
+            throw new Exception('Empty list');
         }
         return $last;
     }
@@ -1052,13 +1062,13 @@ function last($list, string $separator = null) {
 function tail($list, string $separator = null) {
     if (is_array($list)) {
         if (!count($list)) {
-            throw new RuntimeException('Empty list');
+            throw new Exception('Empty list');
         }
         array_shift($list);
         return $list;
     } elseif (is_string($list)) {
         if ($list === '') {
-            throw new RuntimeException('Empty list');
+            throw new Exception('Empty list');
         }
         // @TODO, mb_substr()
         $pos = strpos($list, $separator);
@@ -1076,7 +1086,7 @@ function tail($list, string $separator = null) {
                 }
             }
             if ($empty) {
-                throw new RuntimeException('Empty list');
+                throw new Exception('Empty list');
             }
         };
         return $gen();
@@ -1330,10 +1340,10 @@ function merge(array $arrA, array $arrB, bool $resetIntKeys = true): array {
  * Symmetrical difference of the two sets: ($a \ $b) U ($b \ $a).
  * If for $a[$k1] and $b[$k2] string keys are equal the value $b[$k2] will overwrite the value $a[$k1].
  */
-function symDiff(array $arrA, array $arrB): array {
+function symDiff(array $arrA, array $arrB, bool $union = true): array {
     $diffA = array_diff($arrA, $arrB);
     $diffB = array_diff($arrB, $arrA);
-    return union($diffA, $diffB);
+    return $union ? union($diffA, $diffB) : [$diffA, $diffB];
 }
 
 function unsetOne(array $arr, mixed $val, bool $resetIntKeys = true, bool $allOccur = false, bool $strict = true): array {
@@ -1436,7 +1446,7 @@ function index(array $matrix, $keyForIndex, bool $drop = false): array {
     $result = [];
     foreach ($matrix as $row) {
         if (!isset($row[$keyForIndex])) {
-            throw new RuntimeException();
+            throw new Exception();
         }
         $k = $row[$keyForIndex];
         if ($drop) {
@@ -1508,10 +1518,17 @@ function mkStream(string $bytes, string $source = null) {
     }
     $stream = fopen($source, 'r+');
     if (!$stream) {
-        throw new \RuntimeException('Unable to allocate memory');
+        throw new Exception('Unable to allocate memory');
     }
     fwrite($stream, $bytes);
     rewind($stream);
     return $stream;
 }
 
+function reorderKeys(array $arr, array $keys): array {
+    $res = [];
+    foreach ($keys as $k) {
+        $res[$k] = $arr[$k];
+    }
+    return $res;
+}

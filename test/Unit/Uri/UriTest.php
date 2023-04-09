@@ -133,8 +133,8 @@ class UriTest extends TestCase {
         $this->assertSame($uri, Uri::parse($uri));
     }
 
-    public function dataToStr() {
-        foreach ($this->dataParse() as $sample) {
+    public static function dataToStr(): iterable {
+        foreach (self::dataParse() as $sample) {
             yield [$sample[0]];
         }
     }
@@ -147,7 +147,7 @@ class UriTest extends TestCase {
         $this->assertSame($uriStr, $uri->toStr(null, false));
     }
 
-    public function dataResolveRelUri_NormalExamples() {
+    public static function dataResolveRelUri_NormalExamples() {
         yield ['g:h', 'g:h'];
         yield ['g', 'http://a/b/c/g'];
         yield ['./g', 'http://a/b/c/g'];
@@ -183,7 +183,7 @@ class UriTest extends TestCase {
         $this->assertSame($expected, $uri->toStr(null, false));
     }
 
-    public function dataResolveRelUri_AbnormalExamples() {
+    public static function dataResolveRelUri_AbnormalExamples() {
         yield ['../../../g', 'http://a/g'];
         yield ['../../../../g', 'http://a/g'];
         yield ['/./g', 'http://a/g'];

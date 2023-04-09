@@ -7,30 +7,39 @@
 namespace Morpho\Test\Unit\Compiler;
 
 use ArrayObject;
+use Morpho\Base\IFn;
 use Morpho\Base\Pipe;
 use Morpho\Compiler\Backend\IBackend;
 use Morpho\Compiler\Backend\IInterpreter;
 use Morpho\Compiler\Compiler;
+use Morpho\Compiler\Frontend\IFrontend;
 use Morpho\Compiler\ICompiler;
-use Morpho\Compiler\ICompilerStep;
 use Morpho\Compiler\IMidend;
 use Morpho\Compiler\ITranslator;
 
 class CompilerTest extends ConfigurablePipeTest {
     public function testCompilerInterface() {
         $compiler = new Compiler($this->mkCompilerConf());
+        $this->assertInstanceOf(IFn::class, $compiler);
         $this->assertInstanceOf(ITranslator::class, $compiler);
         $this->assertInstanceOf(ICompiler::class, $compiler);
         $this->assertInstanceOf(Pipe::class, $compiler);
         $this->assertInstanceOf(
-            ICompilerStep::class,
+            IFn::class,
+            new class implements IFrontend {
+                public function __invoke(mixed $val): mixed {
+                }
+            }
+        );
+        $this->assertInstanceOf(
+            IFn::class,
             new class implements IMidend {
                 public function __invoke(mixed $val): mixed {
                 }
             }
         );
         $this->assertInstanceOf(
-            ICompilerStep::class,
+            IFn::class,
             new class implements IBackend {
                 public function __invoke(mixed $val): mixed {
                 }
@@ -47,9 +56,9 @@ class CompilerTest extends ConfigurablePipeTest {
 
     private function mkCompilerConf(): array {
         return [
-            'frontend' => fn ($v) => $v,
-            'midend'   => fn ($v) => $v,
-            'backend'  => fn ($v) => $v,
+            'frontend' => fn($v) => $v,
+            'midend'   => fn($v) => $v,
+            'backend'  => fn($v) => $v,
         ];
     }
 
@@ -96,7 +105,7 @@ class CompilerTest extends ConfigurablePipeTest {
         $this->assertSame('backend ok', $context['backend']);
     }
 
-    public function dataStepsAccessors() {
+    public static function dataStepsAccessors() {
         yield [
             'frontend',
             'midend',
@@ -111,7 +120,7 @@ class CompilerTest extends ConfigurablePipeTest {
         $compiler = new Compiler($this->mkCompilerConf());
         $oldStep = $compiler->$method();
         $this->assertIsCallable($oldStep);
-        $newStep = fn () => null;
+        $newStep = fn() => null;
         $this->assertSame($compiler, $compiler->{'set' . $method}($newStep));
         $this->assertSame($newStep, $compiler->$method());
         $this->assertNotSame($newStep, $oldStep);

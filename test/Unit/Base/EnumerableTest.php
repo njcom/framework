@@ -10,7 +10,7 @@ use Morpho\Base\Enumerable;
 use Morpho\Testing\TestCase;
 
 class EnumerableTest extends TestCase {
-    public function dataEnumerable() {
+    public static function dataEnumerable() {
         return [
             [new EnumerableTest_Enumerable()],
             [new class extends Enumerable {

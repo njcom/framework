@@ -60,7 +60,7 @@ class ClassTypeDiscovererTest extends TestCase {
         $this->classTypeDiscoverer->classTypesDefinedInDir(__DIR__);
     }
 
-    public function dataClassTestFilePath() {
+    public static function dataClassTestFilePath() {
         return [
             [
                 self::class . '\\MyClass',

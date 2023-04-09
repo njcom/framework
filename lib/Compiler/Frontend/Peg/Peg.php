@@ -16,6 +16,10 @@ namespace Morpho\Compiler\Frontend\Peg;
 use Morpho\Compiler\Frontend\IParserGen;
 
 class Peg implements IParserGen {
+    public static function build(): array {
+        return [$grammar, $parser, $tokenizer];
+    }
+
     public function frontend(): callable {
         return function (mixed $context): mixed {
             $tokenGen = function () {

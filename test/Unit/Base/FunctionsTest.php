@@ -8,6 +8,7 @@ namespace Morpho\Test\Unit\Base;
 
 use ArrayIterator;
 use IteratorAggregate;
+use Morpho\Base\Exception;
 use Morpho\Base\IDisposable;
 use Morpho\Base\IFn;
 use Morpho\Test\Unit\Base\FunctionsTest\Foo;
@@ -23,7 +24,7 @@ use function count;
 use function fclose;
 use function file_put_contents;
 use function get_class_methods;
-use function Morpho\Base\{all, append, appendFn, camelize, camelizeKeys, capture, cartesianProduct, classify, compose, dasherize, deleteDups, enumVals, formatBytes, formatFloat, fromJson, humanize, indent, index, isEnumCase, isSubset, isUtf8Text, last, lastPos, lines, memoize, merge, normalizeEols, not, op, partial, permutations, pipe, prepend, prependFn, q, qq, sanitize, setProps, setsEqual, shorten, subsets, symDiff, titleize, toIt, toJson, tpl, etrim, ucfirst, underscore, underscoreKeys, unindent, union, uniqueName, unsetMany, unsetOne, unsetRecursive, with, caseVal, waitUntilNumOfAttempts, waitUntilTimeout, words, wrap, wrapFn};
+use function Morpho\Base\{all, append, appendFn, camelize, camelizeKeys, capture, cartesianProduct, classify, compose, dasherize, deleteDups, enumVals, formatBytes, formatFloat, fromJson, humanize, indent, index, isEnumCase, isSubset, isUtf8Text, last, lastPos, lines, memoize, merge, normalizeEols, not, op, partial, permutations, pipe, prepend, prependFn, q, qq, reorderKeys, sanitize, setProps, setsEqual, shorten, subsets, symDiff, titleize, toIt, toJson, tpl, etrim, ucfirst, underscore, underscoreKeys, unindent, union, uniqueName, unsetMany, unsetOne, unsetRecursive, with, caseVal, waitUntilNumOfAttempts, waitUntilTimeout, words, wrap, wrapFn};
 use function ob_get_clean;
 use function ob_start;
 use function property_exists;
@@ -56,7 +57,7 @@ class FunctionsTest extends TestCase {
 
     // -------------------------------------------------------------------------
 
-    public function dataAll_CommonCases() {
+    public static function dataAll_CommonCases() {
         $falsePredicate = fn () => false;
         $truePredicate = fn () => true;
         $emptyString = '';
@@ -100,7 +101,7 @@ class FunctionsTest extends TestCase {
         $this->assertSame($expected, all($predicate, $list));
     }
 
-    public function dataAll_StringAndStringable_Utf8String() {
+    public static function dataAll_StringAndStringable_Utf8String() {
         yield [
             'ℚ ⊂ ℝ ⊂ ℂ',
         ];
@@ -136,7 +137,7 @@ class FunctionsTest extends TestCase {
 
     // -------------------------------------------------------------------------
 
-    public function dataToIt() {
+    public static function dataToIt() {
         $it = new ArrayIterator(['foo', 'bar']);
         $itAggr = new class ($it) implements IteratorAggregate {
             private ArrayIterator $it;
@@ -184,7 +185,7 @@ class FunctionsTest extends TestCase {
 
     // -------------------------------------------------------------------------
 
-    public function dataLines() {
+    public static function dataLines() {
         yield ["\n"];   // *nix
         yield ["\r\n"]; // Win
         yield ["\r"];   // old Mac
@@ -238,17 +239,17 @@ class FunctionsTest extends TestCase {
             $called++;
             return false;
         };
-        $this->expectException(RuntimeException::class, 'The number of attempts has been reached');
+        $this->expectException(Exception::class, 'The number of attempts has been reached');
         waitUntilNumOfAttempts($predicate, 0);
     }
 
     public function testWaitUntilTimeout_Timeout() {
-        $this->expectException(RuntimeException::class, 'The timeout has been reached');
+        $this->expectException(Exception::class, 'The timeout has been reached');
         $this->assertNull(waitUntilTimeout(fn () => usleep(2000), 1000));
     }
 
     public function testWaitUntilTimeout_NoTimeout() {
-        $this->assertSame('abc', waitUntilTimeout(fn () => 'abc', 1000));
+        $this->assertSame('abc', waitUntilTimeout(fn () => 'abc', 2000));
     }
 
     public function testNot() {
@@ -279,7 +280,7 @@ class FunctionsTest extends TestCase {
     }
 
     public function testFromJson_InvalidJsonThrowsException() {
-        $this->expectException(RuntimeException::class, "Invalid JSON or too deep data");
+        $this->expectException(Exception::class, "Invalid JSON or too deep data");
         fromJson('S => {');
     }
 
@@ -448,7 +449,7 @@ class FunctionsTest extends TestCase {
         $this->assertEquals('fghello', compose($f, $g)('hello'));
     }
 
-    public function dataCompose_IFnWithClosure() {
+    public static function dataCompose_IFnWithClosure() {
         $ifn = new class implements IFn {
             public function __invoke(mixed $value): mixed {
                 return 'IFn called ' . $value;
@@ -483,11 +484,11 @@ class FunctionsTest extends TestCase {
         $this->assertSame($expected, compose($f, $g)('test'));
     }
 
-    public function dataQ() {
-        return $this->dataQ_("'");
+    public static function dataQ() {
+        return self::dataQ_("'");
     }
 
-    private function dataQ_(string $quote) {
+    private static function dataQ_(string $quote) {
         return [
             [
                 "$quote$quote",
@@ -531,8 +532,8 @@ class FunctionsTest extends TestCase {
         $this->assertSame($expected, q($actual));
     }
 
-    public function dataQQ() {
-        return $this->dataQ_('"');
+    public static function dataQQ() {
+        return self::dataQ_('"');
     }
 
     /**
@@ -640,7 +641,7 @@ class FunctionsTest extends TestCase {
      * Modified version of the providesOperator() from the https://github.com/nikic/iter
      * @Copyright (c) 2013 by Nikita Popov.
      */
-    public function dataOp() {
+    public static function dataOp() {
         return [
             ['instanceof', new stdClass, 'stdClass', true],
             ['*', 3, 2, 6],
@@ -687,7 +688,7 @@ class FunctionsTest extends TestCase {
     }
 
     public function testWith_CallsInvoke() {
-        $disposable = new class implements IDisposable {
+        $disposable = new class implements IDisposable, IFn {
             public $disposeArgs;
             public $invokeArgs;
 
@@ -707,7 +708,7 @@ class FunctionsTest extends TestCase {
     }
 
     public function testWith_CallsDispose() {
-        $disposable = new class implements IDisposable {
+        $disposable = new class implements IDisposable, IFn {
             public $disposeArgs;
             public $invokeArgs;
 
@@ -906,7 +907,7 @@ OUT;
         $this->assertSame([[]], subsets([1, 2], 0));
     }
 
-    public function dataIsSubset() {
+    public static function dataIsSubset() {
         return [
             [
                 true,
@@ -988,7 +989,7 @@ OUT;
         $this->assertSame($expected, isSubset($a, $b));
     }
 
-    public function dataSetsEqual() {
+    public static function dataSetsEqual() {
         return [
             [
                 [],
@@ -1205,7 +1206,7 @@ OUT;
         $this->assertSame(['foo', 'bar', 'baz'], union(['foo', 'bar'], ['baz', 'foo']));
     }
 
-    public function dataSymmetricDiff() {
+    public static function dataSymmetricDiff() {
         // for each {int keys, string keys, mixed keys}
         // check {value !=, key !=}
         return [
@@ -1301,7 +1302,7 @@ OUT;
         );
     }
 
-    public function dataPermutations() {
+    public static function dataPermutations() {
         yield [
             [],
             [
@@ -1374,7 +1375,7 @@ OUT;
      * This function based on https://github.com/zendframework/zend-stdlib/blob/master/test/ArrayUtilsTest.php
      * Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
      */
-    public function dataMerge() {
+    public static function dataMerge() {
         return [
             'merge-integer-and-string-keys'                  => [
                 [
@@ -1531,6 +1532,11 @@ OUT;
             fn ($v) => $v * 3,
         ];
         $this->assertSame(36, pipe($iter, 7));
+    }
+
+    public function testReorderKeys() {
+        $arr = ['foo' => 123, 'bar' => 456, 'baz' => 758];
+        $this->assertSame(['bar' => 456, 'baz' => 758, 'foo' => 123], reorderKeys($arr, ['bar', 'baz', 'foo']));
     }
 }
 

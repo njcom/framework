@@ -34,8 +34,8 @@ class Compiler extends ConfigurablePipe implements ICompiler {
     public function frontend(): callable {
         if (null === $this->frontend) {
             $this->frontend = $this->conf['frontend'] ?? function ($context) {
-                    return $context;
-                };
+                return $context;
+            };
         }
         return $this->frontend;
     }
@@ -43,8 +43,8 @@ class Compiler extends ConfigurablePipe implements ICompiler {
     public function midend(): callable {
         if (null === $this->midend) {
             $this->midend = $this->conf['midend'] ?? function ($context) {
-                    return $context;
-                };;
+                return $context;
+            };
         }
         return $this->midend;
     }
@@ -52,8 +52,8 @@ class Compiler extends ConfigurablePipe implements ICompiler {
     public function backend(): callable {
         if (null === $this->backend) {
             $this->backend = $this->conf['backend'] ?? function ($context) {
-                    return $context;
-                };;
+                return $context;
+            };
         }
         return $this->backend;
     }

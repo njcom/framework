@@ -25,7 +25,7 @@ class RouteMetaProviderTest extends TestCase {
         $this->assertInstanceOf(IFn::class, new RouteMetaProvider());
     }
 
-    public function dataInvoke_RestActions() {
+    public static function dataInvoke_RestActions() {
         return [
             [
                 'index',
@@ -149,7 +149,7 @@ class RouteMetaProviderTest extends TestCase {
         );
     }
 
-    public function dataDocComments() {
+    public static function dataDocComments() {
         yield [
             '/**
               * @GET|POST

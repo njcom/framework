@@ -48,7 +48,7 @@ class RequestTest extends TestCase {
         $this->assertFalse($this->request->isAjax());
     }
 
-    public function dataSettingHeadersThroughServerVars() {
+    public static function dataSettingHeadersThroughServerVars() {
         yield [true];
         yield [false];
     }
@@ -144,7 +144,7 @@ class RequestTest extends TestCase {
         $this->assertEquals('https://blog.example.com:8042/top.htm?page=news&skip=10', $uri->toStr(null, true));
     }
 
-    public function dataIsHttpMethod(): Traversable {
+    public static function dataIsHttpMethod(): Traversable {
         foreach (HttpMethod::cases() as $httpMethod) {
             yield [$httpMethod];
         }
@@ -196,7 +196,7 @@ class RequestTest extends TestCase {
         $this->assertNull($this->request->query('foo', false));
     }
 
-    public function dataGetArgs() {
+    public static function dataGetArgs() {
         yield [HttpMethod::Get];
         yield [HttpMethod::Post];
     }
@@ -229,7 +229,7 @@ class RequestTest extends TestCase {
         $this->assertSame($basePath, $uri->path()->basePath());
     }
 
-    public function dataPrependWithBasePath() {
+    public static function dataPrependWithBasePath() {
         yield [
             '/foo/news/',
             '/foo',
@@ -312,7 +312,7 @@ class RequestTest extends TestCase {
         $this->assertSame($expectedUri, $prepended->toStr(null, false));
     }
 
-    public function dataUriInitialization_Scheme() {
+    public static function dataUriInitialization_Scheme() {
         yield [false, []];
         yield [true, ['HTTPS' => 'on']];
         yield [false, ['HTTPS' => 'off']];
@@ -376,7 +376,7 @@ class RequestTest extends TestCase {
         $this->assertFalse($this->request->isKnownMethod('unknown'));
     }
 
-    public function dataMethod(): Traversable {
+    public static function dataMethod(): Traversable {
         foreach (HttpMethod::cases() as $httpMethod) {
             yield [$httpMethod];
         }

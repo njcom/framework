@@ -4,12 +4,6 @@
  * It is distributed under the 'Apache License Version 2.0' license.
  * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
  */
-/**
- * The implementation is based on Python's PEG:
- * 1. https://medium.com/@gvanrossum_83706/peg-parsing-series-de5d41b2ed60
- * 2. https://www.python.org/dev/peps/pep-0617/
- * 3. https://www.youtube.com/watch?v=QppWTvh7_sI
- */
 namespace Morpho\Compiler\Frontend\Peg;
 
 use Generator;
@@ -19,10 +13,12 @@ use Morpho\Compiler\Frontend\ITokenizer;
 use Morpho\Compiler\Frontend\Location;
 use RuntimeException;
 
+use UnexpectedValueException;
+
 use function Morpho\Base\last;
 
 /**
- * https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/tokenizer.py
+ * Based on https://github.com/python/cpython/blob/main/Lib/tokenize.py
  */
 class GrammarTokenizer implements ITokenizer {
     private int $index = 0;
@@ -132,7 +128,7 @@ class GrammarTokenizer implements ITokenizer {
                         throw new IndentationException("Unindent does not match any outer indentation level", $lnum, $pos, $line);
                     }
                     $indents = array_slice($indents, 0, -1);
-                    yield new TokenInfo(TokenType::INDENT, '', new Location($lnum, $pos), new Location($lnum, $pos), $line);
+                    yield new TokenInfo(TokenType::DEDENT, '', new Location($lnum, $pos), new Location($lnum, $pos), $line);
                 }
             } else { // continued statement
                 if ('' === $line) {
@@ -170,7 +166,7 @@ class GrammarTokenizer implements ITokenizer {
                         $endprogRe = $endPatterns[$token];
                         if (preg_match('~' . $endprogRe . '~AsDu', $line, $match, PREG_OFFSET_CAPTURE, $pos))  { # all on one line
                             if (count($match) !== 1) {
-                                throw new \UnexpectedValueException();
+                                throw new UnexpectedValueException();
                             }
                             $pos = mb_strlen($match[0]);
                             $token = mb_substr($line, $start, $end - $start);
@@ -207,7 +203,7 @@ class GrammarTokenizer implements ITokenizer {
                             } elseif (isset($endPatterns[$token[2]])) {
                                 $endprogRe = $endPatterns[$token[2]];
                             } else {
-                                throw new \UnexpectedValueException();
+                                throw new UnexpectedValueException();
                             }
                             $contstr = mb_substr($line, $start);
                             $needcont = 1;
@@ -246,6 +242,10 @@ class GrammarTokenizer implements ITokenizer {
         if (!feof($stream)) {
             throw new RuntimeException('Unexpected end of the stream');
         }
+    }
+
+    public static function untokenize() {
+        throw new NotImplementedException(__METHOD__);
     }
 
     /*

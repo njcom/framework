@@ -10,7 +10,7 @@ use Morpho\App\Web\Env;
 use Morpho\Testing\TestCase;
 
 class EnvTest extends TestCase {
-    public function dataHttpProto() {
+    public static function dataHttpProto() {
         yield [
             'HTTP/1.0',
             'HTTP/1.0',

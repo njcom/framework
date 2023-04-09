@@ -15,7 +15,7 @@ use function strlen;
 use function substr;
 
 class ResultTest extends TestCase {
-    public function dataInterface() {
+    public static function dataInterface() {
         yield [new Ok()];
         yield [new Err()];
     }
@@ -55,7 +55,7 @@ class ResultTest extends TestCase {
         $this->assertEquals(new Err($errVal), $res);
     }
 
-    public function dataComposition() {
+    public static function dataComposition() {
         $req = [
             'name'  => "Phillip",
             'email' => "phillip@example",

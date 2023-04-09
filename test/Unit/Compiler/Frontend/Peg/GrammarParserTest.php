@@ -19,7 +19,7 @@ class GrammarParserTest extends TestCase {
         parent::setUp();
         $this->parser = new GrammarParser(
             new GrammarTokenizer(
-                GrammarTokenizer::tokens($this->getTestDirPath() . '/peg.peg')
+                GrammarTokenizer::tokenize($this->getTestDirPath() . '/peg.peg')
             )
         );
     }

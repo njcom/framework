@@ -71,7 +71,7 @@ class ResponseTest extends TestCase {
         );
     }
 
-    public function dataStatusCodeToStatusLine() {
+    public static function dataStatusCodeToStatusLine() {
         yield [
             200,
             'OK',

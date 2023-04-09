@@ -7,7 +7,7 @@
 namespace Morpho\Test\Unit\Uri;
 
 trait TUriParserDataProvider {
-    public function dataParse() {
+    public static function dataParse() {
         return [
             [
                 '',

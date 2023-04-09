@@ -12,7 +12,7 @@ use Morpho\App\Web\View\UriProcessor;
 use Morpho\Testing\TestCase;
 
 class UriProcessorTest extends TestCase {
-    public function dataProcessUrisInTags() {
+    public static function dataProcessUrisInTags() {
         foreach (['/base/path', '/'] as $basePath) {
             // `form` tag
             yield [

@@ -21,7 +21,7 @@ abstract class DiscoverStrategyTest extends TestCase {
 
     protected abstract function mkDiscoverStrategy();
 
-    public function dataClassTypesDefinedInFile() {
+    public static function dataClassTypesDefinedInFile() {
         (yield [
             [
                 __NAMESPACE__ . '\\StrategyTest1\\FooTrait',

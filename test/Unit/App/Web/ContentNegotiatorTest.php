@@ -14,10 +14,10 @@ use Morpho\Testing\TestCase;
 use function implode;
 
 class ContentNegotiatorTest extends TestCase {
-    public function dataInvoke() {
-        $mediaRanges = $this->mediaRanges();
+    public static function dataInvoke() {
+        $mediaRanges = self::mediaRanges();
         yield [
-            $this->mkAcceptHeaderVal(
+            self::mkAcceptHeaderVal(
                 [
                     $mediaRanges[ContentFormat::JSON],
                     $mediaRanges[ContentFormat::HTML],
@@ -28,7 +28,7 @@ class ContentNegotiatorTest extends TestCase {
             ContentFormat::HTML,// Default priority is choosing HTML
         ];
         yield [
-            $this->mkAcceptHeaderVal(
+            self::mkAcceptHeaderVal(
                 [
                     $mediaRanges[ContentFormat::ANY],
                     $mediaRanges[ContentFormat::XML],
@@ -38,7 +38,7 @@ class ContentNegotiatorTest extends TestCase {
             ContentFormat::JSON,
         ];
         yield [
-            $this->mkAcceptHeaderVal(
+            self::mkAcceptHeaderVal(
                 [
                     $mediaRanges[ContentFormat::JSON],
                 ]
@@ -55,7 +55,7 @@ class ContentNegotiatorTest extends TestCase {
         ];
     }
 
-    private function mediaRanges(): array {
+    private static function mediaRanges(): array {
         return [
             ContentFormat::JSON => ['application/json'],
             ContentFormat::HTML => ['text/html', 'application/xhtml+xml'],
@@ -64,7 +64,7 @@ class ContentNegotiatorTest extends TestCase {
         ];
     }
 
-    private function mkAcceptHeaderVal(array $mediaRanges): string {
+    private static function mkAcceptHeaderVal(array $mediaRanges): string {
         foreach ($mediaRanges as &$mediaRange) {
             $mediaRange = implode(', ', $mediaRange);
         }

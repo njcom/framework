@@ -10,7 +10,7 @@ use Morpho\Base\Hashing;
 use Morpho\Testing\TestCase;
 
 class HashingTest extends TestCase {
-    public function dataIsMd5Like() {
+    public static function dataIsMd5Like() {
         (yield [false, '']);
         (yield [false, 'foo']);
         (yield [true, md5('foo')]);

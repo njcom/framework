@@ -43,7 +43,7 @@ class ControllerTest extends TestCase {
         $this->assertSame([ContentFormat::JSON], $response->formats());
     }
 
-    public function dataRedirect() {
+    public static function dataRedirect() {
         yield [
             '/foo/bar',
             399,

@@ -36,7 +36,7 @@ class PathTest extends TestCase {
         );
     }
 
-    public function dataBasePathAccessors() {
+    public static function dataBasePathAccessors() {
         yield [
             '/base/path/foo/bar',
             '/base/path',
@@ -66,7 +66,7 @@ class PathTest extends TestCase {
         $path->setBasePath('/base/path');
     }
 
-    public function dataIsRel() {
+    public static function dataIsRel() {
         yield ['', true];
         yield ['/', false];
         yield ['//', false];
@@ -87,7 +87,7 @@ class PathTest extends TestCase {
         $isRel ? $this->assertTrue($path->isRel()) : $this->assertFalse($path->isRel());
     }
 
-    public function dataCombine() {
+    public static function dataCombine() {
         yield from (new BasePathTest(__METHOD__))->dataCombine();
         yield from [
             [

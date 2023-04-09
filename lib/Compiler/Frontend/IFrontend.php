@@ -6,10 +6,10 @@
  */
 namespace Morpho\Compiler\Frontend;
 
-use Morpho\Compiler\ICompilerStep;
+use Morpho\Base\IFn;
 
 /**
  * Translates an input program into IR/Intermediate Representation.
  */
-interface IFrontend extends ICompilerStep {
+interface IFrontend extends IFn {
 }

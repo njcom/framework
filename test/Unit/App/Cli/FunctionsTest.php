@@ -82,7 +82,7 @@ class FunctionsTest extends TestCase {
         $this->assertSame(CODE_WIDTH_1 + 1, strlen($output));
     }
 
-    public function dataWriteErrorAndWriteErrorLine(): iterable {
+    public static function dataWriteErrorAndWriteErrorLine(): iterable {
         return [
             ['showError', 'Something went wrong', 'Something went wrong'],
             ['showErrorLine', "Space cow has arrived!\n", 'Space cow has arrived!'],
@@ -154,7 +154,7 @@ OUT
         sh('ls', ['some invalid option' => 'value of invalid option']);
     }
 
-    public function dataShell_CaptureAndShowConfOptions(): iterable {
+    public static function dataShell_CaptureAndShowConfOptions(): iterable {
         yield [false, false];
         yield [false, true];
         yield [true, false];

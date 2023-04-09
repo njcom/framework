@@ -95,7 +95,7 @@ OUT;
         $parentPage = <<<OUT
 <body>
 This is a
-<script src="bar/parent.js" ${indexAttr}="100"></script>
+<script src="bar/parent.js" {$indexAttr}="100"></script>
 parent
 </body>
 OUT;
@@ -115,7 +115,7 @@ OUT;
         $this->assertMatchesRegularExpression($re, $html);
     }
 
-    public function dataSkipAttribute() {
+    public static function dataSkipAttribute() {
         return [
             [
                 'body',
@@ -158,7 +158,7 @@ OUT;
         $this->assertSame($html, $processed);
     }
 
-    public function dataAutoInclusionOfActionScripts_WithoutChildScripts() {
+    public static function dataAutoInclusionOfActionScripts_WithoutChildScripts() {
         yield [
             ['foo' => 'bar'],
         ];

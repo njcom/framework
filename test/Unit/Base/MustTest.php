@@ -225,6 +225,10 @@ class MustTest extends TestCase {
                 ['foo', 'bar', 'baz'],
             ],
             [
+                ['foo' => '1', 'bar' => 2, 'baz' => 3],
+                ['foo', 'baz', 'bar'], // Order does not matter
+            ],
+            [
                 ['foo' => 1],
                 ['foo'],
             ],
@@ -238,8 +242,8 @@ class MustTest extends TestCase {
     /**
      * @dataProvider dataHaveExactKeys_Valid
      */
-    public function testHaveExactKeys_Valid($actual, $allowedKeys) {
-        Must::haveExactKeys($actual, $allowedKeys);
+    public function testHaveExactKeys_Valid(...$args) {
+        Must::haveExactKeys(...$args);
         $this->markTestAsNotRisky();
     }
 

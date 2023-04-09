@@ -144,7 +144,7 @@ class SchemaTest extends DbTestCase {
             $this->assertTrue($i > 0);
         }
 
-        public function dataAvailableCollationsOfServer() {
+        public static function dataAvailableCollationsOfServer() {
             yield [null, function ($defaultEncountered) {
                 $this->assertTrue($defaultEncountered > 0);
             }];
@@ -264,7 +264,7 @@ class SchemaTest extends DbTestCase {
             $this->assertTrue($i > 0);
         }
 
-        public function dataCollationOfTable() {
+        public static function dataCollationOfTable() {
             yield [self::DB . '.kiwi', null];
             yield [self::DB, 'kiwi'];
         }

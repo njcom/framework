@@ -16,7 +16,7 @@ use function get_debug_type;
 use function is_object;
 
 class VarExportFileCacheTest extends TestCase {
-    public function dataCaching() {
+    public static function dataCaching() {
         yield [
             ['foo' => 'bar'],
         ];
@@ -63,7 +63,7 @@ class VarExportFileCacheTest extends TestCase {
         $this->assertSame($def, $cache->get($key, $def));
     }
 
-    public function dataThrowsExceptionOnNotSupportedDataType() {
+    public static function dataThrowsExceptionOnNotSupportedDataType() {
         yield [new ArrayIterator([])];
         yield [STDIN];
     }

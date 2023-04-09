@@ -162,8 +162,11 @@ class FileReflectionTest extends TestCase {
         $this->assertEquals($expectedFilePath, $rFunction->getFileName());
     }
 
-    public function dataNamespaces_MultipleNamespaces() {
-        $testDirPath = $this->getTestDirPath();
+    /**
+     * @throws \ReflectionException
+     */
+    public static function dataNamespaces_MultipleNamespaces() {
+        $testDirPath = self::getTestDirPath();
         return [
             [
                 $testDirPath . '/multiple-bracketed-ns.php',

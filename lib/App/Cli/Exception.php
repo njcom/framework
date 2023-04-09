@@ -6,7 +6,5 @@
  */
 namespace Morpho\App\Cli;
 
-use RuntimeException;
-
-class Exception extends RuntimeException {
-} 
+class Exception extends \RuntimeException {
+}

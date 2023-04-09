@@ -48,7 +48,7 @@ class EnvTest extends TestCase {
         $this->assertFalse(Env::boolIniVal(__FUNCTION__));
     }
 
-    public function dataIniValToBool() {
+    public static function dataIniValToBool() {
         return [
             [
                 true,

@@ -12,6 +12,7 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use ReflectionClass;
 use ReflectionObject;
 use RuntimeException;
 
@@ -45,7 +46,7 @@ use const Morpho\App\TEST_DATA_DIR_NAME;
 abstract class TestCase extends BaseTestCase {
     private array $tmpDirPaths = [];
     private array $tmpFilePaths = [];
-    private string $classFilePath;
+    private static array $classFilePaths = [];
     private ?string $prevTimezone = null;
 
 /*    public function expectException(string $exceptionClass, $message = '', $code = null): void {
@@ -139,9 +140,16 @@ abstract class TestCase extends BaseTestCase {
 
     /**
      * Note: we can't use name testDirPath as it will be considered as test method.
+     * @throws \ReflectionException
      */
-    protected function getTestDirPath(): string {
-        $classFilePath = $this->classFilePath();
+    protected static function getTestDirPath(): string {
+        $class = get_called_class();
+        if (!isset(self::$classFilePaths[$class])) {
+            $filePath = (new ReflectionClass($class))->getFileName();
+            $isWindows = defined('PHP_WINDOWS_VERSION_BUILD');
+            self::$classFilePaths[$class] = $isWindows ? str_replace('\\', '/', $filePath) : $filePath;
+        }
+        $classFilePath = self::$classFilePaths[$class];
         return dirname($classFilePath) . '/' . TEST_DATA_DIR_NAME . '/' . pathinfo($classFilePath, PATHINFO_FILENAME);
     }
 
@@ -231,16 +239,6 @@ abstract class TestCase extends BaseTestCase {
     private function tryDeleteDir(string $dirPath): bool {
         $this->fixPerms($dirPath);
         return @rmdir($dirPath);
-    }
-
-    private function classFilePath(): string {
-        if (!isset($this->classFilePath)) {
-            $filePath = (new ReflectionObject($this))->getFileName();
-            $isWindows = defined('PHP_WINDOWS_VERSION_BUILD');
-            $this->classFilePath = $isWindows ? str_replace('\\', '/', $filePath) : $filePath;
-        }
-
-        return $this->classFilePath;
     }
 
     private function deleteTmpDirs(): void {

@@ -22,7 +22,7 @@ class PhpFileHeaderFixerTest extends TestCase {
         $this->fixer = new PhpFileHeaderFixer(LICENSE_COMMENT);
     }
 
-    public function dataCheckAndFix_EmptyFile() {
+    public static function dataCheckAndFix_EmptyFile() {
         (yield ['']);
         (yield ['<?php']);
         (yield ["#!/usr/bin/env php"]);

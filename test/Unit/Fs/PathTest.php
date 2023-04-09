@@ -18,7 +18,7 @@ use function basename;
 use function touch;
 
 class PathTest extends TestCase {
-    public function dataIsAbs() {
+    public static function dataIsAbs() {
         return [
             [
                 '',
@@ -84,7 +84,7 @@ class PathTest extends TestCase {
         $this->assertTrue(Path::isAbsWinPath('C:/'));
     }
 
-    public function dataAssertSafe_NotSafePath() {
+    public static function dataAssertSafe_NotSafePath() {
         return [
             ['..'],
             ['C:/foo/../bar'],
@@ -103,7 +103,7 @@ class PathTest extends TestCase {
         Path::assertSafe($path);
     }
 
-    public function dataAssertSafe_SafePath() {
+    public static function dataAssertSafe_SafePath() {
         return [
             [
                 '',
@@ -123,7 +123,7 @@ class PathTest extends TestCase {
         $this->assertSame($path, Path::assertSafe($path));
     }
 
-    public function dataNormalize() {
+    public static function dataNormalize() {
         yield from (new BasePathTest(__METHOD__))->dataNormalize();
         $fixSlashes = fn($path) => str_replace('\\', '/', $path);
         $data = [
@@ -155,7 +155,7 @@ class PathTest extends TestCase {
         $this->assertSame($expected, Path::normalize($path));
     }
 
-    public function dataCombine() {
+    public static function dataCombine() {
         yield from (new BasePathTest(__METHOD__))->dataCombine();
         // https://docs.microsoft.com/en-us/dotnet/standard/io/file-path-formats
         yield from [
@@ -255,7 +255,7 @@ class PathTest extends TestCase {
         $this->assertSame('dir/foo.d.ts', Path::changeExt('dir/foo.d.ts', null, 'd.ts'));
     }
 
-    public function dataChangeExt_GuessOldExt_EmptyPathOrNewExt() {
+    public static function dataChangeExt_GuessOldExt_EmptyPathOrNewExt() {
         yield [
             'term',
             null,

@@ -42,7 +42,7 @@ class UriParserTest extends TestCase {
         $this->assertSame($expected['fragment'], $uri->fragment());
     }
 
-    public function dataParseOnlyAuthority_ValidCases() {
+    public static function dataParseOnlyAuthority_ValidCases() {
         yield [
             '',
             [
@@ -169,7 +169,7 @@ class UriParserTest extends TestCase {
         $this->assertSame($expected['port'], $authority->port());
     }
 
-    public function dataParseOnlyAuthority_InvalidCases() {
+    public static function dataParseOnlyAuthority_InvalidCases() {
         yield [
             '',
         ];
@@ -195,7 +195,7 @@ class UriParserTest extends TestCase {
         }
     }
 
-    public function dataParseOnlyQuery() {
+    public static function dataParseOnlyQuery() {
         yield [
             'foo',
             ['foo' => null],

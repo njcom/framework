@@ -29,7 +29,7 @@ class AppInitializerTest extends TestCase {
         ini_set('date.timezone', $this->timezone);
     }
 
-    public function dataTimezoneCanBeSetThroughSiteConf() {
+    public static function dataTimezoneCanBeSetThroughSiteConf() {
         return [
             [
                 'Europe/London',

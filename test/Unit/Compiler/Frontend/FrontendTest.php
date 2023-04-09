@@ -6,15 +6,15 @@
  */
 namespace Morpho\Test\Unit\Compiler\Frontend;
 
+use Morpho\Base\IFn;
 use Morpho\Compiler\Frontend\Frontend;
 use Morpho\Compiler\Frontend\IFrontend;
-use Morpho\Compiler\ICompilerStep;
 use Morpho\Test\Unit\Compiler\ConfigurablePipeTest;
 
 class FrontendTest extends ConfigurablePipeTest {
     public function testInterface() {
         $this->assertInstanceOf(
-            ICompilerStep::class,
+            IFn::class,
             new class implements IFrontend {
                 public function __invoke(mixed $val): mixed {
                 }

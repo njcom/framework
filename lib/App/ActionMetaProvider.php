@@ -67,7 +67,6 @@ abstract class ActionMetaProvider implements IFn {
             'filePath' => $rClass->getFileName(),
             'class'    => $rClass->getName(),
         ];
-        /** @noinspection PhpIncludeInspection */
         require_once $controllerMeta['filePath'];
         $actionsMeta = [];
         foreach ((new ReflectionClass($controllerMeta['class']))->getMethods(ReflectionMethod::IS_PUBLIC) as $rMethod) {
@@ -89,6 +88,9 @@ abstract class ActionMetaProvider implements IFn {
         yield from array_values($actionsMeta);
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function actionFilter(): callable {
         if (null === $this->actionFilter) {
             $baseControllerClasses = $this->baseControllerClasses();

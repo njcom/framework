@@ -14,7 +14,7 @@ use stdClass;
 use function is_object;
 
 abstract class CacheTest extends TestCase {
-    public function dataCaching() {
+    public static function dataCaching() {
         yield [['foo' => 'bar']];
         yield [false];
         yield [true];

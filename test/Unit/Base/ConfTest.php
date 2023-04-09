@@ -44,7 +44,7 @@ class ConfTest extends TestCase {
         $this->assertSame([], (new Conf())->getArrayCopy());
     }
 
-    public function dataMerge() {
+    public static function dataMerge() {
         yield [
             false,
             ['foo' => ['abc']],
@@ -63,7 +63,7 @@ class ConfTest extends TestCase {
         $this->assertSame($expected, $conf->merge(['foo' => ['abc']], $recursive)->getArrayCopy());
     }
 
-    public function dataCheck_Array() {
+    public static function dataCheck_Array() {
         return [
             [
                 [],

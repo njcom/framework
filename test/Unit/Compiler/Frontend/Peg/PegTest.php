@@ -20,7 +20,11 @@ class PegTest extends TestCase {
 
     public function testInterface() {
         $this->assertInstanceOf(ICompiler::class, $this->peg);
-
+    }
+    
+    public function testBuild() {
+        # build_parser(), build.py in Python
+        [$grammar, $parser, $tokenizer] = Peg::build    ();
     }
 
     public function testInvoke() {

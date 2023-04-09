@@ -234,7 +234,7 @@ class FileTest extends TestCase {
         $this->assertSame('', file_get_contents($filePath));
     }
 
-    public function dataWrite_ModeConfOption() {
+    public static function dataWrite_ModeConfOption() {
         yield [
             0777,
         ];

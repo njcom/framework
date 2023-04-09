@@ -62,15 +62,21 @@ class Must {
         self::beTruthy(contains($haystack, $needle), $errMessage ?: 'A haystack does not contain a needle');
     }
 
-    public static function haveAtLeastKeys(array $arr, array $keys): void {
+    public static function haveAtLeastKeys(array $arr, array $keys): array {
         $intersection = array_intersect_key(array_flip($keys), $arr);
         if (count($intersection) != count($keys)) {
             throw new MustException('The array must have the items with the specified keys');
         }
+        return $arr;
     }
 
-    public static function haveExactKeys(array $arr, array $keys): array {
-        if (array_keys($arr) !== $keys) {
+    public static function haveExactKeys(array $arr, array $keys, bool $ordered = false): array {
+        if (!$ordered) {
+            $invalid = !empty(symDiff(array_keys($arr), $keys));
+        } else {
+            $invalid = array_keys($arr) !== $keys;
+        }
+        if ($invalid) {
             throw new MustException('The array must have the items with the specified keys and no other items');
         }
         return $arr;

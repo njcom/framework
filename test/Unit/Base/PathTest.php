@@ -11,7 +11,7 @@ use Morpho\Testing\TestCase;
 use RuntimeException;
 
 class PathTest extends TestCase {
-    public function dataNormalize() {
+    public static function dataNormalize() {
         return [
             ['', ''],
             ['/', '/'],
@@ -53,7 +53,7 @@ class PathTest extends TestCase {
         Path::rel($baseDirPath, $path);
     }
 
-    public function dataCombine() {
+    public static function dataCombine() {
         return [
             [
                 '',

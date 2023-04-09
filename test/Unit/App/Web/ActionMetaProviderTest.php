@@ -24,8 +24,11 @@ class ActionMetaProviderTest extends TestCase {
         $this->assertInstanceOf(IFn::class, $this->actionMetaProvider);
     }
 
-    public function dataInvoke() {
-        $testDirPath = $this->getTestDirPath();
+    /**
+     * @throws \ReflectionException
+     */
+    public static function dataInvoke(): iterable {
+        $testDirPath = self::getTestDirPath();
         $testNs = __CLASS__;
         yield [
             ['self/box', $testDirPath . '/inheritance/SecondParentController.php'],
@@ -189,7 +192,6 @@ class ActionMetaProviderTest extends TestCase {
      */
     public function testInvoke($moduleMeta, $expected) {
         $module = $this->mkModule($moduleMeta[0], $moduleMeta[1]);
-        /** @noinspection PhpParamsInspection */
         $actual = iterator_to_array($this->actionMetaProvider->__invoke([$module]), false);
         $this->assertEquals($expected, $actual);
     }

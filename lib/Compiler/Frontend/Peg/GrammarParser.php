@@ -239,7 +239,7 @@ class GrammarParser extends Parser {
                     &&
                     ($literal_2 = $this->expect(']'))
                 ) {
-                    return [$name->string, $type->string + "*"];
+                    return [$name->val, $type->val + "*"];
                 }
                 $this->reset($index);
                 if ($cut) {
@@ -255,7 +255,7 @@ class GrammarParser extends Parser {
                     &&
                     ($literal_1 = $this->expect(']'))
                 ) {
-                    return [$name->string, $type->string];
+                    return [$name->val, $type->val];
                 }
                 $this->reset($index);
                 if ($cut) {
@@ -263,7 +263,7 @@ class GrammarParser extends Parser {
                 }
                 $cut = false;
                 if ($name = $this->name()) {
-                    return [$name->string, null];
+                    return [$name->val, null];
                 }
                 $this->reset($index);
                 return null;
@@ -485,7 +485,7 @@ class GrammarParser extends Parser {
                     &&
                     ($item = $this->item())
                 ) {
-                    return NamedItem($name->string, item, $type->string/*f"{type.string}*"*/);
+                    return NamedItem($name->val, item, $type->val/*f"{type.string}*"*/);
                 }
                 $this->reset($index);
                 if ($cut) {
@@ -507,7 +507,7 @@ class GrammarParser extends Parser {
                     &&
                     ($item = $this->item())
                 ) {
-                    return NamedItem($name->string, $item, $type->string);
+                    return NamedItem($name->val, $item, $type->val);
                 }
                 $this->reset($index);
                 if ($cut) {
@@ -523,7 +523,7 @@ class GrammarParser extends Parser {
                     &&
                     ($item = $this->item())
                 ) {
-                    return NamedItem($name->string, $item);
+                    return NamedItem($name->val, $item);
                 }
                 $this->reset($index);
                 if ($cut) {
@@ -738,7 +738,7 @@ class GrammarParser extends Parser {
                 }
                 $cut = false;
                 if ($name = $this->name()) {
-                    return NameLeaf($name->string);
+                    return NameLeaf($name->val);
                 }
                 $this->reset($index);
                 if ($cut) {
@@ -824,7 +824,7 @@ class GrammarParser extends Parser {
                 }
                 $cut = false;
                 if ($name = $this->name()) {
-                    return $name->string;
+                    return $name->val;
                 }
                 $this->reset($index);
                 if ($cut) {

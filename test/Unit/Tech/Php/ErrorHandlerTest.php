@@ -122,7 +122,7 @@ class ErrorHandlerTest extends BaseErrorHandlerTest {
         $this->checkBoolAccessor([$this->mkErrorHandler(false), 'exitOnFatalError'], true);
     }
 
-    public function dataTestHandleError_ConvertsErrorToException() {
+    public static function dataTestHandleError_ConvertsErrorToException() {
         return [
             [E_USER_ERROR, 'UserErrorException'],
             [E_USER_WARNING, 'UserWarningException'],
@@ -149,7 +149,7 @@ class ErrorHandlerTest extends BaseErrorHandlerTest {
         $this->assertEquals($severity, $ex->getSeverity());
     }
 
-    public function dataErrorToException() {
+    public static function dataErrorToException() {
         return [
             [E_ERROR, 'ErrorException'],
             [E_WARNING, 'WarningException'],

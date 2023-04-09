@@ -35,7 +35,7 @@ class DateTimeTest extends TestCase {
         $this->assertEquals($date, (new DateTime($date))->mySqlDateTime());
     }
 
-    public function dataTestIsTimestamp() {
+    public static function dataTestIsTimestamp() {
         $timestamp = DateTime::createFromFormat('Y-m-d H:i:s', '2013-12-09 01:31:34')->getTimestamp();
         return [
             [
