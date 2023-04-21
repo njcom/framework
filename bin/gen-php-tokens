@@ -4,12 +4,12 @@ namespace Morpho\Infra;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Morpho\Compiler\Frontend\Peg\GrammarTokenizer;
+use Morpho\Compiler\Frontend\Peg\Tokenizer;
 
 use function Morpho\App\Cli\showLine;
 
 function process($stream): void {
-    foreach (GrammarTokenizer::tokenize($stream) as $token) {
+    foreach (Tokenizer::tokenize($stream) as $token) {
         showLine($token);
     }
 }

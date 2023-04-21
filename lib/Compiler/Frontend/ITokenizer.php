@@ -6,10 +6,10 @@
  */
 namespace Morpho\Compiler\Frontend;
 
-use Morpho\Base\IFn;
+//use Morpho\Base\IFn;
 
 /**
  * Generates the list of tokens. NB: we don't call it Lexer/Lexical analyzer because it generates the list of lexemes - tokens vs lexems are different things.
  */
-interface ITokenizer extends IFn {
+interface ITokenizer /*extends IFn */{
 }

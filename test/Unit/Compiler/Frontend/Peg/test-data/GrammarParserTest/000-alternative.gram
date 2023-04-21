@@ -1,0 +1,4 @@
+start: expr NEWLINE? ENDMARKER
+    expr: A | B
+    A: 'a' | '-'
+    B: 'b' | '+'

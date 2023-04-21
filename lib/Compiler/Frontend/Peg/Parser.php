@@ -8,39 +8,43 @@ namespace Morpho\Compiler\Frontend\Peg;
 
 use Closure;
 use Morpho\Compiler\Frontend\IParser;
+use Morpho\Compiler\Frontend\SyntaxError;
 
 /**
  * Base class for the PEG parsers
  * https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/parser.py
  */
 abstract class Parser implements IParser {
-    private $tokenizer;
+    private IGrammarTokenizer $tokenizer;
+    private int $index;
+    private array $cache;
+    private int $level;
+    private array $keywords = [];
 
-
-
-
-    public function __construct(CachingGrammarTokenizer $tokenizer) {
+    public function __construct(IGrammarTokenizer $tokenizer) {
         // tokenizer in Python
         $this->tokenizer = $tokenizer;
-        //$this->level = 0;
-        //$this->cache = [];
+        $this->level = 0;
+        $this->cache = [];
+        // Integer tracking whether we are in a left recursive rule or not. Can be useful for error reporting.
+        $this->inRecursiveRule = 0;
+        // Pass through common tokenizer methods.
+        $this->index = $this->tokenizer->index();
+    }
+
+    protected function reset(int $index): void {
+        $this->tokenizer->reset($index);
     }
 
     abstract public function start(): mixed;
 
-    public function showPeek(): string {
-        $tok = $this->lexer->peek();
+/*    public function showPeek(): string {
+        $tok = $this->tokenizer->peek();
         return $tok->start[0] . '.' . $tok->start[1] . ': ' . static::TOKENS[$tok->type] . ':' . $tok->string . '!r';
-    }
+    }*/
 
-    // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-
-    protected function mark(): int {
-        return $this->lexer->mark();
-    }
-
-    protected function reset(int $index): void {
-        $this->lexer->reset($index);
+    protected function index(): int {
+        return $this->tokenizer->index();
     }
     /*
     def __init__(self, tokenizer: Tokenizer, *, verbose: bool = False):
@@ -58,13 +62,13 @@ abstract class Parser implements IParser {
             tok = self._tokenizer.peek()
             return f"{tok.start[0]}.{tok.start[1]}: {token.tok_name[tok.type]}:{tok.string!r}"
     */
-    protected function name(): ?TokenInfo {
+    protected function name(): ?Token {
         return $this->memoize(
             __METHOD__,
-            function (): ?TokenInfo {
-                $tok = $this->lexer->peek();
-                if ($tok->type === Token::NAME) {
-                    return $this->lexer->nextToken();
+            function (): ?Token {
+                $tok = $this->tokenizer->peekToken();
+                if ($tok->type === TokenType::NAME && !in_array($tok->val, $this->keywords)) {
+                    return $this->tokenizer->nextToken();
                 }
                 return null;
             }
@@ -93,7 +97,7 @@ abstract class Parser implements IParser {
                 return self._tokenizer.getnext()
             return None
     */
-    protected function expect(string $type): ?TokenInfo {
+    protected function expect(string $type): ?Token {
         return $this->memoize(
             __METHOD__,
             function () use ($type) {
@@ -254,4 +258,12 @@ abstract class Parser implements IParser {
             memoize_left_rec_wrapper.__wrapped__ = method  # type: ignore
             return memoize_left_rec_wrapper
     */
+
+    /**
+     * make_syntax_error() in Python.
+     */
+    public function mkSyntaxError(string $msg, string $filePath = null): SyntaxError {
+        $tok = $this->tokenizer->diagnose();
+        return new SyntaxError($msg, $filePath ?? '<unknown>', $tok->start, $tok->end, $tok->line);
+    }
 }

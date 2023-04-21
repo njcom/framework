@@ -13,8 +13,8 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
-use ReflectionObject;
 use RuntimeException;
+use Throwable;
 
 use function chmod;
 use function count;
@@ -44,20 +44,21 @@ use function unlink;
 use const Morpho\App\TEST_DATA_DIR_NAME;
 
 abstract class TestCase extends BaseTestCase {
+    private array $streams = [];
     private array $tmpDirPaths = [];
     private array $tmpFilePaths = [];
     private static array $classFilePaths = [];
     private ?string $prevTimezone = null;
 
-/*    public function expectException(string $exceptionClass, $message = '', $code = null): void {
-        parent::expectException($exceptionClass);
-        if ($message !== null && $message !== '') {
-            $this->expectExceptionMessage($message);
-        }
-        if ($code !== null) {
-            $this->expectExceptionCode($code);
-        }
-    }*/
+    /*    public function expectException(string $exceptionClass, $message = '', $code = null): void {
+            parent::expectException($exceptionClass);
+            if ($message !== null && $message !== '') {
+                $this->expectExceptionMessage($message);
+            }
+            if ($code !== null) {
+                $this->expectExceptionCode($code);
+            }
+        }*/
 
     protected function setUp(): void {
         parent::setUp();
@@ -66,10 +67,8 @@ abstract class TestCase extends BaseTestCase {
 
     protected function tearDown(): void {
         parent::tearDown();
-        if (null !== $this->prevTimezone) {
-            date_default_timezone_set($this->prevTimezone);
-            $this->prevTimezone = null;
-        }
+        $this->closeInMemoryStreams();
+        $this->restoreTimezone();
         $this->deleteTmpFiles();
         $this->deleteTmpDirs();
         Vfs::unregister();
@@ -97,17 +96,13 @@ abstract class TestCase extends BaseTestCase {
         return $tmpFilePath;
     }
 
-    protected function createTmpFile(
-        string $prefix = null,
-        string $suffix = null,
-        bool $deleteOnTearDown = true
-    ): string {
-        $prefix = (string) $prefix;
-        $suffix = (string) $suffix;
+    protected function createTmpFile(string $prefix = null, string $suffix = null, bool $deleteOnTearDown = true): string {
+        $prefix = (string)$prefix;
+        $suffix = (string)$suffix;
         if ($prefix === '') {
             $prefix = strtolower(__FUNCTION__);
         }
-        $tmpFilePath = tempnam($this->tmpDirPath(), (string) $prefix);
+        $tmpFilePath = tempnam($this->tmpDirPath(), (string)$prefix);
         if ($suffix !== '') {
             unlink($tmpFilePath);
             $tmpFilePath .= $suffix;
@@ -228,12 +223,30 @@ abstract class TestCase extends BaseTestCase {
     }
 
     protected function randomString(): string {
-        return md5(uniqid((string) microtime(true)));
+        return md5(uniqid((string)microtime(true)));
     }
 
     protected function markTestAsNotRisky(): void {
         $this->addToAssertionCount(1);
         // $this->assertTrue(true) may work too.
+    }
+
+    /**
+     * @param string $bytes
+     * @return false|resource
+     */
+    protected function mkStream(string $bytes) {
+        try {
+            $stream = fopen('php://memory', 'r+');
+            fwrite($stream, $bytes);
+            rewind($stream);
+            $this->streams[] = $stream;
+            return $stream;
+        } catch (Throwable $e) {
+            if (isset($stream)) {
+                fclose($stream);
+            }
+        }
     }
 
     private function tryDeleteDir(string $dirPath): bool {
@@ -303,5 +316,20 @@ abstract class TestCase extends BaseTestCase {
             return false;
         }
         return @chmod($path, $prevMode | 0200); // set the write bit (in octal)
+    }
+
+    private function closeInMemoryStreams(): void {
+        foreach ($this->streams as $stream) {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }
+    }
+
+    private function restoreTimezone(): void {
+        if (null !== $this->prevTimezone) {
+            date_default_timezone_set($this->prevTimezone);
+            $this->prevTimezone = null;
+        }
     }
 }

@@ -25,8 +25,6 @@ use function fclose;
 use function file_put_contents;
 use function get_class_methods;
 use function Morpho\Base\{all, append, appendFn, camelize, camelizeKeys, capture, cartesianProduct, classify, compose, dasherize, deleteDups, enumVals, formatBytes, formatFloat, fromJson, humanize, indent, index, isEnumCase, isSubset, isUtf8Text, last, lastPos, lines, memoize, merge, normalizeEols, not, op, partial, permutations, pipe, prepend, prependFn, q, qq, reorderKeys, sanitize, setProps, setsEqual, shorten, subsets, symDiff, titleize, toIt, toJson, tpl, etrim, ucfirst, underscore, underscoreKeys, unindent, union, uniqueName, unsetMany, unsetOne, unsetRecursive, with, caseVal, waitUntilNumOfAttempts, waitUntilTimeout, words, wrap, wrapFn};
-use function ob_get_clean;
-use function ob_start;
 use function property_exists;
 
 class FunctionsTest extends TestCase {
@@ -195,16 +193,13 @@ class FunctionsTest extends TestCase {
      * @dataProvider dataLines
      */
     public function testLines($sep) {
-        $test = function (string $val): array {
-            return iterator_to_array(lines($val, true, true));
-        };
-        $this->assertSame([], $test(''));
-        $this->assertSame([], $test("$sep"));
-        $this->assertSame(['one'], $test("one"));
-        $this->assertSame(['one'], $test("one$sep"));
-        $this->assertSame(['one'], $test("one$sep$sep"));
-        $this->assertSame(['one', 'two'], $test("one{$sep}two"));
-        $this->assertSame(['one', 'two'], $test("one{$sep}two$sep"));
+        $this->assertSame([], lines(''));
+        $this->assertSame([], lines("$sep"));
+        $this->assertSame(['one'], lines("one"));
+        $this->assertSame(['one'], lines("one$sep"));
+        $this->assertSame(['one'], lines("one$sep$sep"));
+        $this->assertSame(['one', 'two'], lines("one{$sep}two"));
+        $this->assertSame(['one', 'two'], lines("one{$sep}two$sep"));
     }
 
     public function testLines_AcceptsStringable() {
@@ -1204,9 +1199,10 @@ OUT;
         $this->assertSame(['foo' => 'kiwi'], union(['foo' => 'apple'], ['foo' => 'kiwi']));
         $this->assertSame(['foo', 'bar', 'baz'], union(['foo', 'bar'], ['baz']));
         $this->assertSame(['foo', 'bar', 'baz'], union(['foo', 'bar'], ['baz', 'foo']));
+        $this->assertSame(['two', 'one'], union([2 => 'two'], [1 => 'one']));
     }
 
-    public static function dataSymmetricDiff() {
+    public static function dataSymDiff_UnionResult(): iterable {
         // for each {int keys, string keys, mixed keys}
         // check {value !=, key !=}
         return [
@@ -1280,10 +1276,19 @@ OUT;
     }
 
     /**
-     * @dataProvider dataSymmetricDiff
+     * @dataProvider dataSymDiff_UnionResult
      */
-    public function testSymmetricDiff(array $expected, array $a, array $b) {
+    public function testSymDiff_UnionResult(array $expected, array $a, array $b) {
         $this->assertSame($expected, symDiff($a, $b));
+    }
+
+    public function testSymDiff_PairResult() {
+        $this->assertSame([['a'], ['b']], symDiff(['a'], ['b'], false));
+        $this->assertSame([], symDiff(['a'], ['a'], false));
+        $this->assertSame([], symDiff([], [], false));
+        $this->assertSame([[], ['a']], symDiff([], ['a'], false));
+        $this->assertSame([['b'], []], symDiff(['b'], [], false));
+        $this->assertSame([['a', 'c'], []], symDiff(['a', 'b', 'c'], ['b'], false));
     }
 
     public function testCartesianProduct() {

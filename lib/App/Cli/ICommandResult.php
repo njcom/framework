@@ -8,9 +8,9 @@ namespace Morpho\App\Cli;
 
 use IteratorAggregate;
 use Stringable;
-use Traversable;
+use Countable;
 
-interface ICommandResult extends IteratorAggregate, Stringable {
+interface ICommandResult extends IteratorAggregate, Stringable, Countable {
     public function command(): string;
 
     public function stdOut(): string;
@@ -21,7 +21,11 @@ interface ICommandResult extends IteratorAggregate, Stringable {
 
     public function isError(): bool;
 
-    public function lines(): Traversable;
+    /**
+     * @param bool $asArr
+     * @return iterable: Traversable if $asArr == false, array otherwise.
+     */
+    public function lines(bool $asArr = true): iterable;
 
     public function __toString(): string;
 }

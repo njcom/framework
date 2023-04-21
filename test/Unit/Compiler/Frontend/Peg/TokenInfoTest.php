@@ -6,14 +6,14 @@
  */
 namespace Morpho\test\Unit\Compiler\Frontend\Peg;
 
-use Morpho\Compiler\Frontend\Peg\TokenInfo;
+use Morpho\Compiler\Frontend\Peg\Token;
 use Morpho\Compiler\Frontend\Peg\TokenType;
 use Morpho\Compiler\Frontend\Location;
 use Morpho\Testing\TestCase;
 
 class TokenInfoTest extends TestCase {
     public function testApi() {
-        $tokenInfo = new TokenInfo(TokenType::NL, "\n", new Location(1, 1), new Location(1, 2), "foo\n");
+        $tokenInfo = new Token(TokenType::NL, "\n", new Location(1, 1), new Location(1, 2), "foo\n");
         $this->assertSame(TokenType::NL, $tokenInfo->type);
         $this->assertEquals(new Location(1, 1), $tokenInfo->start);
         $this->assertEquals(new Location(1, 2), $tokenInfo->end);

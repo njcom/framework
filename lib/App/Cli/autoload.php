@@ -313,11 +313,11 @@ function checkExitCode(int $exitCode, string $errMessage = null): int {
     return $exitCode;
 }
 
-function checkResult(ICommandResult $result): void {
+/*function checkResult(ICommandResult $result): void {
     if ($result->isError()) {
         errorLine($result->error() . ' Exit code: ' . $result->exitCode());
     }
-}
+}*/
 
 function ask(string $question, bool $trim = true): string {
     echo $question;

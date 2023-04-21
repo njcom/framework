@@ -6,6 +6,7 @@
  */
 namespace Morpho\Test\Unit\App\Cli;
 
+use Countable;
 use IteratorAggregate;
 use Morpho\App\Cli\ICommandResult;
 use Morpho\App\Cli\ShellCommandResult;
@@ -39,7 +40,9 @@ OUT
     }
 
     public function testInterface() {
-        $this->assertInstanceOf(IteratorAggregate::class, new ShellCommandResult('foo', 0, '', ''));
-        $this->assertInstanceOf(ICommandResult::class, new ShellCommandResult('foo', 0, '', ''));
+        $result = new ShellCommandResult('foo', 0, '', '');
+        $this->assertInstanceOf(IteratorAggregate::class, $result);
+        $this->assertInstanceOf(ICommandResult::class, $result);
+        $this->assertInstanceOf(Countable::class, $result);
     }
 }

@@ -26,11 +26,13 @@ abstract class CommandResult implements ICommandResult {
     }
 
     public function getIterator(): Traversable {
-        return $this->lines();
+        /** @var \Traversable $lines */
+        $lines = $this->lines(false);
+        return $lines;
     }
 
-    public function lines(bool $filterEmpty = true, bool $trim = true): Traversable {
-        return lines($this->stdOut(), $filterEmpty, $trim);
+    public function lines(bool $asArr = true, bool $filterEmpty = true, bool $trim = true): iterable {
+        return lines($this->stdOut(), $asArr, $filterEmpty, $trim);
     }
 
     public function __toString(): string {

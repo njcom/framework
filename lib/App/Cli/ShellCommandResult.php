@@ -29,4 +29,12 @@ class ShellCommandResult extends CommandResult {
     public function stdErr(): string {
         return $this->stdErr;
     }
+
+    public function count(): int {
+        $n = 0;
+        foreach ($this->lines() as $_) {
+            $n++;
+        }
+        return $n;
+    }
 }

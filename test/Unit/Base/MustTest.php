@@ -207,6 +207,10 @@ class MustTest extends TestCase {
                 ['foo' => '2', 'bar' => 2, 'baz' => 3, 'something' => 4],
                 ['foo', 'bar', 'baz'], // more
             ],
+            [
+                ['foo' => '1', 'bar' => 2, 'baz' => 3],
+                ['foo', 'baz', 'bar'], // Order does matter
+            ],
         ];
     }
 
@@ -223,10 +227,6 @@ class MustTest extends TestCase {
             [
                 ['foo' => '1', 'bar' => 2, 'baz' => 3],
                 ['foo', 'bar', 'baz'],
-            ],
-            [
-                ['foo' => '1', 'bar' => 2, 'baz' => 3],
-                ['foo', 'baz', 'bar'], // Order does not matter
             ],
             [
                 ['foo' => 1],
@@ -246,13 +246,4 @@ class MustTest extends TestCase {
         Must::haveExactKeys(...$args);
         $this->markTestAsNotRisky();
     }
-
-/*
-    public function testHaveItems() {
-        $this->markTestIncomplete();
-    }
-
-    public function testBeInRange() {
-        $this->markTestIncomplete();
-    }*/
 }

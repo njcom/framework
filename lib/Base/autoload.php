@@ -16,7 +16,6 @@ use OutOfBoundsException;
 use Stringable;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
-use Traversable;
 use UnexpectedValueException;
 
 use function array_fill_keys;
@@ -123,11 +122,12 @@ function enumVals(string $enumClass, bool $preserveNames = true): array {
 
 /**
  * @param iterable|Stringable|string|resource $source
- * @param bool                       $filterEmpty
- * @param bool                       $trim
- * @return \Traversable
+ * @param bool $asArr
+ * @param bool $filterEmpty
+ * @param bool $trim
+ * @return iterable
  */
-function lines($source, bool $filterEmpty = true, bool $trim = true): Traversable {
+function lines($source, bool $asArr = true, bool $filterEmpty = true, bool $trim = true): iterable {
     if (is_resource($source)) {
         $source = (function () use ($source) {
             while (false !== ($line = fgets($source))) {
@@ -137,19 +137,37 @@ function lines($source, bool $filterEmpty = true, bool $trim = true): Traversabl
     } elseif (!is_iterable($source)) {
         $text = (string)$source;
         if ($text === '') {
-            return;
+            return [];
         }
         $source = preg_split(EOL_FULL_RE, $text, -1, $filterEmpty ? PREG_SPLIT_NO_EMPTY : 0);
     }
-    foreach ($source as $line) {
-        if ($trim) {
-            $line = trim($line);
+    if ($asArr) {
+        if (!$trim && !$filterEmpty) {
+            return $source;
         }
-        if ($filterEmpty && $line === '') {
-            continue;
+        $lines = [];
+        foreach ($source as $line) {
+            if ($trim) {
+                $line = trim($line);
+            }
+            if ($filterEmpty && $line === '') {
+                continue;
+            }
+            $lines[] = $line;
         }
-        yield $line;
+        return $lines;
     }
+    return (function () use ($source, $trim, $filterEmpty) {
+        foreach ($source as $line) {
+            if ($trim) {
+                $line = trim($line);
+            }
+            if ($filterEmpty && $line === '') {
+                continue;
+            }
+            yield $line;
+        }
+    })();
 }
 
 function partial(callable $fn, ...$args1): Closure {
@@ -413,14 +431,14 @@ function humanize(string|Stringable|int $list, bool $escape = true) {
  * or only first word:
  * 'foo bar_baz' -> 'Foo bar baz'
  *
- * @param string $list
+ * @param string|Stringable|int|float $list
  * @param bool   $ucwords If == true -> all words will be titleized, else only first word will
  *                        titleized.
  * @param bool   $escape Either need to apply escaping of HTML special chars?
  *
  * @return string.
  */
-function titleize(string|Stringable|int $list, bool $ucwords = true, bool $escape = true): string {
+function titleize(string|Stringable|int|float $list, bool $ucwords = true, bool $escape = true): string {
     $result = humanize($list, $escape);
     if ($ucwords) {
         return ucwords($result);
@@ -456,13 +474,13 @@ function etrim(string|Stringable|iterable|int|float $list, string $chars = null)
 /**
  * Removes duplicated characters from the string.
  *
- * @param Stringable|int|string $list Source string with duplicated characters.
- * @param Stringable|int|string $chars Either a set of characters to use in character class or a reg-exp pattern that must match
+ * @param Stringable|int|string|float $list Source string with duplicated characters.
+ * @param Stringable|int|string|float $chars Either a set of characters to use in character class or a reg-exp pattern that must match
  *                               all duplicated characters that must be removed.
  * @param bool                  $isCharClass
  * @return string                String with removed duplicates.
  */
-function deleteDups(string|Stringable|int $list, Stringable|int|string $chars, bool $isCharClass = true) {
+function deleteDups(string|Stringable|int|float $list, Stringable|int|string|float $chars, bool $isCharClass = true) {
     $regExp = $isCharClass
         ? '/([' . preg_quote((string)$chars, '/') . '])+/si'
         : "/($chars)+/si";
@@ -495,6 +513,14 @@ function normalizeEols(string $list): string {
         throw new Exception("Unable to replace EOLs");
     }
     return $res;*/
+}
+
+function toStr(iterable $it, string $eol = "\n"): string {
+    $result = '';
+    foreach ($it as $v) {
+        $result .= (string) $v . $eol;
+    }
+    return $result;
 }
 
 function toJson(mixed $val, int $flags = null): string {
@@ -884,16 +910,12 @@ function filter(callable $predicate, $iter) {
     }
     if (is_array($iter)) {
         $res = [];
-        $intKeys = true;
         foreach ($iter as $k => $v) {
-            if ($intKeys && !is_int($k)) {
-                $intKeys = false;
-            }
             if ($predicate($v, $k)) {
                 $res[$k] = $v;
             }
         }
-        return $intKeys ? array_values($res) : $res;
+        return array_is_list($iter) ? array_values($res) : $res;
     } else {
         return (function () use ($predicate, $iter) {
             foreach ($iter as $k => $v) {
@@ -1319,31 +1341,53 @@ function combinations(array $arr): array {
  * from the second array will be appended to the first array. If both values are arrays, they
  * are merged together, else the value of the second array overwrites the one of the first array.
  */
-function merge(array $arrA, array $arrB, bool $resetIntKeys = true): array {
-    foreach ($arrB as $key => $value) {
-        if (isset($arrA[$key]) || array_key_exists($key, $arrA)) {
+function merge(array $a, array $b, bool $resetIntKeys = true): array {
+    foreach ($b as $key => $value) {
+        if (isset($a[$key]) || array_key_exists($key, $a)) {
             if ($resetIntKeys && is_int($key)) {
-                $arrA[] = $value;
-            } elseif (is_array($value) && is_array($arrA[$key])) {
-                $arrA[$key] = merge($arrA[$key], $value, $resetIntKeys);
+                $a[] = $value;
+            } elseif (is_array($value) && is_array($a[$key])) {
+                $a[$key] = merge($a[$key], $value, $resetIntKeys);
             } else {
-                $arrA[$key] = $value;
+                $a[$key] = $value;
             }
         } else {
-            $arrA[$key] = $value;
+            $a[$key] = $value;
         }
     }
-    return $arrA;
+    return $a;
 }
 
 /**
  * Symmetrical difference of the two sets: ($a \ $b) U ($b \ $a).
  * If for $a[$k1] and $b[$k2] string keys are equal the value $b[$k2] will overwrite the value $a[$k1].
  */
-function symDiff(array $arrA, array $arrB, bool $union = true): array {
-    $diffA = array_diff($arrA, $arrB);
-    $diffB = array_diff($arrB, $arrA);
-    return $union ? union($diffA, $diffB) : [$diffA, $diffB];
+function symDiff(array $a, array $b, bool $asUnion = true): array {
+    $diffA = array_diff($a, $b);
+    $diffB = array_diff($b, $a);
+    if ($asUnion) {
+        return union($diffA, $diffB);
+    }
+    if ($diffA || $diffB) {
+        $aIsList = array_is_list($a);
+        $bIsList = array_is_list($b);
+        if ($aIsList) {
+            if ($bIsList) {
+                // Both $a and $b is list
+                return [array_values($diffA), array_values($diffB)];
+            }
+            // Only $a is list;
+            return [array_values($diffA), $diffB];
+        } else {
+            if ($bIsList) {
+                // Only $b is list
+                return [$diffA, array_values($diffB)];
+            }
+            // neither $a nor $b is list
+            return [$diffA, $diffB];
+        }
+    }
+    return [];
 }
 
 function unsetOne(array $arr, mixed $val, bool $resetIntKeys = true, bool $allOccur = false, bool $strict = true): array {
@@ -1427,7 +1471,7 @@ function only(array $arr, array $keys, $createMissingItems = true): array {
     if ($createMissingItems) {
         $newArr = [];
         foreach ($keys as $key) {
-            $newArr[$key] = isset($arr[$key]) ? $arr[$key] : null;
+            $newArr[$key] = $arr[$key] ?? null;
         }
         return $newArr;
     }

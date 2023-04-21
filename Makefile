@@ -1,5 +1,5 @@
-backendDirPath := $(CURDIR)/backend
-frontendDirPath := $(CURDIR)/frontend
+backend-dir-path := $(CURDIR)/backend
+frontend-dir-path := $(CURDIR)/frontend
 
 # Default target
 all: targets
@@ -19,7 +19,7 @@ integration-test:
 
 backend-test: module-test
 module-test:
-	bin/test $(backendDirPath)
+	bin/test $(backend-dir-path)
 
 # todo: frontend tests
 frontend-test:
@@ -44,13 +44,13 @@ css:
 	bin/css build
 
 watch-css:
-	sass --watch $(frontendDirPath)/localhost
+	sass --watch $(frontend-dir-path)/localhost
 
 clean-css:
-	find $(frontendDirPath)/localhost -mindepth 1 \( -name '*.css' -or -name '*.css.map' -not -path '*/node_modules/*' \) -print -delete
+	find $(frontend-dir-path)/localhost -mindepth 1 \( -name '*.css' -or -name '*.css.map' -not -path '*/node_modules/*' \) -print -delete
 
 clean-js:
-	find $(frontendDirPath)/localhost -mindepth 1 -not -path '*/node_modules/*' -and \( -name '*.js' -or -name '*.js.map' -or -name '*.tsbuildinfo' -or -name '*.d.ts' \) -not -path '*/lib/base/index.d.ts' -print -delete
+	find $(frontend-dir-path)/localhost -mindepth 1 -not -path '*/node_modules/*' -and \( -name '*.js' -or -name '*.js.map' -or -name '*.tsbuildinfo' -or -name '*.d.ts' \) -not -path '*/lib/base/index.d.ts' -print -delete
 
 clean-assets: clean-css clean-js
 
@@ -63,34 +63,29 @@ build:
 ################################################################################
 
 clean: clean-assets
-	sudo sh -c 'rm -rf test/Integration/*.log $(backendDirPath)/localhost/{log,cache}/*'
+	sudo sh -c 'rm -rf test/Integration/*.log $(backend-dir-path)/localhost/{log,cache}/*'
 
 clean-routes:
-	sudo sh -c 'rm -rfv $(backendDirPath)/localhost/cache/router'
+	sudo sh -c 'rm -rfv $(backend-dir-path)/localhost/cache/router'
 
-update:
+update: update-peg
 	composer update
 	# We use `install` instead of `update` to run the [scripts](https://docs.npmjs.com/misc/scripts#description) defined in the package.json file.
-	cd $(frontendDirPath) && npm install
+	cd $(frontend-dir-path) && npm install
+
+update-peg:
+	curl -fLo $(CURDIR)/lib/Tech/Python/python.token 'https://raw.githubusercontent.com/python/cpython/main/Grammar/Tokens'
+	curl -fLo $(CURDIR)/lib/Tech/Python/python.gram 'https://raw.githubusercontent.com/python/cpython/main/Grammar/python.gram'
+	curl -fLo $(CURDIR)/lib/Compiler/Frontend/Peg/meta.gram 'https://raw.githubusercontent.com/python/cpython/main/Tools/peg_generator/pegen/metagrammar.gram'
+	target_file_path=$(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data/TokenizerTest/meta-token \
+		&& cat $(CURDIR)/lib/Compiler/Frontend/Peg/meta.gram | $(CURDIR)/bin/gen-py-tokens > "$$target_file_path" \
+		&& echo "Written '$$target_file_path'"
 
 init:
 	composer require --dev psalm/plugin-phpunit && vendor/bin/psalm-plugin enable psalm/plugin-phpunit
 	test -e package.json || echo '{}' > package.json
 	npm install -g --save-dev @types/node
 	npm install -g --save typescript@next concurrently
-
-pull-peg:
-	curl -fLo $(CURDIR)/lib/Tech/Python/Tokens 'https://raw.githubusercontent.com/python/cpython/main/Grammar/Tokens'
-	curl -fLo $(CURDIR)/lib/Tech/Python/python.peg 'https://raw.githubusercontent.com/python/cpython/main/Grammar/python.gram'
-	curl -fLo $(CURDIR)/lib/Compiler/Frontend/Peg/peg.peg 'https://raw.githubusercontent.com/python/cpython/main/Tools/peg_generator/pegen/metagrammar.gram'
-	#mkdir -p $(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data
-	#cp $(CURDIR)/lib/Tech/Python/python.peg $(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data
-	#cp $(CURDIR)/lib/Compiler/Frontend/Peg/peg.peg $(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data/GrammarLexerTest
-
-gen-tokens-file:
-	target_file_path=$(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data/GrammarLexerTest/peg.peg.tokens \
-		&& cat $(CURDIR)/lib/Compiler/Frontend/Peg/peg.peg | $(CURDIR)/bin/gen-tokens > "$$target_file_path" \
-		&& echo "Written '$$target_file_path'"
 
 ###############################################################################
 # Help
@@ -108,7 +103,7 @@ targets: ## Show available targets
 
 unexport _JAVA_OPTIONS
 
-.PHONY: all test unit-test integration-test backend-test module-test frontend-test lint assets js watch-js css watch-css clean-css clean-js clean-assets build clean clean-routes update init pull-peg gen-tokens-file help targets
+.PHONY: all test unit-test integration-test backend-test module-test frontend-test lint assets js watch-js css watch-css clean-css clean-js clean-assets build clean clean-routes update update-peg init help targets
 .SILENT:
 # Do not use make's built-in rules and variables (this increases performance and avoids hard-to-debug behaviour).
 MAKEFLAGS += -rR
@@ -121,7 +116,7 @@ SHELL := /bin/bash
 
 ###############################################################################
 
-.PHONY: all test unit-test integration-test backend-test module-test frontend-test lint assets js watch-js css watch-css clean-css clean-js clean-assets build clean clean-routes update init pull-peg gen-tokens-file help targets
+.PHONY: all test unit-test integration-test backend-test module-test frontend-test lint assets js watch-js css watch-css clean-css clean-js clean-assets build clean clean-routes update update-peg init help targets
 
 define dl
 	curl -sSfL $(1) -o $(2)
