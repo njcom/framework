@@ -12,7 +12,7 @@ jobs:
 
       - name: 'module/parser: Pull changes for PEG'
         run: |
-          make pull-peg
+          make update-peg
 
       - name: Create a Pull Request
         uses: peter-evans/create-pull-request@v3.10.0
