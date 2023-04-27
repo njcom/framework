@@ -6,5 +6,13 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
-class MetaList {
+use Morpho\Base\NotImplementedException;
+
+/**
+ * Based on https://github.com/python/cpython/blob/main/Lib/ast.py#L55
+ */
+class Ast {
+    public static function literalEval($nodeOrString) {
+        throw new NotImplementedException();
+    }
 }

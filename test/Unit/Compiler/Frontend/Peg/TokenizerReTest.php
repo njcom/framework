@@ -7,27 +7,27 @@
 namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
 use Generator;
-use Morpho\Compiler\Frontend\Peg\GrammarTokenizerRe;
+use Morpho\Compiler\Frontend\Peg\TokenizerRe;
 use Morpho\Testing\TestCase;
 use UnexpectedValueException;
 
-class GrammarTokenizerReTest extends TestCase {
+class TokenizerReTest extends TestCase {
     public function testIsIdentifier() {
-        $this->assertTrue(GrammarTokenizerRe::isIdentifier('Grammar'));
-        $this->assertFalse(GrammarTokenizerRe::isIdentifier('0'));
-        $this->assertFalse(GrammarTokenizerRe::isIdentifier('123test'));
-        $this->assertTrue(GrammarTokenizerRe::isIdentifier('test123'));
-        $this->assertTrue(GrammarTokenizerRe::isIdentifier('_test123'));
-        $this->assertTrue(GrammarTokenizerRe::isIdentifier('_123'));
+        $this->assertTrue(TokenizerRe::isIdentifier('Grammar'));
+        $this->assertFalse(TokenizerRe::isIdentifier('0'));
+        $this->assertFalse(TokenizerRe::isIdentifier('123test'));
+        $this->assertTrue(TokenizerRe::isIdentifier('test123'));
+        $this->assertTrue(TokenizerRe::isIdentifier('_test123'));
+        $this->assertTrue(TokenizerRe::isIdentifier('_123'));
     }
 
     public function testEndPatterns_EndProgRe() {
-        $re = GrammarTokenizerRe::endPatterns()['"""'];
+        $re = TokenizerRe::endPatterns()['"""'];
         $this->assertMatchesRegularExpression('~' . $re . '~', '"""' . "\n");
     }
 
     public function testTailEndOfSingleQuote() {
-        $re = '~' . GrammarTokenizerRe::TAIL_END_OF_SINGLE_QUOTE . '~s';
+        $re = '~' . TokenizerRe::TAIL_END_OF_SINGLE_QUOTE . '~s';
         preg_match($re, "pre1\\.\\.pre2'post", $match);
         $this->assertSame(["pre1\\.\\.pre2'"], $match);
 
@@ -36,25 +36,25 @@ class GrammarTokenizerReTest extends TestCase {
     }
 
     public function testTripleQuotedPrefixesAndSingleQuotedPrefixes() {
-        $prefixes = GrammarTokenizerRe::allStringPrefixes();
+        $prefixes = TokenizerRe::allStringPrefixes();
         $this->assertIsArray($prefixes);
         $n = count($prefixes);
         $this->assertTrue($n > 0);
-        $this->assertCount($n * 2, GrammarTokenizerRe::tripleQuotedPrefixes());
-        $this->assertCount($n * 2, GrammarTokenizerRe::singleQuotedPrefixes());
+        $this->assertCount($n * 2, TokenizerRe::tripleQuotedPrefixes());
+        $this->assertCount($n * 2, TokenizerRe::singleQuotedPrefixes());
     }
 
     public function testGroupRe(): void {
-        $this->assertSame('()', GrammarTokenizerRe::groupRe());
-        $this->assertSame('(a)', GrammarTokenizerRe::groupRe('a'));
-        $this->assertSame('(a|b)', GrammarTokenizerRe::groupRe('a', 'b'));
+        $this->assertSame('()', TokenizerRe::groupRe());
+        $this->assertSame('(a)', TokenizerRe::groupRe('a'));
+        $this->assertSame('(a|b)', TokenizerRe::groupRe('a', 'b'));
     }
 
     public function testAnyRe(): void {
-        $this->assertSame('(a)*', GrammarTokenizerRe::anyRe('a'));
-        $this->assertSame('(a|b)*', GrammarTokenizerRe::anyRe('a', 'b'));
+        $this->assertSame('(a)*', TokenizerRe::anyRe('a'));
+        $this->assertSame('(a|b)*', TokenizerRe::anyRe('a', 'b'));
         try {
-            GrammarTokenizerRe::anyRe();
+            TokenizerRe::anyRe();
             $this->fail();
         } catch (UnexpectedValueException $e) {
             $this->assertSame("RE can't be empty", $e->getMessage());
@@ -62,10 +62,10 @@ class GrammarTokenizerReTest extends TestCase {
     }
 
     public function testMaybeRe(): void {
-        $this->assertSame('(a)?', GrammarTokenizerRe::maybeRe('a'));
-        $this->assertSame('(a|b)?', GrammarTokenizerRe::maybeRe('a', 'b'));
+        $this->assertSame('(a)?', TokenizerRe::maybeRe('a'));
+        $this->assertSame('(a|b)?', TokenizerRe::maybeRe('a', 'b'));
         try {
-            GrammarTokenizerRe::maybeRe();
+            TokenizerRe::maybeRe();
             $this->fail();
         } catch (UnexpectedValueException $e) {
             $this->assertSame("RE can't be empty", $e->getMessage());
@@ -74,7 +74,7 @@ class GrammarTokenizerReTest extends TestCase {
 
     public static function dataSimpleRes(): iterable {
         yield from self::genSamples([
-            GrammarTokenizerRe::HEX_NUMBER_RE => [
+            TokenizerRe::HEX_NUMBER_RE => [
                 [
                     '0x_0f',
                     true,
@@ -116,7 +116,7 @@ class GrammarTokenizerReTest extends TestCase {
                     true,
                 ],
             ],
-            GrammarTokenizerRe::BIN_NUMBER_RE => [
+            TokenizerRe::BIN_NUMBER_RE => [
                 [
                     '0b01_10',
                     true,
@@ -150,7 +150,7 @@ class GrammarTokenizerReTest extends TestCase {
                     false,
                 ],
             ],
-            GrammarTokenizerRe::OCT_NUMBER_RE => [
+            TokenizerRe::OCT_NUMBER_RE => [
                 [
                     '0o0703331',
                     true,
@@ -176,7 +176,7 @@ class GrammarTokenizerReTest extends TestCase {
                     false,
                 ],
             ],
-            GrammarTokenizerRe::DEC_NUMBER_RE => [
+            TokenizerRe::DEC_NUMBER_RE => [
                 [
                     '0',
                     true,
@@ -206,7 +206,7 @@ class GrammarTokenizerReTest extends TestCase {
                     false,
                 ],
             ],
-            GrammarTokenizerRe::WHITESPACE_RE => [
+            TokenizerRe::WHITESPACE_RE => [
                 [
                     '',
                     true,
@@ -220,7 +220,7 @@ class GrammarTokenizerReTest extends TestCase {
                     false,
                 ],
             ],
-            GrammarTokenizerRe::COMMENT_RE    => [
+            TokenizerRe::COMMENT_RE    => [
                 [
                     '#',
                     true,
@@ -238,7 +238,7 @@ class GrammarTokenizerReTest extends TestCase {
                     false,
                 ],
             ],
-            GrammarTokenizerRe::NAME_RE       => [
+            TokenizerRe::NAME_RE       => [
                 [
                     'abc',
                     true,
@@ -399,7 +399,7 @@ class GrammarTokenizerReTest extends TestCase {
      * @dataProvider dataIntNumberRe
      */
     public function testIntNumberRe(string $input, bool $mustMatch) {
-        $this->checkRe(GrammarTokenizerRe::intNumberRe(), $input, $mustMatch);
+        $this->checkRe(TokenizerRe::intNumberRe(), $input, $mustMatch);
     }
 
     public static function dataStringPrefixRe(): iterable {
@@ -415,11 +415,11 @@ class GrammarTokenizerReTest extends TestCase {
      * @dataProvider dataStringPrefixRe
      */
     public function testStringPrefixRe(string $prefix, bool $mustMatch) {
-        $this->checkRe(GrammarTokenizerRe::stringPrefixRe(), $prefix, $mustMatch);
+        $this->checkRe(TokenizerRe::stringPrefixRe(), $prefix, $mustMatch);
     }
 
     public function testContStrRe() {
-        $re = GrammarTokenizerRe::contStr();
+        $re = TokenizerRe::contStr();
         $this->checkRe($re, '""', true);
         $this->checkRe($re, '"123"', true);
         $this->checkRe($re, '"', false);
@@ -427,19 +427,19 @@ class GrammarTokenizerReTest extends TestCase {
 
     public function testFunnyRe() {
         $line = '"""' . "\n";
-        $re = GrammarTokenizerRe::funnyRe();
+        $re = TokenizerRe::funnyRe();
         preg_match($this->toFullRe($re), $line, $match, PREG_OFFSET_CAPTURE, 3);
         $this->assertSame(["\n", 3], $match[0]);
     }
 
     public function testPseudoExtrasRe() {
-        $re = GrammarTokenizerRe::pseudoExtrasRe();
+        $re = TokenizerRe::pseudoExtrasRe();
         preg_match($this->toFullRe($re), '"""' . "\n", $match, PREG_OFFSET_CAPTURE, 3);
         $this->assertSame(["\n", 3], $match[0]);
     }
 
     public function testPseudoTokenRe(): void {
-        $re = GrammarTokenizerRe::pseudoTokenRe();
+        $re = TokenizerRe::pseudoTokenRe();
 
         $this->assertMatchesRegularExpression($this->toLineRe($re), 'abc');
 

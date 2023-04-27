@@ -16,7 +16,7 @@ class GrammarTokenizer implements IGrammarTokenizer {
     private int $index = 0;
 
     /**
-     * @var array TokenInfo[]
+     * @var array Token[]
      */
     private array $tokens = [];
 
@@ -27,25 +27,16 @@ class GrammarTokenizer implements IGrammarTokenizer {
     }
 
     /*
-
     def shorttok(tok: tokenize.TokenInfo) -> str:
         return "%-25.25s" % f"{tok.start[0]}.{tok.start[1]}: {token.tok_name[tok.type]}:{tok.string!r}"
     */
 
-    /**
-     * Return the next token and updates the index.
-     * getnext() in Python
-     */
     public function nextToken(): Token {
         $tok = $this->peekToken();
         $this->index++;
         return $tok;
     }
 
-    /**
-     * Return the next token *without* updating the index.
-     * @return Token
-     */
     public function peekToken(): Token {
         while ($this->index === count($this->tokens)) {
             $tok = $this->tokenGen->current();
@@ -53,7 +44,7 @@ class GrammarTokenizer implements IGrammarTokenizer {
             if (in_array($tok->type, [TokenType::NL, TokenType::COMMENT])) {
                 continue;
             }
-            if ($tok->type === TokenType::ERRORTOKEN && $tok->string->isSpace()) {
+            if ($tok->type === TokenType::ERRORTOKEN && ctype_space($tok->val)) {
                 continue;
             }
             $this->tokens[] = $tok;
@@ -68,9 +59,6 @@ class GrammarTokenizer implements IGrammarTokenizer {
         return $this->tokens[count($this->tokens) - 1];
     }
 
-    /**
-     * get_last_non_whitespace_token() in Python
-     */
     public function lastNonWhitespaceToken(): Token {
         throw new NotImplementedException();
         /*

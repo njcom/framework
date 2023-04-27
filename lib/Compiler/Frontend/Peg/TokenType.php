@@ -82,7 +82,10 @@ enum TokenType: int {
     case N_TOKENS = 64;
     case NT_OFFSET = 256;
 
-    // EXACT_TOKEN_TYPES in https://github.com/python/cpython/blob/fc94d55ff453a3101e4c00a394d4e38ae2fece13/Lib/token.py#L80
+    /**
+     * EXACT_TOKEN_TYPES in Python
+     * @return \Morpho\Compiler\Frontend\Peg\TokenType[]
+     */
     public static function exactTypes(): array {
         return [
             '!=' => self::NOTEQUAL,

@@ -57,7 +57,7 @@ readonly class Token implements Stringable {
             }
             return q($s);
         };
-        // @todo: rename `string` to `val`
+        // @todo: rename `string` to `val`, TokenInfo to Token
         return 'TokenInfo(type=' . $this->type->value . ' (' . ($this->type->name) . '), string=' . $q($this->val) . ', start=(' . $this->start->lineNo . ', ' . $this->start->columnNo . '), end=(' . $this->end->lineNo . ', ' . $this->end->columnNo . '), line=' . $q($this->line) . ")";
     }
 }

@@ -45,10 +45,10 @@ class Tokenizer implements ITokenizer {
             rewind($stream);
         }
 
-        $pseudoTokenRe = GrammarTokenizerRe::pseudoTokenRe();
-        $tripleQuoted = GrammarTokenizerRe::tripleQuotedPrefixes();
-        $singleQuoted = GrammarTokenizerRe::singleQuotedPrefixes();
-        $endPatterns = GrammarTokenizerRe::endPatterns();
+        $pseudoTokenRe = TokenizerRe::pseudoTokenRe();
+        $tripleQuoted = TokenizerRe::tripleQuotedPrefixes();
+        $singleQuoted = TokenizerRe::singleQuotedPrefixes();
+        $endPatterns = TokenizerRe::endPatterns();
 
         while (true) { // loop over lines in stream
             $lastLine = $line;
@@ -202,7 +202,7 @@ class Tokenizer implements ITokenizer {
                         } else {
                             yield new Token(TokenType::STRING, $token, $spos, $epos, $line); # ordinary string
                         }
-                    } elseif (GrammarTokenizerRe::isIdentifier($initial)) { # ordinary name
+                    } elseif (TokenizerRe::isIdentifier($initial)) { # ordinary name
                         yield new Token(TokenType::NAME, $token, $spos, $epos, $line);
                     } elseif ($initial == '\\') { # continued stmt
                         $continued = 1;

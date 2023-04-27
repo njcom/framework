@@ -10,11 +10,16 @@ use Morpho\Compiler\Frontend\ITokenizer as IBaseTokenizer;
 
 interface IGrammarTokenizer extends IBaseTokenizer {
     /**
+     * Returns the next token and updates the index.
      * getnext() in Python
-     * @return mixed
      */
     public function nextToken(): Token;
 
+    /**
+     * Returns the next token *without* updating the index.
+     * peek() in Python
+     * @return \Morpho\Compiler\Frontend\Peg\Token
+     */
     public function peekToken(): Token;
 
     public function index(): int;
@@ -24,9 +29,11 @@ interface IGrammarTokenizer extends IBaseTokenizer {
     public function lines(array $lineNumbers): array;
 
     public function diagnose(): Token;
-    #public function report(bool $cached, bool $back): void;
-    /*
 
-        def get_last_non_whitespace_token(self) -> tokenize.TokenInfo:
+    /**
+     * get_last_non_whitespace_token() in Python
      */
+    public function lastNonWhitespaceToken(): Token;
+
+    #public function report(bool $cached, bool $back): void;
 }
