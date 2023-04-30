@@ -60,27 +60,27 @@ abstract class Parser implements IParser {
     }
 
     protected function name(): ?Token {
-        return $this->nextTokenIfMemoized(__METHOD__, fn($tok) => $tok->type == TokenType::NAME && !in_array($tok->val, self::KEYWORDS));
+        return $this->nextTokenIf(__METHOD__, fn($tok) => $tok->type == TokenType::NAME && !in_array($tok->val, self::KEYWORDS));
     }
 
     protected function number(): ?Token {
-        return $this->nextTokenIfMemoized(__METHOD__, fn($tok) => $tok->type == TokenType::NUMBER);
+        return $this->nextTokenIf(__METHOD__, fn($tok) => $tok->type == TokenType::NUMBER);
     }
 
     protected function string(): ?Token {
-        return $this->nextTokenIfMemoized(__METHOD__, fn($tok) => $tok->type == TokenType::STRING);
+        return $this->nextTokenIf(__METHOD__, fn($tok) => $tok->type == TokenType::STRING);
     }
 
     protected function op(): ?Token {
-        return $this->nextTokenIfMemoized(__METHOD__, fn ($tok) => $tok->type == TokenType::OP);
+        return $this->nextTokenIf(__METHOD__, fn ($tok) => $tok->type == TokenType::OP);
     }
     
     protected function typeComment(): ?Token {
-        return $this->nextTokenIfMemoized(__METHOD__ , fn($tok) => $tok->type == TokenType::COMMENT);
+        return $this->nextTokenIf(__METHOD__ , fn($tok) => $tok->type == TokenType::COMMENT);
     }
 
     protected function softKeyword(): ?Token {
-        return $this->nextTokenIfMemoized(__METHOD__ , fn($tok) => $tok->type == TokenType::NAME && in_array($tok->val, self::SOFT_KEYWORDS));
+        return $this->nextTokenIf(__METHOD__ , fn($tok) => $tok->type == TokenType::NAME && in_array($tok->val, self::SOFT_KEYWORDS));
     }
 
     protected function expect(string $type): ?Token {
@@ -135,7 +135,7 @@ abstract class Parser implements IParser {
         return $fn();
     }
 
-    private function nextTokenIfMemoized(string $memoizeKey, Closure $predicate): ?Token {
+    private function nextTokenIf(string $memoizeKey, Closure $predicate): ?Token {
         return $this->memoize(
             $memoizeKey,
             function () use ($predicate): ?Token {

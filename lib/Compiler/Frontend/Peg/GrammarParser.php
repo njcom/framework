@@ -127,7 +127,7 @@ class GrammarParser extends Parser {
                     && ($moreAlts = $this->moreAlts())
                     && ($this->expect('DEDENT'))
                 ) {
-                    return new Rule($ruleName[0], $ruleName[1], new Rhs($alts->alts + $moreAlts->alts), memo: $opt);
+                    return new Rule($ruleName[0], $ruleName[1], new Rhs(array_merge($alts->alts, $moreAlts->alts)), memo: $opt);
                 }
                 $this->reset($index);
                 if (
@@ -200,158 +200,90 @@ class GrammarParser extends Parser {
             function (): ?Rhs {
                 # alts: alt "|" alts | alt
                 $index = $this->index();
-                $cut = false;
-                if (
-                    ($alt = $this->alt())
-                    &&
-                    ($literal = $this->expect("|"))
-                    &&
-                    ($alts = $this->alts())
-                ) {
-                    return Rhs(array_merge([$alt], $alts->alts));
+                if (($alt = $this->alt()) && $this->expect("|") && ($alts = $this->alts())) {
+                    return new Rhs(array_merge([$alt], $alts->alts));
                 }
-                $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
                 if ($alt = $this->alt()) {
-                    return Rhs([$alt]);
+                    return new Rhs([$alt]);
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
                 return null;
             }
         );
     }
 
-    private function moreAlts() {
+    private function moreAlts(): ?Rhs {
         return $this->memoize(
             __METHOD__,
             function (): ?Rhs {
                 # more_alts: "|" alts NEWLINE more_alts | "|" alts NEWLINE
                 $index = $this->index();
-                $cut = false;
                 if (
-                    ($literal = $this->expect("|"))
-                    &&
-                    ($alts = $this->alts())
-                    &&
-                    ($newline = $this->expect('NEWLINE'))
-                    &&
-                    ($more_alts = $this->more_alts())
+                    ( $this->expect("|"))
+                    && ($alts = $this->alts())
+                    && $this->expect('NEWLINE')
+                    && ($more_alts = $this->more_alts())
                 ) {
-                    return Rhs(array_merge($alts->alts, $more_alts->alts));
+                    return new Rhs(array_merge($alts->alts, $more_alts->alts));
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
-                if (
-                    ($literal = $this->expect("|"))
-                    &&
-                    ($alts = $this->alts())
-                    &&
-                    ($newline = $this->expect('NEWLINE'))
-                ) {
-                    return Rhs($alts->alts);
+                if ($this->expect("|") && ($alts = $this->alts())  &&($this->expect('NEWLINE'))) {
+                    return new Rhs($alts->alts);
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
                 return null;
             }
         );
     }
 
-    private function alt() {
+    private function alt(): ?Alt {
         return $this->memoize(
             __METHOD__,
             function (): ?Alt {
                 # alt: items '$' action | items '$' | items action | items
-
                 $index = $this->index();
-                $cut = false;
                 if (
                     ($items = $this->items())
-                    &&
-                    ($literal = $this->expect('$'))
-                    &&
-                    ($action = $this->action())
+                    && ($this->expect('$'))
+                    && ($action = $this->action())
                 ) {
-                    return Alt($items + [NamedItem(null, NameLeaf('ENDMARKER'))], action: $action);
+                    return new Alt(array_merge($items, [new NamedItem(null, new NameLeaf('ENDMARKER'))]), action: $action);
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
                 if (
                     ($items = $this->items())
-                    &&
-                    ($literal = $this->expect('$'))
+                    && ($this->expect('$'))
                 ) {
-                    return Alt($items + [NamedItem(null, NameLeaf('ENDMARKER'))], action: null);
+                    return new Alt(array_merge($items, [new NamedItem(null, new NameLeaf('ENDMARKER'))]), action: null);
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
                 if (
                     ($items = $this->items())
-                    &&
-                    ($action = $this->action())
-                ) {
-                    return Alt($items, action: $action);
+                    && ($action = $this->action())) {
+                    return new Alt($items, action: $action);
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
-                if (
-                    ($items = $this->items())
-                ) {
-                    return Alt($items, action: null);
+                if ($items = $this->items()) {
+                    return new Alt($items, action: null);
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
                 return null;
             }
         );
     }
 
-    private function items() {
+    private function items(): ?NamedItemList {
         return $this->memoize(
             __METHOD__,
             function (): ?NamedItemList {
                 # items: named_item items | named_item
-
                 $index = $this->index();
-                $cut = false;
-                if (
-                    ($named_item = $this->named_item())
-                    &&
-                    ($items = $this->items())
-                ) {
-                    return array_merge([$named_item], $items);
+                if (($named_item = $this->namedItem()) && ($items = $this->items())) {
+                    return new NamedItemList(array_merge([$named_item], $items));
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
-                if (
-                    ($named_item = $this->named_item())
-                ) {
-                    return [named_item];
+                if ($named_item = $this->namedItem()) {
+                    return new NamedItemList([$named_item]);
                 }
                 $this->reset($index);
                 return null;
@@ -359,99 +291,47 @@ class GrammarParser extends Parser {
         );
     }
 
-    function namedItem() {
+    function namedItem(): ?NamedItem {
         return $this->memoize(
             __METHOD__,
             function (): ?NamedItem {
-                # named_item: NAME '[' NAME '*' ']' '=' ~ item | NAME '[' NAME ']' '=' ~ item | NAME '=' ~ item | item | forced_atom | lookahead
+                # named_item: NAME annotation '=' ~ item | NAME '=' ~ item | item | forced_atom | lookahead
                 $index = $this->index();
                 $cut = false;
                 if (
                     ($name = $this->name())
-                    &&
-                    ($literal = $this->expect('['))
-                    &&
-                    ($type = $this->name())
-                    &&
-                    ($literal_1 = $this->expect('*'))
-                    &&
-                    ($literal_2 = $this->expect(']'))
-                    &&
-                    ($literal_3 = $this->expect('='))
-                    &&
-                    ($cut = true)
-                    &&
-                    ($item = $this->item())
+                    && ($annotation = $this->annotation())
+                    && ($this->expect('='))
+                    && ($cut = true)
+                    && ($item = $this->item())
                 ) {
-                    return NamedItem($name->val, item, $type->val/*f"{type.string}*"*/);
+                    return new NamedItem($name->val, $item, $annotation);
                 }
                 $this->reset($index);
                 if ($cut) {
                     return null;
                 }
-                $cut = false;
-                if (
-                    ($name = $this->name())
-                    &&
-                    ($literal = $this->expect('['))
-                    &&
-                    ($type = $this->name())
-                    &&
-                    ($literal_1 = $this->expect(']'))
-                    &&
-                    ($literal_2 = $this->expect('='))
-                    &&
-                    ($cut = true)
-                    &&
-                    ($item = $this->item())
-                ) {
-                    return NamedItem($name->val, $item, $type->val);
+                //$cut = false;
+                if (($name = $this->name())
+                    && $this->expect('=')
+                    && ($cut = true)
+                    && ($item = $this->item())) {
+                    return new NamedItem($name->val, $item);
                 }
                 $this->reset($index);
                 if ($cut) {
                     return null;
                 }
-                $cut = false;
-                if (
-                    ($name = $this->name())
-                    &&
-                    ($literal = $this->expect('='))
-                    &&
-                    ($cut = true)
-                    &&
-                    ($item = $this->item())
-                ) {
-                    return NamedItem($name->val, $item);
+                if ($item = $this->item()) {
+                    return new NamedItem(null, $item);
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
-                if (
-                    ($item = $this->item())
-                ) {
-                    return NamedItem(null, $item);
+                if ($it = $this->forcedAtom()) {
+                    return new NamedItem(null, $it);
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
-                if (
-                    ($it = $this->forced_atom())
-                ) {
-                    return NamedItem(null, $it);
-                }
-                $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
-                if (
-                    ($it = $this->lookahead())
-                ) {
-                    return NamedItem(null, $it);
+                if ($it = $this->lookahead()) {
+                    return new NamedItem(null, $it);
                 }
                 $this->reset($index);
                 return null;
@@ -459,67 +339,51 @@ class GrammarParser extends Parser {
         );
     }
 
-    private function forcedAtom() {
+    private function forcedAtom(): null | Lookahead | Forced | Cut {
         return $this->memoize(
             __METHOD__,
-            function (): ?NamedItem {
+            function (): null | Lookahead | Forced | Cut {
                 # forced_atom: '&' '&' ~ atom
                 $index = $this->index();
-                $cut = false;
-                if (
-                    ($literal = $this->expect('&'))
-                    &&
-                    ($literal_1 = $this->expect('&'))
-                    &&
-                    ($cut = true)
-                    &&
-                    ($atom = $this->atom())
-                ) {
-                    return Forced($atom);
+                //$cut = false;
+                if ($this->expect('&') && $this->expect('&') && /*($cut = true) &&*/ ($atom = $this->atom())) {
+                    return new Forced($atom);
                 }
                 $this->reset($index);
+//                if ($cut) {
+//                    return null
+//                }
                 return null;
             }
         );
     }
 
-    private function lookahead() {
+    // def lookahead(self) -> Optional[LookaheadOrCut]:
+    // LookaheadOrCut = Union[Lookahead, Forced, Cut]
+    private function lookahead(): null | Lookahead | Forced | Cut {
         return $this->memoize(
             __METHOD__,
-            function (): ?LookaheadOrCut {
+            function (): null | Lookahead | Forced | Cut {
                 # lookahead: '&' ~ atom | '!' ~ atom | '~'
                 $index = $this->index();
                 $cut = false;
-                if (
-                    ($literal = $this->expect('&'))
-                    &&
-                    ($cut = true)
-                    &&
-                    ($atom = $this->atom())
-                ) {
-                    return PositiveLookahead($atom);
+                if ( $this->expect('&') && ($cut = true) && ($atom = $this->atom())) {
+                    return new PositiveLookahead($atom);
                 }
                 $this->reset($index);
                 if ($cut) {
                     return null;
                 }
-                $cut = false;
-                if (
-                    ($literal = $this->expect('!'))
-                    &&
-                    ($cut = true)
-                    &&
-                    ($atom = $this->atom())
-                ) {
-                    return NegativeLookahead($atom);
+                //$cut = false;
+                if ($this->expect('!') && ($cut = true) && ($atom = $this->atom())) {
+                    return new NegativeLookahead($atom);
                 }
                 $this->reset($index);
                 if ($cut) {
                     return null;
                 }
-                $cut = false;
-                if ($literal = $this->expect('~')) {
-                    return Cut();
+                if ($this->expect('~')) {
+                    return new Cut();
                 }
                 $this->reset($index);
                 return null;
@@ -527,81 +391,43 @@ class GrammarParser extends Parser {
         );
     }
 
-    private function item() {
+    // def item(self) -> Optional[Item]
+    // Item = Union[Plain, Opt, Repeat, Forced, Lookahead, Rhs, Cut]
+    // Plain = Union[Leaf, Group]
+    private function item(): null | Leaf | Group | Opt | Repeat | Forced | Lookahead | Rhs | Cut {
         return $this->memoize(
             __METHOD__,
-            function (): ?Item {
+            function (): null | Leaf | Group | Opt | Repeat | Forced | Lookahead | Rhs | Cut {
                 # item: '[' ~ alts ']' | atom '?' | atom '*' | atom '+' | atom '.' atom '+' | atom
                 $index = $this->index();
                 $cut = false;
-                if (
-                    ($literal = $this->expect('['))
-                    &&
-                    ($cut = true)
-                    &&
-                    ($alts = $this->alts())
-                    &&
-                    ($literal_1 = $this->expect(']'))
-                ) {
-                    return Opt($alts);
+                if ($this->expect('[') && ($cut = true) && ($alts = $this->alts()) && $this->expect(']')) {
+                    return new Opt($alts);
                 }
                 $this->reset($index);
                 if ($cut) {
                     return null;
                 }
-                $cut = false;
-                if (
-                    ($atom = $this->atom())
-                    &&
-                    ($literal = $this->expect('?'))
-                ) {
-                    return Opt($atom);
+                if (($atom = $this->atom()) && $this->expect('?')) {
+                    return new Opt($atom);
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
-                if (
-                    ($atom = $this->atom())
-                    &&
-                    ($literal = $this->expect('*'))
-                ) {
-                    return Repeat0($atom);
+                if (($atom = $this->atom()) && $this->expect('*')) {
+                    return new Repeat0($atom);
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
-                if (
-                    ($atom = $this->atom())
-                    &&
-                    ($literal = $this->expect('+'))
-                ) {
-                    return Repeat1($atom);
+                if (($atom = $this->atom()) && $this->expect('+')) {
+                    return new Repeat1($atom);
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
                 if (
                     ($sep = $this->atom())
-                    &&
-                    ($literal = $this->expect('.'))
-                    &&
-                    ($node = $this->atom())
-                    &&
-                    ($literal_1 = $this->expect('+'))
-                ) {
-                    return Gather($sep, node);
+                    && $this->expect('.')
+                    && ($node = $this->atom())
+                    && $this->expect('+')) {
+                    return new Gather($sep, $node);
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
                 if ($atom = $this->atom()) {
                     return $atom;
                 }
@@ -611,40 +437,28 @@ class GrammarParser extends Parser {
         );
     }
 
-    private function atom() {
+    // def atom(self) -> Optional[Plain]:
+    // Plain = Union[Leaf, Group]
+    private function atom(): null | Leaf | Group {
         return $this->memoize(
             __METHOD__,
-            function (): ?Plain {
+            function (): null | Leaf | Group {
                 # atom: '(' ~ alts ')' | NAME | STRING
-
                 $index = $this->index();
                 $cut = false;
-                if (
-                    ($literal = $this->expect('('))
-                    &&
-                    ($cut = true)
-                    &&
-                    ($alts = $this->alts())
-                    &&
-                    ($literal_1 = $this->expect(')'))
-                ) {
-                    return Group($alts);
+                if ($this->expect('(') && ($cut = true) && ($alts = $this->alts()) &&$this->expect(')')) {
+                    return new Group($alts);
                 }
                 $this->reset($index);
                 if ($cut) {
                     return null;
                 }
-                $cut = false;
                 if ($name = $this->name()) {
-                    return NameLeaf($name->val);
+                    return new NameLeaf($name->val);
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
                 if ($string = $this->string()) {
-                    return StringLeaf($string->string);
+                    return new StringLeaf($string->val);
                 }
                 $this->reset($index);
                 return null;
@@ -656,12 +470,16 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?string {
-                # action: "{" ~ targetAtoms "}"
+                # action: "{" ~ target_atoms "}"
                 $index = $this->index();
-                if (($literal = $this->expect("{")) && ($cut = true) && ($targetAtoms = $this->targetAtoms()) && ($literal_1 = $this->expect("}"))) {
+                //$cut = false;
+                if ($this->expect("{") /*&& ($cut = true)*/ && ($targetAtoms = $this->targetAtoms()) && $this->expect("}")) {
                     return $targetAtoms;
                 }
                 $this->reset($index);
+                /*if ($cut) {
+                    return null;
+                }*/
                 return null;
             }
         );
@@ -686,28 +504,16 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?string {
-                # targetAtoms: targetAtom targetAtoms | targetAtom
+                # target_atoms: target_atom target_atoms | target_atom
                 $index = $this->index();
-                $cut = false;
-                if (
-                    ($targetAtom = $this->targetAtom())
-                    &&
-                    ($targetAtoms = $this->targetAtoms())
-                ) {
+                if (($targetAtom = $this->targetAtom()) && ($targetAtoms = $this->targetAtoms())) {
                     return $targetAtom . " " . $targetAtoms;
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
                 if ($targetAtom = $this->targetAtom()) {
                     return $targetAtom;
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
                 return null;
             }
         );
@@ -717,135 +523,115 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?string {
-                # targetAtom: "{" ~ targetAtoms "}" | NAME | NUMBER | STRING | "?" | ":" | !"}" OP
+                # target_atom: "{" ~ target_atoms? "}" | "[" ~ target_atoms? "]" | NAME "*" | NAME | NUMBER | STRING | "?" | ":" | !"}" !"]" OP
                 $index = $this->index();
                 $cut = false;
-                if (($literal = $this->expect("{"))
-                    &&
-                    ($cut = true)
-                    &&
-                    ($targetAtoms = $this->targetAtoms())
-                    &&
-                    ($literal_1 = $this->expect("}"))
-                ) {
-                    return "{" . $targetAtoms . "}";
+                if ($this->expect("{")
+                    && ($cut = true)
+                    && ($atoms = $this->targetAtoms())
+                    && $this->expect("}")) {
+                    return "{" . $atoms . "}";
                 }
                 $this->reset($index);
                 if ($cut) {
                     return null;
                 }
-                $cut = false;
+                //$cut = false;
+                if ($this->expect('[') && ($cut = true) && ($atoms = $this->targetAtoms()) && $this->expect(']')) {
+                    return '[' . ($atoms ?? '') . ']';
+                }
+                $this->reset($index);
+                if ($cut) {
+                    return null;
+                }
+                if (($name = $this->name()) && $this->expect('*')) {
+                    return $name->val . '*';
+                }
+                $this->reset($index);
                 if ($name = $this->name()) {
                     return $name->val;
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
                 if ($number = $this->number()) {
-                    return $number->string;
+                    return $number->val;
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
                 if ($string = $this->string()) {
-                    return $string->string;
+                    return $string->val;
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
-                if ($literal = $this->expect("?")) {
-                    return "?";
+                if ($this->expect('?"')) {
+                    return '?';
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
-                if ($literal = $this->expect(":")) {
-                    return ":";
+                if ($this->expect(':')) {
+                    return ':';
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
-                $cut = false;
-                // todo
-                if ($this->negative_lookahead($this->expect, "}") && ($op = $this->op())) {
-                    return $op->string;
+                if ($this->negativeLookahead($this->expect(...), '}') && $this->negativeLookahead($this->expect(...), ']') && ($op = $this->op())) {
+                    return $op->val;
                 }
                 $this->reset($index);
-                if ($cut) {
-                    return null;
-                }
                 return null;
             }
         );
     }
 }
 
+// MetaList = List[MetaTuple]
 class MetaList {
 }
 
+// RuleList = List[Rule]
 class RuleList extends \ArrayObject {
 }
 
 class Rule {
 }
 
+// RuleName = Tuple[str, str]
 class RuleName {
 
 }
 
+// MetaTuple = Tuple[str, Optional[str]]
 class MetaTuple {
 
 }
 
-
-/*
-     Alt,
-    Cut,
-    Forced,
-    Gather,
-    Group,
-    Item,
-    Lookahead,
-    LookaheadOrCut,
-    MetaTuple,
-    MetaList,
-    NameLeaf,
-    NamedItem,
-    NamedItemList,
-    NegativeLookahead,
-    Opt,
-    Plain,
-    PositiveLookahead,
-    Repeat0,
-    Repeat1,
-    Rhs,
-    Rule,
-    RuleList,
-    RuleName,
-    Grammar,
-    StringLeaf,
- */
-
-/*
-Plain = Union[Leaf, Group]
-Item = Union[Plain, Opt, Repeat, Forced, Lookahead, Rhs, Cut]
-RuleName = Tuple[str, str]
-MetaTuple = Tuple[str, Optional[str]]
-MetaList = List[MetaTuple]
-RuleList = List[Rule]
-NamedItemList = List[NamedItem]
-LookaheadOrCut = Union[Lookahead, Cut]
-*/
-
 class Rhs {
 
 }
+
+class Alt {
+
+}
+
+class NamedItem {
+
+}
+
+// NamedItemList = List[NamedItem]
+class NamedItemList {}
+
+// LookaheadOrCut = Union[Lookahead, Forced, Cut]
+class Forced {}
+class Cut {}
+class Lookahead {
+}
+
+class PositiveLookahead extends Lookahead {}
+class NegativeLookahead extends Lookahead {}
+
+class Opt {}
+class Repeat {}
+class Repeat0 extends Repeat {}
+class Repeat1 extends Repeat {}
+class Gather extends Repeat {}
+
+class Group {}
+class Leaf {}
+
+class NameLeaf extends Leaf {}
+
+class StringLeaf extends Leaf {}
