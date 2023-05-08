@@ -16,24 +16,15 @@ use Morpho\Compiler\Frontend\SyntaxError;
  */
 abstract class Parser implements IParser {
     private IGrammarTokenizer $tokenizer;
-    private int $index;
-    // private bool $verbose;
     private int $level;
     private array $cache;
-
     private const KEYWORDS = [];
-    private  const SOFT_KEYWORDS = ['memo'];
+    private const SOFT_KEYWORDS = ['memo'];
 
     public function __construct(IGrammarTokenizer $tokenizer) {
-        // tokenizer in Python
         $this->tokenizer = $tokenizer;
-        //$this->verbose = $verbose;
         $this->level = 0;
         $this->cache = [];
-        // Integer tracking whether we are in a left recursive rule or not. Can be useful for error reporting.
-        $this->inRecursiveRule = 0;
-        // Pass through common tokenizer methods.
-        $this->index = $this->tokenizer->index();
     }
 
     /**
@@ -50,43 +41,92 @@ abstract class Parser implements IParser {
         $this->tokenizer->reset($index);
     }
 
-    /*    public function showPeek(): string {
-            $tok = $this->tokenizer->peek();
-            return $tok->start[0] . '.' . $tok->start[1] . ': ' . static::TOKENS[$tok->type] . ':' . $tok->string . '!r';
-        }*/
-
     protected function index(): int {
         return $this->tokenizer->index();
     }
 
     protected function name(): ?Token {
-        return $this->nextTokenIf(__METHOD__, fn($tok) => $tok->type == TokenType::NAME && !in_array($tok->val, self::KEYWORDS));
+        return $this->memoize(
+            __METHOD__,
+            function () {
+                $tok = $this->tokenizer->peekToken();
+                if ($tok->type == TokenType::NAME && !in_array($tok->val, self::KEYWORDS)) {
+                    return $this->tokenizer->nextToken();
+                }
+                return null;
+            },
+        );
     }
 
     protected function number(): ?Token {
-        return $this->nextTokenIf(__METHOD__, fn($tok) => $tok->type == TokenType::NUMBER);
+        return $this->memoize(
+            __METHOD__,
+            function () {
+                $tok = $this->tokenizer->peekToken();
+                if ($tok->type == TokenType::NUMBER) {
+                    return $this->tokenizer->nextToken();
+                }
+                return null;
+            },
+        );
     }
 
     protected function string(): ?Token {
-        return $this->nextTokenIf(__METHOD__, fn($tok) => $tok->type == TokenType::STRING);
+        return $this->memoize(
+            __METHOD__,
+            function () {
+                $tok = $this->tokenizer->peekToken();
+                if ($tok->type == TokenType::STRING) {
+                    return $this->tokenizer->nextToken();
+                }
+                return null;
+            },
+        );
     }
 
     protected function op(): ?Token {
-        return $this->nextTokenIf(__METHOD__, fn ($tok) => $tok->type == TokenType::OP);
+        return $this->memoize(
+            __METHOD__,
+            function () {
+                $tok = $this->tokenizer->peekToken();
+                if ($tok->type == TokenType::OP) {
+                    return $this->tokenizer->nextToken();
+                }
+                return null;
+            },
+        );
     }
     
     protected function typeComment(): ?Token {
-        return $this->nextTokenIf(__METHOD__ , fn($tok) => $tok->type == TokenType::COMMENT);
+        return $this->memoize(
+            __METHOD__,
+            function () {
+                $tok = $this->tokenizer->peekToken();
+                if ($tok->type == TokenType::COMMENT) {
+                    return $this->tokenizer->nextToken();
+                }
+                return null;
+            },
+        );
     }
 
     protected function softKeyword(): ?Token {
-        return $this->nextTokenIf(__METHOD__ , fn($tok) => $tok->type == TokenType::NAME && in_array($tok->val, self::SOFT_KEYWORDS));
+        return $this->memoize(
+            __METHOD__,
+            function () {
+                $tok = $this->tokenizer->peekToken();
+                if ($tok->type == TokenType::NAME && in_array($tok->val, self::SOFT_KEYWORDS)) {
+                    return $this->tokenizer->nextToken();
+                }
+                return null;
+            },
+        );
     }
 
     protected function expect(string $type): ?Token {
         return $this->memoize(
             __METHOD__,
-            function () use ($type) {
+            function ($type) {
                 $tok = $this->tokenizer->peekToken();
                 if ($tok->val === $type) {
                     return $this->tokenizer->nextToken();
@@ -101,11 +141,12 @@ abstract class Parser implements IParser {
                 if type in token.__dict__:
                     if tok.type == token.__dict__[type]:
                         return self._tokenizer.getnext()*/
-                if ($tok->type === TokenType::OP) { //  && $tok->type == $type is always false, so don't add it
+                if ($tok->type === TokenType::OP && $tok->val == $type) {
                     return $this->tokenizer->nextToken();
                 }
                 return null;
-            }
+            },
+            $type,
         );
     }
 
@@ -130,18 +171,19 @@ abstract class Parser implements IParser {
         return !$ok;
     }
 
-    protected function memoize(string $fnId, Closure $fn): mixed {
-        // todo
-        return $fn();
-    }
-
-    private function nextTokenIf(string $memoizeKey, Closure $predicate): ?Token {
-        return $this->memoize(
-            $memoizeKey,
-            function () use ($predicate): ?Token {
-                $tok = $this->tokenizer->peekToken();
-                return $predicate($tok) ? $this->tokenizer->nextToken() : null;
-            }
-        );
+    protected function memoize(string $fnId, Closure $fn, ...$args): mixed {
+        $index = $this->index();
+        $key = md5(serialize([$index, $fnId, $args]));
+        if (isset($this->cache[$key])) {
+            [$tree, $endIndex] = $this->cache[$key];
+            $this->reset($endIndex);
+            return $tree;
+        }
+        $this->level++;
+        $tree = $fn(...$args);
+        $this->level--;
+        $endIndex = $this->index();
+        $this->cache[$key] = [$tree, $endIndex];
+        return $tree;
     }
 }

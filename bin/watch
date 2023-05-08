@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+#set -eu
+
+SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+declare -r SCRIPT_DIR_PATH
+#SCRIPT_FILE_NAME="$(basename "$0")"
+#declare -r SCRIPT_FILE_NAME
+#declare -r SCRIPT_FILE_PATH="$SCRIPT_DIR_PATH"/"$SCRIPT_FILE_NAME"
+
+# shellcheck disable=2086,2046
+while ! inotifywait -e modify "$SCRIPT_DIR_PATH"/../test/Unit/Compiler/Frontend/Peg/GrammarParserTest.php $(echo "$SCRIPT_DIR_PATH"/../lib/Compiler/Frontend/Peg/*.php); do
+    "$SCRIPT_DIR_PATH"/test "$SCRIPT_DIR_PATH"/../test/Unit/Compiler/Frontend/Peg/GrammarParserTest.php
+done

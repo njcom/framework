@@ -85,7 +85,7 @@ class Path extends BasePath {
         return $path;
     }
 
-    public static function changeExt(string $path, ?string $oldExt, string $newExt): string {
+    public static function changeExt(string $path, string $newExt, string $oldExt = null): string {
         if ($path === '' || $newExt === '') {
             throw new UnexpectedValueException("Path or extension can't be empty");
         }

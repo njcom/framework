@@ -237,22 +237,22 @@ class PathTest extends TestCase {
     }
 
     public function testChangeExt_GuessOldExt() {
-        $this->assertSame('test.jpg', Path::changeExt('test.txt', null, 'jpg'));
+        $this->assertSame('test.jpg', Path::changeExt('test.txt', 'jpg'));
 
-        $this->assertSame('term.txt', Path::changeExt('term.jpg', null, 'txt'));
-        $this->assertSame('term.txt', Path::changeExt('term.jpg', null, '.txt'));
+        $this->assertSame('term.txt', Path::changeExt('term.jpg', 'txt'));
+        $this->assertSame('term.txt', Path::changeExt('term.jpg', '.txt'));
 
-        $this->assertSame('term.txt', Path::changeExt('term.txt', null, 'txt'));
-        $this->assertSame('term.txt', Path::changeExt('term.txt', null, '.txt'));
+        $this->assertSame('term.txt', Path::changeExt('term.txt', 'txt'));
+        $this->assertSame('term.txt', Path::changeExt('term.txt', '.txt'));
 
-        $this->assertSame('term.txt', Path::changeExt('term', null, 'txt'));
-        $this->assertSame('term.txt', Path::changeExt('term', null, '.txt'));
+        $this->assertSame('term.txt', Path::changeExt('term', 'txt'));
+        $this->assertSame('term.txt', Path::changeExt('term', '.txt'));
 
-        $this->assertSame('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.jpg', null, 'txt'));
-        $this->assertSame('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.jpg', null, '.txt'));
-        $this->assertSame('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.', null, 'txt'));
+        $this->assertSame('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.jpg', 'txt'));
+        $this->assertSame('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.jpg', '.txt'));
+        $this->assertSame('/foo/bar/term.txt', Path::changeExt('/foo/bar/term.', 'txt'));
 
-        $this->assertSame('dir/foo.d.ts', Path::changeExt('dir/foo.d.ts', null, 'd.ts'));
+        $this->assertSame('dir/foo.d.ts', Path::changeExt('dir/foo.d.ts', 'd.ts'));
     }
 
     public static function dataChangeExt_GuessOldExt_EmptyPathOrNewExt() {
@@ -274,7 +274,7 @@ class PathTest extends TestCase {
      */
     public function testChangeExt_GuessExt_EmptyPathOrNewExt(string $path, ?string $oldExt, string $newExt) {
         $this->expectExceptionObject(new UnexpectedValueException("Path or extension can't be empty"));
-        Path::changeExt($path, $oldExt, $newExt);
+        Path::changeExt($path, $newExt, $oldExt);
     }
 
     public function testDropExt_Quess() {

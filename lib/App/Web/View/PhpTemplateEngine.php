@@ -245,7 +245,7 @@ class PhpTemplateEngine extends ArrPipe {
             }
         }
         $baseSourceDirPath = $candidateDirPaths[$max[0]];
-        $targetRelFilePath = Path::changeExt(Path::rel($baseSourceDirPath, $sourceAbsFilePath), null, 'php');
+        $targetRelFilePath = Path::changeExt(Path::rel($baseSourceDirPath, $sourceAbsFilePath), 'php');
         $targetAbsFilePath = $this->targetDirPath . '/' . $targetRelFilePath;
         $this->compileFile($sourceAbsFilePath, $targetAbsFilePath, []);
         return $this->evalPhpFile($targetAbsFilePath, (array)$context);

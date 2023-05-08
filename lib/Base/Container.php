@@ -7,7 +7,7 @@
 namespace Morpho\Base;
 
 abstract class Container implements IContainer {
-    protected mixed $val;
+    protected readonly mixed $val;
 
     public function __construct(mixed $val) {
         $this->val = $val;
