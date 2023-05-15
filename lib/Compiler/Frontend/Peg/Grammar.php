@@ -42,43 +42,49 @@ class GrammarVisitor:
 SIMPLE_STR = True
 */
 
-readonly class Grammar implements IGrammar {
-    private iterable $rules;
+readonly class Grammar implements IGrammar, IGrammarItem {
+    public iterable $rules;
     private iterable $metas;
 
     // def __init__(self, rules: Iterable[Rule], metas: Iterable[Tuple[str, Optional[str]]]):
     public function __construct(iterable $rules, iterable $metas) {
-        //self.rules = {rule.name: rule for rule in rules}
-        $this->rules = throw new NotImplementedException();
+        $rulesMap = [];
+        foreach ($rules as $rule) {
+            $rulesMap[$rule->name] = $rule;
+        }
+        $this->rules = $rulesMap;
         $this->metas = $metas;
         //self.metas = dict(metas)
     }
 
-    public function rules(): iterable {
-        return $this->rules;
+    public function __toString(): string {
+        throw new NotImplementedException();
+        //return "\n".join(str(rule) for name, rule in self.rules.items())
     }
 /*
-
-def __str__(self) -> str:
-    return "\n".join(str(rule) for name, rule in self.rules.items())
-
-def __repr__(self) -> str:
-    lines = ["Grammar("]
-    lines.append("  [")
-    for rule in self.rules.values():
-        lines.append(f"    {repr(rule)},")
-    lines.append("  ],")
-    lines.append("  {repr(list(self.metas.items()))}")
-    lines.append(")")
-    return "\n".join(lines)
-
 def __iter__(self) -> Iterator[Rule]:
     yield from self.rules.values()
 */
+
+    public function repr(): string {
+        $lines = [
+            'Grammar(',
+            '  [',
+        ];
+        foreach ($this->rules as $rule) {
+            throw new NotImplementedException();
+        }
+/*    for rule in self.rules.values():
+        lines.append(f"    {repr(rule)},")*/
+        $lines[] = '  ],';
+        $lines[] = '  {repr(list(self.metas.items()))}';
+        $lines[] = ')';
+        return implode("\n", $lines);
+    }
 }
 
 readonly class Rule {
-    private string $name;
+    public string $name;
     private ?string $type;
     private Rhs $rhs;
     private ?object $memo;
@@ -218,7 +224,7 @@ readonly class Rhs {
     /**
      * @var array<int, Alt>
      */
-    private array $alts;
+    public array $alts;
 
     // self.memo: Optional[Tuple[Optional[str], str]] = None
 
@@ -582,19 +588,16 @@ Item = Union[Plain, Opt, Repeat, Forced, Lookahead, Rhs, Cut]
 */
 
 // RuleName = Tuple[str, str]
-readonly class RuleName {
-    private ?string $val;
-    private ?string $annotation;
-
-    public function __construct(?string $val, ?string $annotation) {
-        $this->val = $val;
-        $this->annotation = $annotation;
+class RuleName extends \ArrayObject {
+    public function __construct(string $val, ?string $annotation) {
+        parent::__construct([$val, $annotation]);
     }
 }
 
 // MetaTuple = Tuple[str, Optional[str]]
-readonly class MetaTuple {
-
+class MetaTuple extends \ArrayObject {
+    public function __construct(string $name, ?string $val) {
+    }
 }
 
 // MetaList = List[MetaTuple]

@@ -7,8 +7,10 @@
 namespace Morpho\Compiler\Frontend\Peg;
 
 use Closure;
+use Morpho\Base\NotImplementedException;
 use Morpho\Compiler\Frontend\IParser;
 use Morpho\Compiler\Frontend\SyntaxError;
+use function Morpho\Base\last;
 
 /**
  * Base class for the PEG parsers
@@ -20,6 +22,8 @@ abstract class Parser implements IParser {
     private array $cache;
     private const KEYWORDS = [];
     private const SOFT_KEYWORDS = ['memo'];
+    // @todo: remove after PHP 8.3
+    private static $tokenTypes = [];
 
     public function __construct(IGrammarTokenizer $tokenizer) {
         $this->tokenizer = $tokenizer;
@@ -137,11 +141,19 @@ abstract class Parser implements IParser {
                         return $this->tokenizer->nextToken();
                     }
                 }
-                /* todo:
-                if type in token.__dict__:
-                    if tok.type == token.__dict__[type]:
-                        return self._tokenizer.getnext()*/
-                if ($tok->type === TokenType::OP && $tok->val == $type) {
+                if (PHP_VERSION_ID > 803000) {
+                    throw new NotImplementedException('Use Foo::{$bar} to check if enum case exists');
+                }
+                if (!self::$tokenTypes) {
+                    self::$tokenTypes = [];
+                    foreach (TokenType::cases() as $case) {
+                        self::$tokenTypes[last($case->name, ':')] = $case->value;
+                    }
+                }
+                if (isset(self::$tokenTypes[$type]) && $tok->type->value === self::$tokenTypes[$type]) {
+                    return $this->tokenizer->nextToken();
+                }
+                if ($tok->type === TokenType::OP && $tok->val === $type) {
                     return $this->tokenizer->nextToken();
                 }
                 return null;

@@ -27,14 +27,13 @@ class FirstSetCalculator {
         $this->inProcess = [];
     }
 
-    // Dict[str, Set[str]]:
+    // def calculate(self) -> Dict[str, Set[str]]:
     public function calculate(): array {
         throw new NotImplementedException();
     }
 
     /*
 
-        def calculate(self) -> Dict[str, Set[str]]:
             for name, rule in self.rules.items():
                 self.visit(rule)
             return self.first_sets

@@ -4,9 +4,8 @@
  * It is distributed under the 'Apache License Version 2.0' license.
  * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
  */
-namespace Morpho\Compiler\Frontend;
+namespace Morpho\Compiler\Frontend\Peg;
 
-// Defines ILanguage yielding set of strings which it consists of.
-interface IGrammar {
-    //public function rules(): iterable;
+interface IGrammarItem extends \Stringable {
+    public function repr(): string;
 }

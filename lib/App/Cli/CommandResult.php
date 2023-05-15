@@ -26,9 +26,7 @@ abstract class CommandResult implements ICommandResult {
     }
 
     public function getIterator(): Traversable {
-        /** @var \Traversable $lines */
-        $lines = $this->lines(false);
-        return $lines;
+        return $this->lines(false);
     }
 
     public function lines(bool $asArr = true, bool $filterEmpty = true, bool $trim = true): iterable {

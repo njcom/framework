@@ -17,11 +17,13 @@ class GrammarParser extends Parser {
         throw new NotImplementedException();
     }
 
+    /**
+     * start: grammar $
+     */
     public function start(): ?Grammar {
         return $this->memoize(
             __METHOD__,
             function (): ?Grammar {
-                # start: grammar $
                 $index = $this->index();
                 if (($grammar = $this->grammar()) && $this->expect('ENDMARKER')) {
                     return $grammar;
@@ -32,11 +34,13 @@ class GrammarParser extends Parser {
         );
     }
 
+    /**
+     * grammar: metas rules | rules
+     */
     private function grammar(): ?Grammar {
         return $this->memoize(
             __METHOD__,
             function (): ?Grammar {
-                # grammar: metas rules | rules
                 $index = $this->index();
                 if (($metas = $this->metas()) && ($rules = $this->rules())) {
                     return new Grammar($rules, $metas);
@@ -52,30 +56,34 @@ class GrammarParser extends Parser {
     }
 
 
+    /**
+     * metas: meta metas | meta
+     */
     private function metas(): ?MetaList {
         return $this->memoize(
             __METHOD__,
             function (): ?MetaList {
-                # metas: meta metas | meta
-                $mark = $this->index();
+                $index = $this->index();
                 if (($meta = $this->meta()) && ($metas = $this->metas())) {
                     return new MetaList(array_merge([$meta], $metas));
                 }
-                $this->reset($mark);
+                $this->reset($index);
                 if ($meta = $this->meta()) {
                     return new MetaList([$meta]);
                 }
-                $this->reset($mark);
+                $this->reset($index);
                 return null;
             }
         );
     }
 
+    /**
+     * meta: "@" NAME NEWLINE | "@" NAME NAME NEWLINE | "@" NAME STRING NEWLINE
+     */
     private function meta(): ?MetaTuple {
         return $this->memoize(
             __METHOD__,
             function (): ?MetaTuple {
-                # meta: "@" NAME NEWLINE | "@" NAME NAME NEWLINE | "@" NAME STRING NEWLINE
                 $index = $this->index();
                 if ($this->expect('@') && ($name = $this->name()) && $this->expect('NEWLINE')) {
                     return new MetaTuple($name->val, null);
@@ -94,18 +102,20 @@ class GrammarParser extends Parser {
         );
     }
 
+    /**
+     * rules: rule rules | rule
+     */
     private function rules(): ?RuleList {
         return $this->memoize(
             __METHOD__,
             function (): ?RuleList {
-                # rules: rule rules | rule
                 $index = $this->index();
                 if (($rule = $this->rule()) && ($rules = $this->rules())) {
                     return new RuleList(array_merge([$rule], $rules->getArrayCopy()));
                 }
                 $this->reset($index);
                 if ($rule = $this->rule()) {
-                    return new RuleList($rule);
+                    return new RuleList([$rule]);
                 }
                 $this->reset($index);
                 return null;
@@ -113,11 +123,13 @@ class GrammarParser extends Parser {
         );
     }
 
+    /**
+     * rule: rulename memoflag? ":" alts NEWLINE INDENT more_alts DEDENT | rulename memoflag? ":" NEWLINE INDENT more_alts DEDENT | rulename memoflag? ":" alts NEWLINE
+     */
     private function rule(): ?Rule {
         return $this->memoize(
             __METHOD__,
             function (): ?Rule {
-                # rule: rulename memoflag? ":" alts NEWLINE INDENT more_alts DEDENT | rulename memoflag? ":" NEWLINE INDENT more_alts DEDENT | rulename memoflag? ":" alts NEWLINE
                 $index = $this->index();
                 if (
                     ($ruleName = $this->ruleName())
@@ -129,7 +141,7 @@ class GrammarParser extends Parser {
                     && ($moreAlts = $this->moreAlts())
                     && ($this->expect('DEDENT'))
                 ) {
-                    return new Rule($ruleName[0], $ruleName[1], new Rhs(array_merge($alts->alts, $moreAlts->alts)), memo: $opt);
+                    return new Rule($ruleName[0], $ruleName[1], new Rhs(array_merge($alts->alts, $moreAlts->alts)), memo: $opt === true ? null : $opt);
                 }
                 $this->reset($index);
                 if (
@@ -141,7 +153,7 @@ class GrammarParser extends Parser {
                     && ($moreAlts = $this->moreAlts())
                     && ($this->expect('DEDENT'))
                 ) {
-                    return new Rule($ruleName[0], $ruleName[1], $moreAlts, memo: $opt);
+                    return new Rule($ruleName[0], $ruleName[1], $moreAlts, memo: $opt === true ? null : $opt);
                 }
                 $this->reset($index);
                 if (
@@ -151,7 +163,7 @@ class GrammarParser extends Parser {
                     && ($alts = $this->alts())
                     && ($this->expect('NEWLINE'))
                 ) {
-                    return new Rule($ruleName[0], $ruleName[1], $alts, memo: $opt);
+                    return new Rule($ruleName[0], $ruleName[1], $alts, memo: $opt === true ? null : $opt);
                 }
                 $this->reset($index);
                 return null;
@@ -159,11 +171,13 @@ class GrammarParser extends Parser {
         );
     }
 
+    /**
+     * rulename: NAME annotation | NAME
+     */
     private function ruleName(): ?RuleName {
         return $this->memoize(
             __METHOD__,
             function (): ?RuleName {
-                # rulename: NAME annotation | NAME
                 $index = $this->index();
                 if (($name = $this->name()) && ($annotation = $this->annotation())) {
                     return new RuleName($name->val, $annotation);
@@ -178,11 +192,13 @@ class GrammarParser extends Parser {
         );
     }
 
+    /**
+     * memoflag: '(' "memo" ')'
+     */
     private function memoFlag(): ?string {
         return $this->memoize(
             __METHOD__,
             function (): ?string {
-                # memoflag: '(' "memo" ')'
                 $index = $this->index();
                 if ($this->expect('(') && $this->expect('memo') && $this->expect(')')) {
                     return "memo";
@@ -193,15 +209,18 @@ class GrammarParser extends Parser {
         );
     }
 
+    /**
+     * alts: alt "|" alts | alt
+     */
     private function alts(): ?Rhs {
         return $this->memoize(
             __METHOD__,
             function (): ?Rhs {
-                # alts: alt "|" alts | alt
                 $index = $this->index();
                 if (($alt = $this->alt()) && $this->expect("|") && ($alts = $this->alts())) {
                     return new Rhs(array_merge([$alt], $alts->alts));
                 }
+                $this->reset($index);
                 if ($alt = $this->alt()) {
                     return new Rhs([$alt]);
                 }
@@ -211,11 +230,13 @@ class GrammarParser extends Parser {
         );
     }
 
+    /**
+     * more_alts: "|" alts NEWLINE more_alts | "|" alts NEWLINE
+     */
     private function moreAlts(): ?Rhs {
         return $this->memoize(
             __METHOD__,
             function (): ?Rhs {
-                # more_alts: "|" alts NEWLINE more_alts | "|" alts NEWLINE
                 $index = $this->index();
                 if (
                     ( $this->expect("|"))
@@ -235,11 +256,13 @@ class GrammarParser extends Parser {
         );
     }
 
+    /**
+     * alt: items '$' action | items '$' | items action | items
+     */
     private function alt(): ?Alt {
         return $this->memoize(
             __METHOD__,
             function (): ?Alt {
-                # alt: items '$' action | items '$' | items action | items
                 $index = $this->index();
                 if (($items = $this->items()) && ($this->expect('$')) && ($action = $this->action())) {
                     return new Alt(array_merge($items, [new NamedItem(null, new NameLeaf('ENDMARKER'))]), action: $action);
@@ -262,11 +285,13 @@ class GrammarParser extends Parser {
         );
     }
 
+    /**
+     * items: named_item items | named_item
+     */
     private function items(): ?NamedItemList {
         return $this->memoize(
             __METHOD__,
             function (): ?NamedItemList {
-                # items: named_item items | named_item
                 $index = $this->index();
                 if (($namedItem = $this->namedItem()) && ($items = $this->items())) {
                     return new NamedItemList(array_merge([$namedItem], $items->getArrayCopy()));
@@ -281,11 +306,13 @@ class GrammarParser extends Parser {
         );
     }
 
+    /**
+     * named_item: NAME annotation '=' ~ item | NAME '=' ~ item | item | forced_atom | lookahead
+     */
     private function namedItem(): ?NamedItem {
         return $this->memoize(
             __METHOD__,
             function (): ?NamedItem {
-                # named_item: NAME annotation '=' ~ item | NAME '=' ~ item | item | forced_atom | lookahead
                 $index = $this->index();
                 $cut = false;
                 if (
@@ -329,11 +356,13 @@ class GrammarParser extends Parser {
         );
     }
 
+    /**
+     * forced_atom: '&' '&' ~ atom
+     */
     private function forcedAtom(): null | Lookahead | Forced | Cut {
         return $this->memoize(
             __METHOD__,
             function (): null | Lookahead | Forced | Cut {
-                # forced_atom: '&' '&' ~ atom
                 $index = $this->index();
                 //$cut = false;
                 if ($this->expect('&') && $this->expect('&') && /*($cut = true) &&*/ ($atom = $this->atom())) {
@@ -348,16 +377,18 @@ class GrammarParser extends Parser {
         );
     }
 
-    // def lookahead(self) -> Optional[LookaheadOrCut]:
-    // LookaheadOrCut = Union[Lookahead, Forced, Cut]
+    /**
+     * lookahead: '&' ~ atom | '!' ~ atom | '~'
+     * def lookahead(self) -> Optional[LookaheadOrCut]:
+     *   LookaheadOrCut = Union[Lookahead, Forced, Cut]
+     */
     private function lookahead(): null | Lookahead | Forced | Cut {
         return $this->memoize(
             __METHOD__,
             function (): null | Lookahead | Forced | Cut {
-                # lookahead: '&' ~ atom | '!' ~ atom | '~'
                 $index = $this->index();
                 $cut = false;
-                if ( $this->expect('&') && ($cut = true) && ($atom = $this->atom())) {
+                if ($this->expect('&') && ($cut = true) && ($atom = $this->atom())) {
                     return new PositiveLookahead($atom);
                 }
                 $this->reset($index);
@@ -381,14 +412,16 @@ class GrammarParser extends Parser {
         );
     }
 
-    // def item(self) -> Optional[Item]
-    // Item = Union[Plain, Opt, Repeat, Forced, Lookahead, Rhs, Cut]
-    // Plain = Union[Leaf, Group]
+    /**
+     * item: '[' ~ alts ']' | atom '?' | atom '*' | atom '+' | atom '.' atom '+' | atom 
+     * def item(self) -> Optional[Item]
+     *   Item = Union[Plain, Opt, Repeat, Forced, Lookahead, Rhs, Cut]
+     *   Plain = Union[Leaf, Group]
+     */
     private function item(): null | Leaf | Group | Opt | Repeat | Forced | Lookahead | Rhs | Cut {
         return $this->memoize(
             __METHOD__,
             function (): null | Leaf | Group | Opt | Repeat | Forced | Lookahead | Rhs | Cut {
-                # item: '[' ~ alts ']' | atom '?' | atom '*' | atom '+' | atom '.' atom '+' | atom
                 $index = $this->index();
                 $cut = false;
                 if ($this->expect('[') && ($cut = true) && ($alts = $this->alts()) && $this->expect(']')) {
@@ -427,13 +460,15 @@ class GrammarParser extends Parser {
         );
     }
 
-    // def atom(self) -> Optional[Plain]:
-    // Plain = Union[Leaf, Group]
+    /**
+     * atom: '(' ~ alts ')' | NAME | STRING
+     * def atom(self) -> Optional[Plain]:
+     *   Plain = Union[Leaf, Group]
+     */
     private function atom(): null | Leaf | Group {
         return $this->memoize(
             __METHOD__,
             function (): null | Leaf | Group {
-                # atom: '(' ~ alts ')' | NAME | STRING
                 $index = $this->index();
                 $cut = false;
                 if ($this->expect('(') && ($cut = true) && ($alts = $this->alts()) &&$this->expect(')')) {
@@ -456,11 +491,13 @@ class GrammarParser extends Parser {
         );
     }
 
+    /**
+     * action: "{" ~ target_atoms "}"
+     */
     private function action(): ?string {
         return $this->memoize(
             __METHOD__,
             function (): ?string {
-                # action: "{" ~ target_atoms "}"
                 $index = $this->index();
                 //$cut = false;
                 if ($this->expect("{") /*&& ($cut = true)*/ && ($targetAtoms = $this->targetAtoms()) && $this->expect("}")) {
@@ -475,11 +512,13 @@ class GrammarParser extends Parser {
         );
     }
 
+    /**
+     * annotation: "[" ~ target_atoms "]"
+     */
     private function annotation(): ?string {
         return $this->memoize(
             __METHOD__,
             function (): ?string {
-                # annotation: "[" ~ target_atoms "]"
                 $index = $this->index();
                 if ($this->expect('[') && ($targetAtoms = $this->targetAtoms()) && $this->expect(']')) {
                     return $targetAtoms;
@@ -490,11 +529,13 @@ class GrammarParser extends Parser {
         );
     }
 
+    /**
+     * target_atoms: target_atom target_atoms | target_atom
+     */
     private function targetAtoms(): ?string {
         return $this->memoize(
             __METHOD__,
             function (): ?string {
-                # target_atoms: target_atom target_atoms | target_atom
                 $index = $this->index();
                 if (($targetAtom = $this->targetAtom()) && ($targetAtoms = $this->targetAtoms())) {
                     return $targetAtom . ' ' . $targetAtoms;
@@ -509,18 +550,20 @@ class GrammarParser extends Parser {
         );
     }
 
+    /**
+     * target_atom: "{" ~ target_atoms? "}" | "[" ~ target_atoms? "]" | NAME "*" | NAME | NUMBER | STRING | "?" | ":" | !"}" !"]" OP
+     */
     private function targetAtom(): ?string {
         return $this->memoize(
             __METHOD__,
             function (): ?string {
-                # target_atom: "{" ~ target_atoms? "}" | "[" ~ target_atoms? "]" | NAME "*" | NAME | NUMBER | STRING | "?" | ":" | !"}" !"]" OP
                 $index = $this->index();
                 $cut = false;
                 if ($this->expect("{")
                     && ($cut = true)
                     && ($atoms = $this->targetAtoms() || true)
                     && $this->expect("}")) {
-                    return "{" . $atoms . "}";
+                    return "{" . ($atoms === true ? '' : $atoms) . "}";
                 }
                 $this->reset($index);
                 if ($cut) {
@@ -528,7 +571,7 @@ class GrammarParser extends Parser {
                 }
                 //$cut = false;
                 if ($this->expect('[') && ($cut = true) && ($atoms = $this->targetAtoms() || true) && $this->expect(']')) {
-                    return '[' . ($atoms ?? '') . ']';
+                    return '[' . ($atoms === true ? '' : $atoms) . ']';
                 }
                 $this->reset($index);
                 if ($cut) {

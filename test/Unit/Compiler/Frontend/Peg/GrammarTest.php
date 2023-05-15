@@ -6,12 +6,35 @@
  */
 namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
-use Morpho\Testing\TestCase;
+use Morpho\Compiler\Frontend\IGrammar;
 use Morpho\Compiler\Frontend\Peg\Grammar;
+use Morpho\Compiler\Frontend\Peg\IGrammarItem;
+use Morpho\Testing\TestCase;
 
 class GrammarTest extends TestCase {
-    public function testGrammar() {
-        $grammar = new Grammar([], []);
-        $this->markTestIncomplete("@todo: Test Grammar to string, all grammar child items must be readonly classes (test via Reflection)");
+    public function testInterface() {
+        $grammar = $this->mkEmptyGrammar();
+        $this->assertInstanceOf(IGrammar::class, $grammar);
+        $this->assertInstanceOf(IGrammarItem::class, $grammar);
+    }
+
+    public function testRepr_EmptyGrammar() {
+        $grammar = $this->mkEmptyGrammar();
+        $this->assertSame(
+            <<<'OUT'
+Grammar(
+  [
+  ],
+  {repr(list(self.metas.items()))}
+)
+OUT,
+            $grammar->repr()
+        );
+    }
+
+    private function mkEmptyGrammar(): Grammar {
+        $rules = [];
+        $metas = [];
+        return new Grammar($rules, $metas);
     }
 }

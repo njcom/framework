@@ -137,9 +137,10 @@ function lines($source, bool $asArr = true, bool $filterEmpty = true, bool $trim
     } elseif (!is_iterable($source)) {
         $text = (string)$source;
         if ($text === '') {
-            return [];
+            $source = [];
+        } else {
+            $source = preg_split(EOL_FULL_RE, $text, -1, $filterEmpty ? PREG_SPLIT_NO_EMPTY : 0);
         }
-        $source = preg_split(EOL_FULL_RE, $text, -1, $filterEmpty ? PREG_SPLIT_NO_EMPTY : 0);
     }
     if ($asArr) {
         if (!$trim && !$filterEmpty) {

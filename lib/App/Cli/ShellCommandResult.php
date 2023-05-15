@@ -31,10 +31,6 @@ class ShellCommandResult extends CommandResult {
     }
 
     public function count(): int {
-        $n = 0;
-        foreach ($this->lines() as $_) {
-            $n++;
-        }
-        return $n;
+        return iterator_count($this->lines());
     }
 }

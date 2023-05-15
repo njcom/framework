@@ -11,6 +11,7 @@ use ArrayObject;
 use Morpho\Base\InvalidConfException;
 use Morpho\Testing\TestCase;
 use RuntimeException;
+use Morpho\App\Cli\ICommandResult;
 
 use function basename;
 use function escapeshellarg;
@@ -149,12 +150,12 @@ OUT
         $this->assertSame(" '1' '2'", arg($gen1()));
     }
 
-    public function testShell_ThrowsExceptionOnInvalidConfParam() {
+    public function testSh_ThrowsExceptionOnInvalidConfParam() {
         $this->expectException(InvalidConfException::class);
         sh('ls', ['some invalid option' => 'value of invalid option']);
     }
 
-    public static function dataShell_CaptureAndShowConfOptions(): iterable {
+    public static function dataSh_CaptureAndShowConfOptions(): iterable {
         yield [false, false];
         yield [false, true];
         yield [true, false];
@@ -162,9 +163,9 @@ OUT
     }
 
     /**
-     * @dataProvider dataShell_CaptureAndShowConfOptions
+     * @dataProvider dataSh_CaptureAndShowConfOptions
      */
-    public function testShell_CaptureAndShowConfOptions(bool $capture, bool $show) {
+    public function testSh_CaptureAndShowConfOptions(bool $capture, bool $show) {
         $cmd = 'ls ' . escapeshellarg(__DIR__);
         ob_start();
         $result = sh($cmd, ['capture' => $capture, 'show' => $show]);
@@ -174,13 +175,13 @@ OUT
         $this->assertStringContainsString($capture ? basename(__FILE__) : '', (string) $result);
     }
 
-    public function testShell_CheckExitConfParam() {
+    public function testSh_CheckExitConfParam() {
         $exitCode = 134;
         $this->expectException(RuntimeException::class, "Command returned non-zero exit code: $exitCode");
         sh('php -r "exit(' . $exitCode . ');"');
     }
 
-    public function testShell_EnvVarsConfParam() {
+    public function testSh_EnvVarsConfParam() {
         $var = 'v' . md5(__METHOD__);
         $val = 'hello';
         $this->assertSame(
@@ -190,6 +191,28 @@ OUT
                 ['envVars' => [$var => $val], 'capture' => true, 'show' => false]
             )->stdOut()
         );
+    }
+
+    public function testSh_Iterator_MultipleLines() {
+        $result = sh('echo foo; echo bar', ['capture' => true, 'show' => false]);
+        $this->assertInstanceOf(ICommandResult::class, $result);
+        $this->assertCount(2, $result);
+        $i = 0;
+        foreach ($result as $k => $line) {
+            match ($k) {
+                0 => $this->assertSame('foo', $line),
+                1 => $this->assertSame('bar', $line),
+                default => $this->fail(),
+            };
+            $i++;
+        }
+        $this->assertSame(2, $i);
+    }
+
+    public function testSh_Iterator_EmptyResult() {
+        $result = sh('true', ['capture' => true, 'show' => false]);
+        $this->assertInstanceOf(ICommandResult::class, $result);
+        $this->assertCount(0, $result);
     }
 
     public function testEnvVarsStr() {
