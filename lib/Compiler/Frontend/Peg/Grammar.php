@@ -2,7 +2,7 @@
 /**
  * This file is part of morpho-os/framework
  * It is distributed under the 'Apache License Version 2.0' license.
- * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
+ * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
 /**
  * The implementation is based on Python's PEG:
@@ -12,29 +12,15 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
+use ArrayObject;
 use Morpho\Base\NotImplementedException;
 use Morpho\Compiler\Frontend\IGrammar;
+use Traversable;
 
 /*
 class GrammarError(Exception):
     pass
 
-
-class GrammarVisitor:
-    def visit(self, node: Any, *args: Any, **kwargs: Any) -> Any:
-        """Visit a node."""
-        method = "visit_" + node.__class__.__name__
-        visitor = getattr(self, method, self.generic_visit)
-        return visitor(node, *args, **kwargs)
-
-    def generic_visit(self, node: Iterable[Any], *args: Any, **kwargs: Any) -> None:
-        """Called if no explicit visitor function exists for a node."""
-        for value in node:
-            if isinstance(value, list):
-                for item in value:
-                    self.visit(item, *args, **kwargs)
-            else:
-                self.visit(value, *args, **kwargs)
 */
 
 /*
@@ -61,10 +47,6 @@ readonly class Grammar implements IGrammar, IGrammarItem {
         throw new NotImplementedException();
         //return "\n".join(str(rule) for name, rule in self.rules.items())
     }
-/*
-def __iter__(self) -> Iterator[Rule]:
-    yield from self.rules.values()
-*/
 
     public function repr(): string {
         $lines = [
@@ -74,16 +56,22 @@ def __iter__(self) -> Iterator[Rule]:
         foreach ($this->rules as $rule) {
             throw new NotImplementedException();
         }
-/*    for rule in self.rules.values():
-        lines.append(f"    {repr(rule)},")*/
+        /*    for rule in self.rules.values():
+                lines.append(f"    {repr(rule)},")*/
         $lines[] = '  ],';
         $lines[] = '  {repr(list(self.metas.items()))}';
         $lines[] = ')';
         return implode("\n", $lines);
     }
+
+    // def __iter__(self) -> Iterator[Rule]:
+    public function getIterator(): Traversable {
+        //yield from self.rules.values()
+        yield from $this->rules;
+    }
 }
 
-readonly class Rule {
+readonly class Rule implements IGrammarItem {
     public string $name;
     private ?string $type;
     private Rhs $rhs;
@@ -104,123 +92,97 @@ readonly class Rule {
         $this->leftRecursive = false;
         $this->leader = false;
     }
-/*
-def is_loop(self) -> bool:
-    return self.name.startswith("_loop")
 
-def is_gather(self) -> bool:
-    return self.name.startswith("_gather")
+    /*
+    def is_loop(self) -> bool:
+        return self.name.startswith("_loop")
 
-def __str__(self) -> str:
-    if SIMPLE_STR or self.type is None:
-        res = f"{self.name}: {self.rhs}"
-    else:
-        res = f"{self.name}[{self.type}]: {self.rhs}"
-    if len(res) < 88:
-        return res
-    lines = [res.split(":")[0] + ":"]
-    lines += [f"    | {alt}" for alt in self.rhs.alts]
-    return "\n".join(lines)
+    def is_gather(self) -> bool:
+        return self.name.startswith("_gather")
+    */
+    public function __toString(): string {
+        throw new NotImplementedException();
+        /*
+        def __str__(self) -> str:
+            if SIMPLE_STR or self.type is None:
+                res = f"{self.name}: {self.rhs}"
+            else:
+                res = f"{self.name}[{self.type}]: {self.rhs}"
+            if len(res) < 88:
+                return res
+            lines = [res.split(":")[0] + ":"]
+            lines += [f"    | {alt}" for alt in self.rhs.alts]
+            return "\n".join(lines)
+        */
+    }
 
-def __repr__(self) -> str:
-    return f"Rule({self.name!r}, {self.type!r}, {self.rhs!r})"
+    public function repr(): string {
+        throw new NotImplementedException();
+        //return f"Rule({self.name!r}, {self.type!r}, {self.rhs!r})"
+    }
 
-def __iter__(self) -> Iterator[Rhs]:
-    yield self.rhs
+    // def __iter__(self) -> Iterator[Rhs]
+    public function getIterator(): Traversable {
+        return $this->rhs;
+    }
 
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    if self.visited:
-        # A left-recursive rule is considered non-nullable.
-        return False
-    self.visited = True
-    self.nullable = self.rhs.nullable_visit(rules)
-    return self.nullable
-
-def initial_names(self) -> AbstractSet[str]:
-    return self.rhs.initial_names()
-
-def flatten(self) -> Rhs:
-    # If it's a single parenthesized group, flatten it.
-    rhs = self.rhs
-    if (
-        not self.is_loop()
-        and len(rhs.alts) == 1
-        and len(rhs.alts[0].items) == 1
-        and isinstance(rhs.alts[0].items[0].item, Group)
-    ):
-        rhs = rhs.alts[0].items[0].item.rhs
-    return rhs
-
-def collect_todo(self, gen: ParserGenerator) -> None:
-    rhs = self.flatten()
-    rhs.collect_todo(gen)
-*/
+    /*
+    def flatten(self) -> Rhs:
+        # If it's a single parenthesized group, flatten it.
+        rhs = self.rhs
+        if (
+            not self.is_loop()
+            and len(rhs.alts) == 1
+            and len(rhs.alts[0].items) == 1
+            and isinstance(rhs.alts[0].items[0].item, Group)
+        ):
+            rhs = rhs.alts[0].items[0].item.rhs
+        return rhs
+    */
 }
 
-readonly class Leaf {
+abstract readonly class Leaf implements IGrammarItem {
     private string $val;
 
     public function __construct(string $val) {
         $this->val = $val;
     }
-/*
-def __str__(self) -> str:
-    return self.value
 
-def __iter__(self) -> Iterable[str]:
-    if False:
-        yield
+    public function __toString(): string {
+        return $this->val;
+    }
 
-@abstractmethod
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    raise NotImplementedError
-
-@abstractmethod
-def initial_names(self) -> AbstractSet[str]:
-    raise NotImplementedError
-*/
+    // def __iter__(self) -> Iterable[str]:
+    public function getIterator(): Traversable {
+        if (false) {
+            yield;
+        }
+    }
 }
 
 readonly class NameLeaf extends Leaf {
-/*
-"""The value is the name."""
+    public function __toString(): string {
+        throw new NotImplementedException();
+        /*    if self.value == "ENDMARKER":
+                return "$"
+            return super().__str__()*/
+    }
 
-def __str__(self) -> str:
-    if self.value == "ENDMARKER":
-        return "$"
-    return super().__str__()
-
-def __repr__(self) -> str:
-    return f"NameLeaf({self.value!r})"
-
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    if self.value in rules:
-        return rules[self.value].nullable_visit(rules)
-    # Token or unknown; never empty.
-    return False
-
-def initial_names(self) -> AbstractSet[str]:
-    return {self.value}
-*/
+    public function repr(): string {
+        //return f"NameLeaf({self.value!r})"
+        throw new NotImplementedException();
+    }
 }
 
+//"""The value is a string literal, including quotes."""
 readonly class StringLeaf extends Leaf {
-/*
-"""The value is a string literal, including quotes."""
-
-def __repr__(self) -> str:
-    return f"StringLeaf({self.value!r})"
-
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    # The string token '' is considered empty.
-    return not self.value
-
-def initial_names(self) -> AbstractSet[str]:
-    return set()
-*/
+    public function repr(): string {
+        //return f"StringLeaf({self.value!r})"
+        throw new NotImplementedException();
+    }
 }
 
-readonly class Rhs {
+readonly class Rhs implements IGrammarItem {
     /**
      * @var array<int, Alt>
      */
@@ -235,35 +197,24 @@ readonly class Rhs {
     public function __construct(array $alts) {
         $this->alts = $alts;
     }
-/*
-def __str__(self) -> str:
-    return " | ".join(str(alt) for alt in self.alts)
 
-def __repr__(self) -> str:
-    return f"Rhs({self.alts!r})"
+    public function __toString(): string {
+        //return " | ".join(str(alt) for alt in self.alts)
+        throw new NotImplementedException();
+    }
 
-def __iter__(self) -> Iterator[List[Alt]]:
-    yield self.alts
+    public function repr(): string {
+        //return f"Rhs({self.alts!r})"
+        throw new NotImplementedException();
+    }
 
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    for alt in self.alts:
-        if alt.nullable_visit(rules):
-            return True
-    return False
-
-def initial_names(self) -> AbstractSet[str]:
-    names: Set[str] = set()
-    for alt in self.alts:
-        names |= alt.initial_names()
-    return names
-
-def collect_todo(self, gen: ParserGenerator) -> None:
-    for alt in self.alts:
-        alt.collect_todo(gen)
-*/
+    // def __iter__(self) -> Iterator[List[Alt]]:
+    public function getIterator(): Traversable {
+        yield $this->alts;
+    }
 }
 
-readonly class Alt {
+readonly class Alt implements IGrammarItem {
     private NamedItemList $items;
     private int $icut;
     private ?string $action;
@@ -274,264 +225,246 @@ readonly class Alt {
         $this->icut = $icut;
         $this->action = $action;
     }
-/*
-def __str__(self) -> str:
-    core = " ".join(str(item) for item in self.items)
-    if not SIMPLE_STR and self.action:
-        return f"{core} {{ {self.action} }}"
-    else:
-        return core
 
-def __repr__(self) -> str:
-    args = [repr(self.items)]
-    if self.icut >= 0:
-        args.append(f"icut={self.icut}")
-    if self.action:
-        args.append(f"action={self.action!r}")
-    return f"Alt({', '.join(args)})"
+    public function __toString(): string {
+        /*
+    def __str__(self) -> str:
+        core = " ".join(str(item) for item in self.items)
+        if not SIMPLE_STR and self.action:
+            return f"{core} {{ {self.action} }}"
+        else:
+            return core
+    */
+        throw new NotImplementedException();
+    }
 
-def __iter__(self) -> Iterator[List[NamedItem]]:
-    yield self.items
+    public function repr(): string {
+        /*def __repr__(self) -> str:
+            args = [repr(self.items)]
+            if self.icut >= 0:
+                args.append(f"icut={self.icut}")
+            if self.action:
+                args.append(f"action={self.action!r}")
+            return f"Alt({', '.join(args)})"*/
+        throw new NotImplementedException();
+    }
 
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    for item in self.items:
-        if not item.nullable_visit(rules):
-            return False
-    return True
-
-def initial_names(self) -> AbstractSet[str]:
-    names: Set[str] = set()
-    for item in self.items:
-        names |= item.initial_names()
-        if not item.nullable:
-            break
-    return names
-
-def collect_todo(self, gen: ParserGenerator) -> None:
-    for item in self.items:
-        item.collect_todo(gen)
-*/
+    //def __iter__(self) -> Iterator[List[NamedItem]]:
+    public function getIterator(): Traversable {
+        throw new NotImplementedException();
+        //yield self.items
+    }
 }
 
-readonly class NamedItem {
+readonly class NamedItem implements IGrammarItem {
     private ?string $name;
-    private Leaf | Group | Opt | Repeat | Forced | Lookahead | Rhs | Cut $item;
+    private Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $item;
     private ?string $type;
     private bool $nullable;
 
     // def __init__(self, name: Optional[str], item: Item, type: Optional[str] = None): $nullab;e
-    public function __construct(?string $name, Leaf | Group | Opt | Repeat | Forced | Lookahead | Rhs | Cut $item, string $type = null) {
+    public function __construct(?string $name, Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $item, string $type = null) {
         $this->name = $name;
         $this->item = $item;
         $this->type = $type;
         $this->nullable = false;
     }
-/*
-def __str__(self) -> str:
-    if not SIMPLE_STR and self.name:
-        return f"{self.name}={self.item}"
-    else:
-        return str(self.item)
 
-def __repr__(self) -> str:
-    return f"NamedItem({self.name!r}, {self.item!r})"
+    public function __toString(): string {
+        throw new NotImplementedException();
+        /*
+        def __str__(self) -> str:
+            if not SIMPLE_STR and self.name:
+                return f"{self.name}={self.item}"
+            else:
+                return str(self.item)
+        */
+    }
 
-def __iter__(self) -> Iterator[Item]:
-    yield self.item
+    public function repr(): string {
+        /*def __repr__(self) -> str:
+            return f"NamedItem({self.name!r}, {self.item!r})"*/
+        throw new NotImplementedException();
+    }
 
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    self.nullable = self.item.nullable_visit(rules)
-    return self.nullable
-
-def initial_names(self) -> AbstractSet[str]:
-    return self.item.initial_names()
-
-def collect_todo(self, gen: ParserGenerator) -> None:
-    gen.callmakervisitor.visit(self.item)
-*/
+    public function getIterator(): Traversable {
+        throw new NotImplementedException();
+/*        def __iter__(self) -> Iterator[Item]:
+            yield self.item*/
+    }
 }
 
-readonly class Forced {
-    private Leaf | Group $node;
+readonly class Forced implements IGrammarItem {
+    private Leaf|Group $node;
 
-    public function __construct(Leaf | Group $node) {
+    public function __construct(Leaf|Group $node) {
         $this->node = $node;
     }
-/*
-def __str__(self) -> str:
-    return f"&&{self.node}"
+    
+    public function __toString(): string {
+        throw new NotImplementedException();
+        //return f"&&{self.node}"
+    }
+    
+    public function repr(): string {
+        throw new NotImplementedException();
+    }
 
-def __iter__(self) -> Iterator[Plain]:
-    yield self.node
-
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    return True
-
-def initial_names(self) -> AbstractSet[str]:
-    return set()
-*/
+    //def __iter__(self) -> Iterator[Plain]:
+    public function getIterator(): Traversable {
+        yield $this->node;
+    }
 }
 
-readonly class Lookahead {
-    private Leaf | Group $node;
+abstract readonly class Lookahead implements IGrammarItem {
+    private Leaf|Group $node;
     private string $sign;
 
-    public function __construct(Leaf | Group $node, string $sign) {
+    public function __construct(Leaf|Group $node, string $sign) {
         $this->node = $node;
         $this->sign = $sign;
     }
-/*
-def __str__(self) -> str:
-    return f"{self.sign}{self.node}"
 
-def __iter__(self) -> Iterator[Plain]:
-    yield self.node
+    public function __toString(): string {
+        return $this->sign . $this->node;
+    }
 
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    return True
-
-def initial_names(self) -> AbstractSet[str]:
-    return set()
-*/
+    public function getIterator(): Traversable {
+        yield $this->node;
+    }
 }
 
 readonly class PositiveLookahead extends Lookahead {
     // def __init__(self, node: Plain):
-    public function __construct(Leaf | Group $node) {
+    public function __construct(Leaf|Group $node) {
         parent::__construct($node, '&');
     }
-/*
-def __repr__(self) -> str:
-    return f"PositiveLookahead({self.node!r})"
-*/
+
+    public function repr(): string {
+        //return f"PositiveLookahead({self.node!r})"
+        throw new NotImplementedException();
+    }
 }
 
 readonly class NegativeLookahead extends Lookahead {
     // def __init__(self, node: Plain):
-    public function __construct(Leaf | Group $node) {
+    public function __construct(Leaf|Group $node) {
         parent::__construct($node, '!');
     }
-/*
-def __repr__(self) -> str:
-    return f"NegativeLookahead({self.node!r})"
-*/
+
+    public function repr(): string {
+        //return f"NegativeLookahead({self.node!r})"
+        throw new NotImplementedException();
+    }
 }
 
-readonly class Opt {
+readonly class Opt implements IGrammarItem {
     // def __init__(self, node: Item):
-    private Leaf | Group | Opt | Repeat | Forced | Lookahead | Rhs | Cut $node;
+    private Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $node;
 
-    public function __construct(Leaf | Group | Opt | Repeat | Forced | Lookahead | Rhs | Cut $node) {
+    public function __construct(Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $node) {
         $this->node = $node;
     }
-/*
-def __str__(self) -> str:
-    s = str(self.node)
-    # TODO: Decide whether to use [X] or X? based on type of X
-    if " " in s:
-        return f"[{s}]"
-    else:
-        return f"{s}?"
 
-def __repr__(self) -> str:
-    return f"Opt({self.node!r})"
+    public function __toString(): string {
+    /*def __str__(self) -> str:
+        s = str(self.node)
+        # TODO: Decide whether to use [X] or X? based on type of X
+        if " " in s:
+            return f"[{s}]"
+        else:
+            return f"{s}?"*/
+        throw new NotImplementedException();
+    }
 
-def __iter__(self) -> Iterator[Item]:
-    yield self.node
+    public function repr(): string {
+        throw new NotImplementedException();
+    //    return f"Opt({self.node!r})"
+    }
 
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    return True
-
-def initial_names(self) -> AbstractSet[str]:
-    return self.node.initial_names()
-*/
+    //def __iter__(self) -> Iterator[Item]:
+    public function getIterator(): Traversable {
+        yield $this->node;
+    }
 }
 
 // Shared base class for x* and x+.
-readonly class Repeat {
-    private Leaf | Group $node;
+abstract readonly class Repeat implements IGrammarItem {
+    private Leaf|Group $node;
 
     // self.memo: Optional[Tuple[Optional[str], str]] = None
     private ?array $memo;
 
     //def __init__(self, node: Plain):
-    public function __construct(Leaf | Group $node) {
+    public function __construct(Leaf|Group $node) {
         $this->node = $node;
         $this->memo = null;
     }
-/*
-@abstractmethod
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    raise NotImplementedError
 
-def __iter__(self) -> Iterator[Plain]:
-    yield self.node
-
-def initial_names(self) -> AbstractSet[str]:
-    return self.node.initial_names()
-*/
-
+    //def __iter__(self) -> Iterator[Plain]:
+    public function getIterator(): Traversable {
+        yield $this->node;
+    }
 }
 
 readonly class Repeat0 extends Repeat {
-/*
-def __str__(self) -> str:
-    s = str(self.node)
-    # TODO: Decide whether to use (X)* or X* based on type of X
-    if " " in s:
-        return f"({s})*"
-    else:
-        return f"{s}*"
+    public function __toString(): string {
+    /*def __str__(self) -> str:
+        s = str(self.node)
+        # TODO: Decide whether to use (X)* or X* based on type of X
+        if " " in s:
+            return f"({s})*"
+        else:
+            return f"{s}*"*/
+        throw new NotImplementedException();
+    }
 
-def __repr__(self) -> str:
-    return f"Repeat0({self.node!r})"
-
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    return True
-*/
+    public function repr(): string {
+        //return f"Repeat0({self.node!r})"
+        throw new NotImplementedException();
+    }
 }
 
 readonly class Repeat1 extends Repeat {
-/*
-def __str__(self) -> str:
-    s = str(self.node)
-    # TODO: Decide whether to use (X)+ or X+ based on type of X
-    if " " in s:
-        return f"({s})+"
-    else:
-        return f"{s}+"
+    public function __toString(): string {
+        throw new NotImplementedException();
+    /*def __str__(self) -> str:
+        s = str(self.node)
+        # TODO: Decide whether to use (X)+ or X+ based on type of X
+        if " " in s:
+            return f"({s})+"
+        else:
+            return f"{s}+"*/
+    }
 
-def __repr__(self) -> str:
-    return f"Repeat1({self.node!r})"
-
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    return False
-*/
+    public function repr(): string {
+        //return f"Repeat1({self.node!r})"
+        throw new NotImplementedException();
+    }
 }
 
 readonly class Gather extends Repeat {
-    private Leaf | Group $separator;
-    private Leaf | Group $node;
+    private Leaf|Group $separator;
+    private Leaf|Group $node;
 
     // def __init__(self, separator: Plain, node: Plain):
-    public function __construct(Leaf | Group $separator, Leaf | Group $node) {
+    public function __construct(Leaf|Group $separator, Leaf|Group $node) {
         $this->separator = $separator;
         $this->node = $node;
     }
-/*
-def __str__(self) -> str:
-    return f"{self.separator!s}.{self.node!s}+"
 
-def __repr__(self) -> str:
-    return f"Gather({self.separator!r}, {self.node!r})"
+    public function __toString(): string {
+    //    return f"{self.separator!s}.{self.node!s}+"
+        throw new NotImplementedException();
+    }
 
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    return False
-*/
-
+    public function repr(): string {
+        //return f"Gather({self.separator!r}, {self.node!r})"
+        throw new NotImplementedException();
+    }
 }
 
-readonly class Group {
+readonly class Group implements IGrammarItem {
     private Rhs $rhs;
 
     // def __init__(self, rhs: Rhs):
@@ -539,47 +472,47 @@ readonly class Group {
         $this->rhs = $rhs;
     }
 
-/*
-def __str__(self) -> str:
-    return f"({self.rhs})"
+    public function __toString(): string {
+        //return f"({self.rhs})"
+        throw new NotImplementedException();
+    }
 
-def __repr__(self) -> str:
-    return f"Group({self.rhs!r})"
+    public function repr(): string {
+        throw new NotImplementedException();
+        //return f"Group({self.rhs!r})"
+    }
 
-def __iter__(self) -> Iterator[Rhs]:
-    yield self.rhs
-
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    return self.rhs.nullable_visit(rules)
-
-def initial_names(self) -> AbstractSet[str]:
-    return self.rhs.initial_names()
-*/
+    // def __iter__(self) -> Iterator[Rhs]:
+    public function getIterator(): Traversable {
+        yield $this->rhs;
+    }
 }
 
-readonly class Cut {
-/*
-def __repr__(self) -> str:
-    return f"Cut()"
+readonly class Cut implements IGrammarItem {
+    public function __toString(): string {
+        return '~';
+    }
 
-def __str__(self) -> str:
-    return f"~"
+    public function repr(): string {
+        //return f"Cut()"
+        throw new NotImplementedException();
+    }
 
-def __iter__(self) -> Iterator[Tuple[str, str]]:
-    if False:
-        yield
+    //def __iter__(self) -> Iterator[Tuple[str, str]]:
+    public function getIterator(): Traversable {
+        if (false) {
+            yield;
+        }
+    }
+    /*
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Cut):
+            return NotImplemented
+        return True
 
-def __eq__(self, other: object) -> bool:
-    if not isinstance(other, Cut):
-        return NotImplemented
-    return True
-
-def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-    return True
-
-def initial_names(self) -> AbstractSet[str]:
-    return set()
-*/
+    def initial_names(self) -> AbstractSet[str]:
+        return set()
+    */
 }
 
 /*
@@ -588,28 +521,65 @@ Item = Union[Plain, Opt, Repeat, Forced, Lookahead, Rhs, Cut]
 */
 
 // RuleName = Tuple[str, str]
-class RuleName extends \ArrayObject {
+class RuleName extends ArrayObject implements IGrammarItem {
     public function __construct(string $val, ?string $annotation) {
         parent::__construct([$val, $annotation]);
+    }
+
+    public function __toString(): string {
+        throw new NotImplementedException();
+    }
+
+    public function repr(): string {
+        throw new NotImplementedException();
     }
 }
 
 // MetaTuple = Tuple[str, Optional[str]]
-class MetaTuple extends \ArrayObject {
+class MetaTuple extends ArrayObject implements IGrammarItem {
     public function __construct(string $name, ?string $val) {
+    }
+
+    public function __toString(): string {
+        throw new NotImplementedException();
+    }
+
+    public function repr(): string {
+        throw new NotImplementedException();
     }
 }
 
 // MetaList = List[MetaTuple]
-class MetaList extends \ArrayObject {
+class MetaList extends ArrayObject implements IGrammarItem {
+    public function __toString(): string {
+        throw new NotImplementedException();
+    }
+
+    public function repr(): string {
+        throw new NotImplementedException();
+    }
 }
 
 // RuleList = List[Rule]
-class RuleList extends \ArrayObject {
+class RuleList extends ArrayObject implements IGrammarItem {
+    public function __toString(): string {
+        throw new NotImplementedException();
+    }
+
+    public function repr(): string {
+        throw new NotImplementedException();
+    }
 }
 
 // NamedItemList = List[NamedItem]
-class NamedItemList extends \ArrayObject {
+class NamedItemList extends ArrayObject implements IGrammarItem {
+    public function __toString(): string {
+        throw new NotImplementedException();
+    }
+
+    public function repr(): string {
+        throw new NotImplementedException();
+    }
 }
 
 /*

@@ -2,16 +2,13 @@
 /**
  * This file is part of morpho-os/framework
  * It is distributed under the 'Apache License Version 2.0' license.
- * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
+ * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
 namespace Morpho\App\Cli;
 
 use Morpho\Base\NotImplementedException;
 use Morpho\Compiler\Frontend\AsciiStringReader;
 use Morpho\Compiler\Frontend\Re;
-
-use RuntimeException;
-
 use function Morpho\Base\caseVal;
 
 // `man dialog`
@@ -221,7 +218,7 @@ class Dialog {
         sh('clear');
         if ($res->isError()) {
             if ($res->exitCode() !== 1) {
-                throw new RuntimeException();
+                throw new Exception();
             }
             return false;
         }

@@ -2,7 +2,7 @@
 /**
  * This file is part of morpho-os/framework
  * It is distributed under the 'Apache License Version 2.0' license.
- * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
+ * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
 namespace {
 
@@ -33,7 +33,7 @@ namespace {
 namespace Morpho\Tech\Php {
     require_once __DIR__ . '/PhpErrorException.php';
 
-    const LICENSE_COMMENT = "/**\n * This file is part of morpho-os/framework\n * It is distributed under the 'Apache License Version 2.0' license.\n * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.\n */";
+    const LICENSE_COMMENT = "/**\n * This file is part of morpho-os/framework\n * It is distributed under the 'Apache License Version 2.0' license.\n * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.\n */";
 
     use Composer\Autoload\ClassLoader;
     use PhpParser\Node;

@@ -2,12 +2,13 @@
 /**
  * This file is part of morpho-os/framework
  * It is distributed under the 'Apache License Version 2.0' license.
- * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
+ * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
 namespace Morpho\Test\Unit\App\Cli;
 
 use ArrayIterator;
 use ArrayObject;
+use Morpho\App\Cli\Exception as CliException;
 use Morpho\Base\InvalidConfException;
 use Morpho\Testing\TestCase;
 use RuntimeException;
@@ -177,7 +178,7 @@ OUT
 
     public function testSh_CheckExitConfParam() {
         $exitCode = 134;
-        $this->expectException(RuntimeException::class, "Command returned non-zero exit code: $exitCode");
+        $this->expectException(CliException::class, "Command returned non-zero exit code: $exitCode");
         sh('php -r "exit(' . $exitCode . ');"');
     }
 

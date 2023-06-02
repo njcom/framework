@@ -2,42 +2,58 @@
 /**
  * This file is part of morpho-os/framework
  * It is distributed under the 'Apache License Version 2.0' license.
- * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
+ * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
 use Morpho\Base\NotImplementedException;
 
-// https://github.com/python/cpython/blob/2b6f5c3483597abcb8422508aeffab04f500f568/Tools/peg_generator/pegen/first_sets.py
-class FirstSetCalculator {
+/**
+ * Based on https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/first_sets.py
+ */
+class FirstSetCalculator extends GrammarVisitor {
     private iterable $rules;
+    // self.first_sets: Dict[str, Set[str]] = dict()
+    private array $firstSets;
 
+    // def __init__(self, rules: Dict[str, Rule]) -> None:
     public function __construct(iterable $rules) {
-/*        def __init__(self, rules: Dict[str, Rule]) -> None:
-            self.rules = rules
-            self.nullables = compute_nullables(rules)
-            self.first_sets: Dict[str, Set[str]] = dict()
-            self.in_process: Set[str] = set()*/
         $this->rules = $rules;
-        $computeNullables = function () {
-
-        };
-        $this->nullables = $computeNullables($rules);
+        $this->nullables = $this->computeNullables($rules);
         $this->firstSets = [];
+        //self.in_process: Set[str] = set()
         $this->inProcess = [];
     }
 
     // def calculate(self) -> Dict[str, Set[str]]:
     public function calculate(): array {
-        throw new NotImplementedException();
+        foreach ($this->rules as $name => $rule) {
+            $this->visit($rule);
+            return $this->firstSets;
+        }
+/*
+            for name, rule in self.rules.items():
+                self.visit(rule)
+            return self.first_sets*/
+
+    }
+
+    /**
+     * https://github.com/python/cpython/blob/ab71acd67b5b09926498b8c7f855bdb28ac0ec2f/Tools/peg_generator/pegen/parser_generator.py#L287
+     * Compute which rules in a grammar are nullable.
+     * def compute_nullables(rules: Dict[str, Rule]) -> Set[Any]:
+     * @return void
+     */
+    private function computeNullables(array $rules): array {
+        $nullableVisitor = new NullableVisitor($rules);
+        foreach ($this->rules as $rule) {
+            $nullableVisitor->visit($rule);
+        }
+        return $nullableVisitor->nullables;
     }
 
     /*
 
-            for name, rule in self.rules.items():
-                self.visit(rule)
-            return self.first_sets
-    
         def visit_Alt(self, item: Alt) -> Set[str]:
             result: Set[str] = set()
             to_remove: Set[str] = set()

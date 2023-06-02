@@ -4,7 +4,7 @@ namespace Morpho\Test\Unit\Tech\Php\FileReflectionTest;
 /**
  * This file is part of morpho-os/framework
  * It is distributed under the 'Apache License Version 2.0' license.
- * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
+ * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
 interface IHasServiceManager {
     public function setServiceManager(IServiceManager $serviceManager);
@@ -21,7 +21,7 @@ interface IServiceManager {
 /**
  * This file is part of morpho-os/framework
  * It is distributed under the 'Apache License Version 2.0' license.
- * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
+ * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
 class ServiceManager implements IServiceManager {
     protected $services = [];
@@ -113,7 +113,7 @@ class ServiceManager implements IServiceManager {
 /**
  * This file is part of morpho-os/framework
  * It is distributed under the 'Apache License Version 2.0' license.
- * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
+ * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
 class ServiceNotFoundException extends \Exception {
     public function __construct($id) {
@@ -124,7 +124,7 @@ class ServiceNotFoundException extends \Exception {
 /**
  * This file is part of morpho-os/framework
  * It is distributed under the 'Apache License Version 2.0' license.
- * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
+ * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
 trait THasServiceManager {
     protected $serviceManager;

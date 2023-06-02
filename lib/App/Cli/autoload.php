@@ -2,7 +2,7 @@
 /**
  * This file is part of morpho-os/framework
  * It is distributed under the 'Apache License Version 2.0' license.
- * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
+ * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
 namespace Morpho\App\Cli;
 
@@ -18,7 +18,6 @@ const STD_PIPES = [
 use Morpho\Base\Conf;
 use Morpho\Tech\Php\DumpListener;
 use Morpho\Tech\Php\ErrorHandler;
-use RuntimeException;
 use Stringable;
 use UnexpectedValueException;
 
@@ -198,7 +197,7 @@ function envVarsStr(array $envVars): string {
     $str = '';
     foreach ($envVars as $name => $value) {
         if (!preg_match('~^[a-z][a-z0-9_]*$~si', (string)$name)) {
-            throw new RuntimeException('Invalid variable name');
+            throw new Exception('Invalid variable name');
         }
         $str .= ' ' . $name . '=' . escapeshellarg($value);
     }
@@ -294,7 +293,7 @@ function sudo(string $command, array $conf = null): ICommandResult {
 function rawSh(string $cmd, $env = null) {
     $pid = pcntl_fork();
     if ($pid < 0) {
-        throw new RuntimeException('fork failed');
+        throw new Exception('fork failed');
     }
     if ($pid == 0) {
         pcntl_exec('/bin/sh', ['-c', $cmd], $env ?? []); // @TODO: pass $_ENV?
@@ -306,7 +305,7 @@ function rawSh(string $cmd, $env = null) {
 
 function checkExitCode(int $exitCode, string $errMessage = null): int {
     if ($exitCode !== 0) {
-        throw new RuntimeException(
+        throw new Exception(
             "Command returned non-zero exit code: " . (int)$exitCode . (null !== $errMessage ? '. ' . $errMessage : '')
         );
     }

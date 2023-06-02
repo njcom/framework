@@ -2,12 +2,11 @@
 /**
  * This file is part of morpho-os/framework
  * It is distributed under the 'Apache License Version 2.0' license.
- * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
+ * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
 namespace Morpho\App\Cli;
 
 use Morpho\App\IHostNameValidator;
-use RuntimeException;
 
 class HostNameValidator implements IHostNameValidator {
     private array $allowedHostNames;
@@ -19,10 +18,10 @@ class HostNameValidator implements IHostNameValidator {
     }
 
     /**
-     * @throws RuntimeException
+     * @throws \Morpho\App\Cli\Exception
      */
     public function throwInvalidSiteError(): void {
-        throw new RuntimeException('Invalid site');
+        throw new Exception('Invalid site');
     }
 
     /**

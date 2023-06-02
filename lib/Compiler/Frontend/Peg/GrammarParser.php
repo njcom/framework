@@ -2,9 +2,10 @@
 /**
  * This file is part of morpho-os/framework
  * It is distributed under the 'Apache License Version 2.0' license.
- * See the https://github.com/morpho-os/framework/blob/master/LICENSE for the full license text.
+ * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
 namespace Morpho\Compiler\Frontend\Peg;
+
 use Morpho\Base\NotImplementedException;
 
 require_once __DIR__ . '/Grammar.php';
@@ -55,7 +56,6 @@ class GrammarParser extends Parser {
         );
     }
 
-
     /**
      * metas: meta metas | meta
      */
@@ -65,7 +65,7 @@ class GrammarParser extends Parser {
             function (): ?MetaList {
                 $index = $this->index();
                 if (($meta = $this->meta()) && ($metas = $this->metas())) {
-                    return new MetaList(array_merge([$meta], $metas));
+                    return new MetaList(array_merge([$meta], $metas->getArrayCopy()));
                 }
                 $this->reset($index);
                 if ($meta = $this->meta()) {
@@ -131,9 +131,10 @@ class GrammarParser extends Parser {
             __METHOD__,
             function (): ?Rule {
                 $index = $this->index();
+                /** @noinspection PhpBooleanCanBeSimplifiedInspection */
                 if (
                     ($ruleName = $this->ruleName())
-                    && ($opt = $this->memoFlag() || true)
+                    && ($opt = ($this->memoFlag() || true))
                     && ($this->expect(":"))
                     && ($alts = $this->alts())
                     && ($this->expect('NEWLINE'))
@@ -144,9 +145,10 @@ class GrammarParser extends Parser {
                     return new Rule($ruleName[0], $ruleName[1], new Rhs(array_merge($alts->alts, $moreAlts->alts)), memo: $opt === true ? null : $opt);
                 }
                 $this->reset($index);
+                /** @noinspection PhpBooleanCanBeSimplifiedInspection */
                 if (
                     ($ruleName = $this->ruleName())
-                    && ($opt = $this->memoFlag() || true)
+                    && ($opt = ($this->memoFlag() || true))
                     && ($this->expect(":"))
                     && ($this->expect('NEWLINE'))
                     && ($this->expect('INDENT'))
@@ -156,9 +158,10 @@ class GrammarParser extends Parser {
                     return new Rule($ruleName[0], $ruleName[1], $moreAlts, memo: $opt === true ? null : $opt);
                 }
                 $this->reset($index);
+                /** @noinspection PhpBooleanCanBeSimplifiedInspection */
                 if (
                     ($ruleName = $this->ruleName())
-                    && ($opt = $this->memoFlag() || true)
+                    && ($opt = ($this->memoFlag() || true))
                     && ($this->expect(":"))
                     && ($alts = $this->alts())
                     && ($this->expect('NEWLINE'))
@@ -239,7 +242,7 @@ class GrammarParser extends Parser {
             function (): ?Rhs {
                 $index = $this->index();
                 if (
-                    ( $this->expect("|"))
+                    ($this->expect("|"))
                     && ($alts = $this->alts())
                     && $this->expect('NEWLINE')
                     && ($moreAlts = $this->moreAlts())
@@ -247,7 +250,7 @@ class GrammarParser extends Parser {
                     return new Rhs(array_merge($alts->alts, $moreAlts->alts));
                 }
                 $this->reset($index);
-                if ($this->expect("|") && ($alts = $this->alts())  &&($this->expect('NEWLINE'))) {
+                if ($this->expect("|") && ($alts = $this->alts()) && ($this->expect('NEWLINE'))) {
                     return new Rhs($alts->alts);
                 }
                 $this->reset($index);
@@ -359,10 +362,10 @@ class GrammarParser extends Parser {
     /**
      * forced_atom: '&' '&' ~ atom
      */
-    private function forcedAtom(): null | Lookahead | Forced | Cut {
+    private function forcedAtom(): null|Lookahead|Forced|Cut {
         return $this->memoize(
             __METHOD__,
-            function (): null | Lookahead | Forced | Cut {
+            function (): null|Lookahead|Forced|Cut {
                 $index = $this->index();
                 //$cut = false;
                 if ($this->expect('&') && $this->expect('&') && /*($cut = true) &&*/ ($atom = $this->atom())) {
@@ -382,10 +385,10 @@ class GrammarParser extends Parser {
      * def lookahead(self) -> Optional[LookaheadOrCut]:
      *   LookaheadOrCut = Union[Lookahead, Forced, Cut]
      */
-    private function lookahead(): null | Lookahead | Forced | Cut {
+    private function lookahead(): null|Lookahead|Forced|Cut {
         return $this->memoize(
             __METHOD__,
-            function (): null | Lookahead | Forced | Cut {
+            function (): null|Lookahead|Forced|Cut {
                 $index = $this->index();
                 $cut = false;
                 if ($this->expect('&') && ($cut = true) && ($atom = $this->atom())) {
@@ -413,15 +416,15 @@ class GrammarParser extends Parser {
     }
 
     /**
-     * item: '[' ~ alts ']' | atom '?' | atom '*' | atom '+' | atom '.' atom '+' | atom 
+     * item: '[' ~ alts ']' | atom '?' | atom '*' | atom '+' | atom '.' atom '+' | atom
      * def item(self) -> Optional[Item]
      *   Item = Union[Plain, Opt, Repeat, Forced, Lookahead, Rhs, Cut]
      *   Plain = Union[Leaf, Group]
      */
-    private function item(): null | Leaf | Group | Opt | Repeat | Forced | Lookahead | Rhs | Cut {
+    private function item(): null|Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut {
         return $this->memoize(
             __METHOD__,
-            function (): null | Leaf | Group | Opt | Repeat | Forced | Lookahead | Rhs | Cut {
+            function (): null|Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut {
                 $index = $this->index();
                 $cut = false;
                 if ($this->expect('[') && ($cut = true) && ($alts = $this->alts()) && $this->expect(']')) {
@@ -465,13 +468,13 @@ class GrammarParser extends Parser {
      * def atom(self) -> Optional[Plain]:
      *   Plain = Union[Leaf, Group]
      */
-    private function atom(): null | Leaf | Group {
+    private function atom(): null|Leaf|Group {
         return $this->memoize(
             __METHOD__,
-            function (): null | Leaf | Group {
+            function (): null|Leaf|Group {
                 $index = $this->index();
                 $cut = false;
-                if ($this->expect('(') && ($cut = true) && ($alts = $this->alts()) &&$this->expect(')')) {
+                if ($this->expect('(') && ($cut = true) && ($alts = $this->alts()) && $this->expect(')')) {
                     return new Group($alts);
                 }
                 $this->reset($index);
@@ -559,9 +562,10 @@ class GrammarParser extends Parser {
             function (): ?string {
                 $index = $this->index();
                 $cut = false;
+                /** @noinspection PhpBooleanCanBeSimplifiedInspection */
                 if ($this->expect("{")
                     && ($cut = true)
-                    && ($atoms = $this->targetAtoms() || true)
+                    && ($atoms = ($this->targetAtoms() || true))
                     && $this->expect("}")) {
                     return "{" . ($atoms === true ? '' : $atoms) . "}";
                 }
@@ -570,7 +574,8 @@ class GrammarParser extends Parser {
                     return null;
                 }
                 //$cut = false;
-                if ($this->expect('[') && ($cut = true) && ($atoms = $this->targetAtoms() || true) && $this->expect(']')) {
+                /** @noinspection PhpBooleanCanBeSimplifiedInspection */
+                if ($this->expect('[') && ($cut = true) && ($atoms = ($this->targetAtoms() || true)) && $this->expect(']')) {
                     return '[' . ($atoms === true ? '' : $atoms) . ']';
                 }
                 $this->reset($index);
