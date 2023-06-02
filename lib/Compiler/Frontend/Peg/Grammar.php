@@ -73,8 +73,8 @@ readonly class Grammar implements IGrammar, IGrammarItem {
 
 readonly class Rule implements IGrammarItem {
     public string $name;
+    public readonly Rhs $rhs;
     private ?string $type;
-    private Rhs $rhs;
     private ?object $memo;
     private bool $visited;
     private bool $nullable;
@@ -142,7 +142,7 @@ readonly class Rule implements IGrammarItem {
 }
 
 abstract readonly class Leaf implements IGrammarItem {
-    private string $val;
+    public readonly string $val;
 
     public function __construct(string $val) {
         $this->val = $val;
@@ -215,7 +215,7 @@ readonly class Rhs implements IGrammarItem {
 }
 
 readonly class Alt implements IGrammarItem {
-    private NamedItemList $items;
+    public readonly NamedItemList $items;
     private int $icut;
     private ?string $action;
 
@@ -258,7 +258,7 @@ readonly class Alt implements IGrammarItem {
 
 readonly class NamedItem implements IGrammarItem {
     private ?string $name;
-    private Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $item;
+    public readonly Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $item;
     private ?string $type;
     private bool $nullable;
 
@@ -465,7 +465,7 @@ readonly class Gather extends Repeat {
 }
 
 readonly class Group implements IGrammarItem {
-    private Rhs $rhs;
+    public readonly Rhs $rhs;
 
     // def __init__(self, rhs: Rhs):
     public function __construct(Rhs $rhs) {

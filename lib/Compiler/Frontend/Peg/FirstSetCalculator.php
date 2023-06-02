@@ -46,7 +46,7 @@ class FirstSetCalculator extends GrammarVisitor {
      */
     private function computeNullables(array $rules): array {
         $nullableVisitor = new NullableVisitor($rules);
-        foreach ($this->rules as $rule) {
+        foreach ($rules as $rule) {
             $nullableVisitor->visit($rule);
         }
         return $nullableVisitor->nullables;

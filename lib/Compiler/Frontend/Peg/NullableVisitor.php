@@ -10,71 +10,96 @@ namespace Morpho\Compiler\Frontend\Peg;
  * https://github.com/python/cpython/blob/ab71acd67b5b09926498b8c7f855bdb28ac0ec2f/Tools/peg_generator/pegen/parser_generator.py#LL221C1-L284C30
  */
 class NullableVisitor extends GrammarVisitor {
-    public array $nullables = [];
+    // Dict[str, Rule]
+    private array $rules;
+    //self.nullables: Set[Union[Rule, NamedItem]] = set()
+    public array $nullables;
+    // self.visited: Set[Any] = set()
+    private array $visited = [];
+
+    public function __construct(array $rules) {
+        $this->rules = $rules;
+        $this->nullables = [];
+    }
+
+    protected function visitRule(Rule $rule): bool {
+        if (in_array($rule, $this->visited)) {
+            return false;
+        }
+        $this->visited[] = $rule;
+        if ($this->visit($rule->rhs)) {
+            $this->nullables[] = $rule;
+        }
+        return in_array($rule, $this->nullables);
+    }
+
+    protected function visitRhs(Rhs $rhs): bool {
+        foreach ($rhs->alts as $alt) {
+            if ($this->visit($alt)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected function visitAlt(Alt $alt): bool {
+        foreach ($alt->items as $item) {
+            if (!$this->visit($item)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected function visitForced(Forced $force): bool {
+        return true;
+    }
+
+    protected function visitLookAhead(Lookahead $lookahead): bool {
+        return true;
+    }
+
+    protected function visitOpt(Opt $opt): bool {
+        return true;
+    }
+
+    protected function visitRepeat0(Repeat0 $repeat): bool {
+        return true;
+    }
+
+    protected function visitRepeat1(Repeat1 $repeat): bool {
+        return false;
+    }
+
+    protected function visitGather(Gather $gather): bool {
+        return false;
+    }
+
+    protected function visitCut(Cut $cut): bool {
+        return false;
+    }
+
+    protected function visitGroup(Group $group): bool {
+        return $this->visit($group->rhs);
+    }
+
+    protected function visitNamedItem(NamedItem $item): bool {
+        if ($this->visit($item->item)) {
+            $this->nullables[] = $item;
+        }
+        return in_array($item, $this->nullables);
+    }
+
+    protected function visitNameLeaf(NameLeaf $node): bool {
+        if (isset($this->rules[$node->val])) {
+            return $this->visit($this->rules[$node->val]);
+        }
+        // Token or unknown; never empty.
+        return false;
+    }
+
+    protected function visitStringLeaf(StringLeaf $node): bool {
+        // The string token '' is considered empty.
+        return $node->val == '';
+    }
 }
-/*
- class NullableVisitor(GrammarVisitor):
-    def __init__(self, rules: Dict[str, Rule]) -> None:
-        self.rules = rules
-        self.visited: Set[Any] = set()
-        self.nullables: Set[Union[Rule, NamedItem]] = set()
-
-    def visit_Rule(self, rule: Rule) -> bool:
-        if rule in self.visited:
-            return False
-        self.visited.add(rule)
-        if self.visit(rule.rhs):
-            self.nullables.add(rule)
-        return rule in self.nullables
-
-    def visit_Rhs(self, rhs: Rhs) -> bool:
-        for alt in rhs.alts:
-            if self.visit(alt):
-                return True
-        return False
-
-    def visit_Alt(self, alt: Alt) -> bool:
-        for item in alt.items:
-            if not self.visit(item):
-                return False
-        return True
-
-    def visit_Forced(self, force: Forced) -> bool:
-        return True
-
-    def visit_LookAhead(self, lookahead: Lookahead) -> bool:
-        return True
-
-    def visit_Opt(self, opt: Opt) -> bool:
-        return True
-
-    def visit_Repeat0(self, repeat: Repeat0) -> bool:
-        return True
-
-    def visit_Repeat1(self, repeat: Repeat1) -> bool:
-        return False
-
-    def visit_Gather(self, gather: Gather) -> bool:
-        return False
-
-    def visit_Cut(self, cut: Cut) -> bool:
-        return False
-
-    def visit_Group(self, group: Group) -> bool:
-        return self.visit(group.rhs)
-
-    def visit_NamedItem(self, item: NamedItem) -> bool:
-        if self.visit(item.item):
-            self.nullables.add(item)
-        return item in self.nullables
-
-    def visit_NameLeaf(self, node: NameLeaf) -> bool:
-        if node.value in self.rules:
-            return self.visit(self.rules[node.value])
-        # Token or unknown; never empty.
-        return False
-
-    def visit_StringLeaf(self, node: StringLeaf) -> bool:
-        # The string token '' is considered empty.
-        return not node.value
- */

@@ -19,9 +19,9 @@ class GrammarVisitor {
      * @todo: make $args array
      */
     public function visit(mixed $node, ...$args): mixed {
-        $method = 'visit' . camelize(last(get_class($this), '\\'), true);
+        $method = 'visit' . camelize(last(get_class($node), '\\'), true);
         if (method_exists($this, $method)) {
-            return $this->$method(...$args);
+            return $this->$method($node, ...$args);
         }
         $this->genericVisit($node, ...$args);
     }
