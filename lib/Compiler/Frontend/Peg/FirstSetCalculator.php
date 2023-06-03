@@ -6,43 +6,56 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
-use Morpho\Base\NotImplementedException;
-
 /**
  * Based on https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/first_sets.py
  */
 class FirstSetCalculator extends GrammarVisitor {
-    private iterable $rules;
-    // self.first_sets: Dict[str, Set[str]] = dict()
+    /**
+     * @var array $rules Dict[str, Rule]
+     */
+    private array $rules;
+
+    /**
+     * @var array Dict[str, Set[str]]
+     */
     private array $firstSets;
 
-    // def __init__(self, rules: Dict[str, Rule]) -> None:
-    public function __construct(iterable $rules) {
+    /**
+     * NB: Set[Any] in Python
+     * @var array Dict[str, true]
+     */
+    private array $inProcess;
+
+    /**
+     * @var array ?
+     */
+    private array $nullables;
+
+    /**
+     * @param array $rules Dict[str, Rule]
+     */
+    public function __construct(array $rules) {
         $this->rules = $rules;
         $this->nullables = $this->computeNullables($rules);
         $this->firstSets = [];
-        //self.in_process: Set[str] = set()
         $this->inProcess = [];
     }
 
-    // def calculate(self) -> Dict[str, Set[str]]:
+    /**
+     * @return array Dict[str, Set[str]]
+     */
     public function calculate(): array {
-        foreach ($this->rules as $name => $rule) {
+        foreach ($this->rules as $rule) {
             $this->visit($rule);
-            return $this->firstSets;
         }
-/*
-            for name, rule in self.rules.items():
-                self.visit(rule)
-            return self.first_sets*/
-
+        return $this->firstSets;
     }
 
     /**
      * https://github.com/python/cpython/blob/ab71acd67b5b09926498b8c7f855bdb28ac0ec2f/Tools/peg_generator/pegen/parser_generator.py#L287
      * Compute which rules in a grammar are nullable.
-     * def compute_nullables(rules: Dict[str, Rule]) -> Set[Any]:
-     * @return void
+     * @param array $rules Dict[str, Rule]
+     * @return array Set[Any]
      */
     private function computeNullables(array $rules): array {
         $nullableVisitor = new NullableVisitor($rules);
@@ -52,93 +65,165 @@ class FirstSetCalculator extends GrammarVisitor {
         return $nullableVisitor->nullables;
     }
 
-    /*
+    /**
+     * @param \Morpho\Compiler\Frontend\Peg\Alt $item
+     * @return array Set[str]
+     */
+    protected function visitAlt(Alt $item): array {
+        $result = [];
+        $toRemove = [];
+        foreach ($item->items as $other) {
+            $newTerminals = $this->visit($other);
+            if ($other->item instanceof NegativeLookahead) {
+                $toRemove = array_unique(array_merge($toRemove, $newTerminals));
+            }
+            $result = array_unique(array_merge($result, $newTerminals));
+            if ($toRemove) {
+                $result = array_values(array_diff($result, $toRemove));
+            }
 
-        def visit_Alt(self, item: Alt) -> Set[str]:
-            result: Set[str] = set()
-            to_remove: Set[str] = set()
-            for other in item.items:
-                new_terminals = self.visit(other)
-                if isinstance(other.item, NegativeLookahead):
-                    to_remove |= new_terminals
-                result |= new_terminals
-                if to_remove:
-                    result -= to_remove
-    
-                # If the set of new terminals can start with the empty string,
-                # it means that the item is completely nullable and we should
-                # also considering at least the next item in case the current
-                # one fails to parse.
-    
-                if "" in new_terminals:
-                    continue
-    
-                if not isinstance(other.item, (Opt, NegativeLookahead, Repeat0)):
-                    break
-    
-            # Do not allow the empty string to propagate.
-            result.discard("")
-    
-            return result
-    
-        def visit_Cut(self, item: Cut) -> Set[str]:
-            return set()
-    
-        def visit_Group(self, item: Group) -> Set[str]:
-            return self.visit(item.rhs)
-    
-        def visit_PositiveLookahead(self, item: Lookahead) -> Set[str]:
-            return self.visit(item.node)
-    
-        def visit_NegativeLookahead(self, item: NegativeLookahead) -> Set[str]:
-            return self.visit(item.node)
-    
-        def visit_NamedItem(self, item: NamedItem) -> Set[str]:
-            return self.visit(item.item)
-    
-        def visit_Opt(self, item: Opt) -> Set[str]:
-            return self.visit(item.node)
-    
-        def visit_Gather(self, item: Gather) -> Set[str]:
-            return self.visit(item.node)
-    
-        def visit_Repeat0(self, item: Repeat0) -> Set[str]:
-            return self.visit(item.node)
-    
-        def visit_Repeat1(self, item: Repeat1) -> Set[str]:
-            return self.visit(item.node)
-    
-        def visit_NameLeaf(self, item: NameLeaf) -> Set[str]:
-            if item.value not in self.rules:
-                return {item.value}
-    
-            if item.value not in self.first_sets:
-                self.first_sets[item.value] = self.visit(self.rules[item.value])
-                return self.first_sets[item.value]
-            elif item.value in self.in_process:
-                return set()
-    
-            return self.first_sets[item.value]
-    
-        def visit_StringLeaf(self, item: StringLeaf) -> Set[str]:
-            return {item.value}
-    
-        def visit_Rhs(self, item: Rhs) -> Set[str]:
-            result: Set[str] = set()
-            for alt in item.alts:
-                result |= self.visit(alt)
-            return result
-    
-        def visit_Rule(self, item: Rule) -> Set[str]:
-            if item.name in self.in_process:
-                return set()
-            elif item.name not in self.first_sets:
-                self.in_process.add(item.name)
-                terminals = self.visit(item.rhs)
-                if item in self.nullables:
-                    terminals.add("")
-                self.first_sets[item.name] = terminals
-                self.in_process.remove(item.name)
-            return self.first_sets[item.name]
-    */
+            // If the set of new terminals can start with the empty string,
+            // it means that the item is completely nullable and we should
+            // also considering at least the next item in case the current
+            // one fails to parse.
+
+            if (in_array('', $newTerminals)) {
+                continue;
+            }
+            if (!($other->item instanceof Opt || $other->item instanceof NegativeLookahead || $other->item instanceof Repeat0)) {
+                break;
+            }
+        }
+        // Do not allow the empty string to propagate.
+        return array_values(array_filter($result, fn($val) => $val !== ''));
+    }
+
+    /**
+     * @param \Morpho\Compiler\Frontend\Peg\Cut $item
+     * @return array Set[str]
+     */
+    protected function visitCut(Cut $item): array {
+        return [];
+    }
+
+    /**
+     * @param \Morpho\Compiler\Frontend\Peg\Group $item
+     * @return array Set[str]
+     */
+    protected function visitGroup(Group $item): array {
+        return $this->visit($item->rhs);
+    }
+
+    /**
+     * @param \Morpho\Compiler\Frontend\Peg\Lookahead $item
+     * @return array Set[str]
+     */
+    protected function visitPositiveLookahead(Lookahead $item): array {
+        return $this->visit($item->node);
+    }
+
+    /**
+     * @param \Morpho\Compiler\Frontend\Peg\NegativeLookahead $item
+     * @return array Set[str]
+     */
+    protected function visitNegativeLookahead(NegativeLookahead $item): array {
+        return $this->visit($item->node);
+    }
+
+    /**
+     * @param \Morpho\Compiler\Frontend\Peg\NamedItem $item
+     * @return array Set[str]
+     */
+    protected function visitNamedItem(NamedItem $item): array {
+        return $this->visit($item->item);
+    }
+
+    /**
+     * @param \Morpho\Compiler\Frontend\Peg\Opt $item
+     * @return array Set[str]
+     */
+    protected function visitOpt(Opt $item): array {
+        return $this->visit($item->node);
+    }
+
+    /**
+     * @param \Morpho\Compiler\Frontend\Peg\Gather $item
+     * @return array Set[str]
+     */
+    protected function visitGather(Gather $item): array {
+        return $this->visit($item->node);
+    }
+
+    /**
+     * @param \Morpho\Compiler\Frontend\Peg\Repeat0 $item
+     * @return array Set[str]
+     */
+    protected function visitRepeat0(Repeat0 $item): array {
+        return $this->visit($item->node);
+    }
+
+    /**
+     * @param \Morpho\Compiler\Frontend\Peg\Repeat1 $item
+     * @return array Set[str]
+     */
+    protected function visitRepeat1(Repeat1 $item): array {
+        return $this->visit($item->node);
+    }
+
+    /**
+     * @param \Morpho\Compiler\Frontend\Peg\NameLeaf $item
+     * @return array Set[str]
+     */
+    protected function visitNameLeaf(NameLeaf $item): array {
+        if (isset($this->rules[$item->val])) {
+            return [$item->val];
+        }
+        if (!isset($this->firstSets[$item->val])) {
+            $this->firstSets[$item->val] = $this->visit($this->rules[$item->val]);
+        } elseif (isset($this->inProcess[$item->val])) {
+            return [];
+        }
+        return $this->firstSets[$item->val];
+    }
+
+    /**
+     * @param \Morpho\Compiler\Frontend\Peg\StringLeaf $item
+     * @return array Set[str]
+     */
+    protected function visitStringLeaf(StringLeaf $item): array {
+        return [$item->val];
+    }
+
+    /**
+     * @param \Morpho\Compiler\Frontend\Peg\Rhs $item
+     * @return array Set[str]
+     */
+    protected function visitRhs(Rhs $item): array {
+        $result = [];
+        foreach ($item->alts as $alt) {
+            $result = array_unique(array_merge($result, $this->visit($alt)));
+        }
+        return $result;
+    }
+
+    /**
+     * @param \Morpho\Compiler\Frontend\Peg\Rule $item
+     * @return array Set[str]
+     */
+    protected function visitRule(Rule $item): array {
+        if (isset($this->inProcess[$item->name])) {
+            return [];
+        }
+        if (!isset($this->firstSets[$item->name])) {
+            $this->inProcess[$item->name] = true;
+            $terminals = $this->visit($item->rhs);
+            if (in_array($item, $this->nullables)) {
+                $terminals[] = '';
+                $terminals = array_unique($terminals);
+            }
+            $this->firstSets[$item->name] = $terminals;
+            unset($this->inProcess[$item->name]);
+        }
+        return $this->firstSets[$item->name];
+    }
 }

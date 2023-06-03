@@ -184,15 +184,14 @@ readonly class StringLeaf extends Leaf {
 
 readonly class Rhs implements IGrammarItem {
     /**
-     * @var array<int, Alt>
+     * @var array<Alt>
      */
     public array $alts;
 
     // self.memo: Optional[Tuple[Optional[str], str]] = None
 
     /**
-     * def __init__(self, alts: List[Alt]):
-     * @param array<int, Alt> $alts
+     * @param array<Alt> $alts
      */
     public function __construct(array $alts) {
         $this->alts = $alts;
@@ -317,7 +316,7 @@ readonly class Forced implements IGrammarItem {
 }
 
 abstract readonly class Lookahead implements IGrammarItem {
-    private Leaf|Group $node;
+    public readonly Leaf|Group $node;
     private string $sign;
 
     public function __construct(Leaf|Group $node, string $sign) {
@@ -359,8 +358,7 @@ readonly class NegativeLookahead extends Lookahead {
 }
 
 readonly class Opt implements IGrammarItem {
-    // def __init__(self, node: Item):
-    private Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $node;
+    public readonly Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $node;
 
     public function __construct(Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $node) {
         $this->node = $node;
@@ -390,7 +388,7 @@ readonly class Opt implements IGrammarItem {
 
 // Shared base class for x* and x+.
 abstract readonly class Repeat implements IGrammarItem {
-    private Leaf|Group $node;
+    public readonly Leaf|Group $node;
 
     // self.memo: Optional[Tuple[Optional[str], str]] = None
     private ?array $memo;
@@ -445,12 +443,11 @@ readonly class Repeat1 extends Repeat {
 
 readonly class Gather extends Repeat {
     private Leaf|Group $separator;
-    private Leaf|Group $node;
 
     // def __init__(self, separator: Plain, node: Plain):
     public function __construct(Leaf|Group $separator, Leaf|Group $node) {
+        parent::__construct($node);
         $this->separator = $separator;
-        $this->node = $node;
     }
 
     public function __toString(): string {
