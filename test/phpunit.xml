@@ -1,23 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- https://phpunit.readthedocs.io/en/9.5/configuration.html -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.0/phpunit.xsd"
-         backupGlobals="false"
-         beStrictAboutChangesToGlobalState="true"
+         bootstrap="bootstrap.php"
+         cacheDirectory=".phpunit.cache"
+         executionOrder="depends,defects"
+         requireCoverageMetadata="false"
          beStrictAboutCoverageMetadata="true"
          beStrictAboutOutputDuringTests="true"
-         bootstrap="./bootstrap.php"
-         cacheDirectory=".phpunit.cache"
-         colors="true"
-         displayDetailsOnIncompleteTests="true"
-         displayDetailsOnSkippedTests="true"
-         failOnEmptyTestSuite="true"
-         failOnIncomplete="false"
          failOnRisky="true"
-         failOnWarning="true"
-         stopOnDefect="true"
-         stopOnIncomplete="false"
-         requireCoverageMetadata="false">
+         failOnWarning="true">
     <testsuites>
         <testsuite name="lib">
             <!-- <file>TestSuite.php</file> -->
@@ -34,6 +25,12 @@
             <directory>../backend/localhost/test</directory>
         </testsuite>
     </testsuites>
+    <coverage>
+        <include>
+            <directory suffix=".php">lib</directory>
+        </include>
+    </coverage>
+
     <coverage>
         <include>
             <directory suffix=".php">lib</directory>
