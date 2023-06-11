@@ -35,6 +35,7 @@ class Vfs implements IFs {
     private static ?VfsDir $root = null;
     private ?VfsDir $dir = null;
     private ?VfsFile $file = null;
+    public mixed $context;
 
     public static function register(): void {
         stream_wrapper_register(self::SCHEME, __CLASS__);

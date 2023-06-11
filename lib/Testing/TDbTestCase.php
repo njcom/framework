@@ -14,15 +14,18 @@ use function dirname;
 use function pathinfo;
 
 trait TDbTestCase {
+    /**
+     * @throws \ReflectionException
+     */
     protected function createFixtures($db): void {
         $testDirPath = $this->getTestDirPath();
         if (is_dir($testDirPath)) {
-            $paths = Dir::paths($testDirPath, '~Fixture\.php$~');
-            foreach ($paths as $path) {
+            foreach (Dir::paths($testDirPath) as $path) {
+                if (!preg_match('~Fixture\.php$~', $path)) {
+                    continue;
+                }
                 require_once $path;
-                $class = $this->ns() . '\\'
-                    . basename(dirname($path)) . '\\'
-                    . pathinfo($path, PATHINFO_FILENAME);
+                $class = $this->ns() . '\\' . basename(dirname($path)) . '\\' . pathinfo($path, PATHINFO_FILENAME);
                 (new $class())->load($db);
             }
         }
