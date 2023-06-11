@@ -351,19 +351,25 @@ class FirstSetCalculatorTest extends TestCase {
         $this->assertSetsEquals($expected, $this->calculateFirstSets($grammar));
     }
 
-    private function sortRecursive(array|string $val): array|string {
-        if (!is_array($val)) {
-            return $val;
-        }
-        asort($val, SORT_NATURAL);
+    private function sortRecursive(array $val): array {
+        ksort($val);
+        $sortedKeys = array_keys($val);
+        array_multisort($val);
         $sorted = [];
-        foreach ($val as $v) {
-            $sorted[] = $this->sortRecursive($v);
+        foreach ($sortedKeys as $key) {
+            $v = $val[$key];
+            $sorted[$key] = is_array($v) ? $this->sortRecursive($v) : $v;
         }
         return $sorted;
     }
 
     private function assertSetsEquals(array $expected, array $actual): void {
-        $this->assertSame($this->sortRecursive($expected), $this->sortRecursive($actual));
+        $expectedLen = count($expected);
+        $actualLen = count($actual);
+        $expected = $this->sortRecursive($expected);
+        $actual = $this->sortRecursive($actual);
+        $this->assertCount($expectedLen, $expected);
+        $this->assertCount($actualLen, $actual);
+        $this->assertSame($expected, $actual);
     }
 }
