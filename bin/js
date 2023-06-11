@@ -2,44 +2,53 @@
 
 set -eu
 
-readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly SCRIPT_FILE_NAME="$(basename "$0")"
-readonly SCRIPT_FILE_PATH="$SCRIPT_DIR_PATH/$SCRIPT_FILE_NAME"
+SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+declare -r SCRIPT_DIR_PATH
+SCRIPT_FILE_NAME="$(basename "$0")"
+declare -r SCRIPT_FILE_NAME
+declare -r SCRIPT_FILE_PATH="$SCRIPT_DIR_PATH"/"$SCRIPT_FILE_NAME"
 
-readonly FRONTEND_DIR_PATH=$(realpath -e $SCRIPT_DIR_PATH/../frontend)
+FRONTEND_DIR_PATH=$(realpath -e "$SCRIPT_DIR_PATH"/../frontend)
+declare -r FRONTEND_DIR_PATH
+
+ts_conf_files() {
+    find "$FRONTEND_DIR_PATH"/module -name tsconfig.json -type f -print0
+}
 
 build() {
     #node $SCRIPT_DIR_PATH/ts.js build
-    while IFS= read -r -d '' tsConfFilePath; do
-        echo -n "Transpiling '""$(dirname "$tsConfFilePath")/**.ts'..."
-        tsc --build "$tsConfFilePath"
+    while IFS= read -r -d '' ts_conf_file_path; do
+        echo -n "Transpiling '""$(dirname "$ts_conf_file_path")/**.ts'..."
+        tsc --build "$ts_conf_file_path"
         echo OK
-    done < <(find "$FRONTEND_DIR_PATH"/localhost -mindepth 2 -name tsconfig.json -type f -print0)
-    find "$FRONTEND_DIR_PATH"/localhost/lib/base -name '*.js' -not -name 'index.js' -delete
+    done < <(ts_conf_files)
+    find "$FRONTEND_DIR_PATH"/module -name '*.js' -not -name 'index.js' -delete
 }
 
 watch() {
-    local cmds=()
-    while IFS= read -r -d '' tsConfFilePath; do
-        cmds+=("tsc --build $tsConfFilePath --watch --preserveWatchOutput")
-    done < <(find "$FRONTEND_DIR_PATH"/localhost -mindepth 2 -name tsconfig.json -type f -print0)
+    declare cmds=()
+    while IFS= read -r -d '' ts_conf_file_path; do
+        cmds+=("tsc --build $ts_conf_file_path --watch --preserveWatchOutput")
+    done < <(ts_conf_files)
     # https://github.com/microsoft/TypeScript/issues/17611
     concurrently --raw -- "${cmds[@]}"
 }
 
-###############################################################################
+################################################################################
+# Sub-command processing
+
+# Return if script has been sourced as the library
+#(return 0 2>/dev/null) && return 0
+
+cmd_re() {
+    grep -P '^[0-9a-z].*\(\)\s+{' "$SCRIPT_FILE_PATH" | grep -vP '[_A-Z]' | tr -d '() {' | tr '\n' '|' | sed 's/|$//' | sed 's/^/(/' | sed 's/$/)/'
+}
 
 usage() {
-    echo "Usage: $0 $(_cmdRe | perl -WpE 's/[|()]/\n/g' | perl -WpE 's/^/    /' | sort -u)"
-}
-
-_err() {
-    >&2 echo "$@"
-    exit 1
-}
-
-_cmdRe() {
-    grep -P '^[a-z].*\(\)\s+{' "$SCRIPT_FILE_PATH" | grep -vP '[A-Z]' | tr -d '() {' | tr '\n' '|' | sed 's/|$//' | sed 's/^/(/' | sed 's/$/)/'
+    echo "Usage: $0 \$cmd"
+    # shellcheck disable=SC2016
+    echo '    where $cmd:'
+    cmd_re | perl -WpE 's/[|()]/\n/g' | perl -WpE 's/^/        /' | perl -WnE 'print unless m/^\s*$/'
 }
 
 if [[ $# -lt 1 ]]; then
@@ -47,8 +56,8 @@ if [[ $# -lt 1 ]]; then
     exit
 fi
 
-if [[ ! "$1" =~ ^$(_cmdRe)$ ]]; then
-    usage
+if [[ ! "$1" =~ ^$(cmd_re)$ ]]; then
+    usage 1>&2
     exit 1
 fi
 

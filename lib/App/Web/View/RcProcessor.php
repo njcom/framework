@@ -92,6 +92,7 @@ class RcProcessor extends HtmlProcessor {
     }
 
     protected function sortScripts(array $scripts): array {
+        // Add indexes for scripts
         $index = 0;
         foreach ($scripts as $key => $script) {
             if (!isset($script[self::INDEX_ATTR])) {
@@ -101,6 +102,7 @@ class RcProcessor extends HtmlProcessor {
             $script[self::INDEX_ATTR] = floatval($script[self::INDEX_ATTR]);
             $scripts[$key] = $script;
         }
+        // Then sort them by index
         usort(
             $scripts,
             function ($prev, $next) {

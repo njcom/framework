@@ -2,18 +2,21 @@
 
 set -eu
 
-readonly SCRIPT_FILE_NAME="$(basename "$0")"
-readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly SCRIPT_FILE_PATH="$SCRIPT_DIR_PATH/$SCRIPT_FILE_NAME"
+SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+declare -r SCRIPT_DIR_PATH
+SCRIPT_FILE_NAME="$(basename "$0")"
+declare -r SCRIPT_FILE_NAME
+declare -r SCRIPT_FILE_PATH="$SCRIPT_DIR_PATH"/"$SCRIPT_FILE_NAME"
 
-readonly FRONTEND_DIR_PATH=$(realpath -e $SCRIPT_DIR_PATH/../frontend)
+FRONTEND_DIR_PATH=$(realpath -e "$SCRIPT_DIR_PATH"/../frontend)
+declare -r FRONTEND_DIR_PATH
 
 build() {
-    sass "$FRONTEND_DIR_PATH"/localhost
+    sass "$FRONTEND_DIR_PATH"/module
 }
 
 watch() {
-    sass --watch "$FRONTEND_DIR_PATH"/localhost
+    sass --watch "$FRONTEND_DIR_PATH"/module
 }
 
 ###############################################################################
