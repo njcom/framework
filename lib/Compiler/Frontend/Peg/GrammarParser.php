@@ -268,11 +268,25 @@ class GrammarParser extends Parser {
             function (): ?Alt {
                 $index = $this->index();
                 if (($items = $this->items()) && ($this->expect('$')) && ($action = $this->action())) {
-                    return new Alt(array_merge($items, [new NamedItem(null, new NameLeaf('ENDMARKER'))]), action: $action);
+                    return new Alt(
+                        new NamedItemList(
+                            array_merge(
+                                $items->getArrayCopy(),
+                                [new NamedItem(null, new NameLeaf('ENDMARKER'))]
+                            )
+                        ), action: $action
+                    );
                 }
                 $this->reset($index);
                 if (($items = $this->items()) && ($this->expect('$'))) {
-                    return new Alt(array_merge($items, [new NamedItem(null, new NameLeaf('ENDMARKER'))]), action: null);
+                    return new Alt(
+                        new NamedItemList(
+                            array_merge(
+                                $items->getArrayCopy(),
+                                [new NamedItem(null, new NameLeaf('ENDMARKER'))]
+                            )
+                        ), action: null
+                    );
                 }
                 $this->reset($index);
                 if (($items = $this->items()) && ($action = $this->action())) {

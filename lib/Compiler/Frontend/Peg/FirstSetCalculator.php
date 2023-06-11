@@ -175,7 +175,7 @@ class FirstSetCalculator extends GrammarVisitor {
      * @return array Set[str]
      */
     protected function visitNameLeaf(NameLeaf $item): array {
-        if (isset($this->rules[$item->val])) {
+        if (!isset($this->rules[$item->val])) {
             return [$item->val];
         }
         if (!isset($this->firstSets[$item->val])) {

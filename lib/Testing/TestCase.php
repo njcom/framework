@@ -117,13 +117,13 @@ abstract class TestCase extends BaseTestCase {
         return $tmpFilePath;
     }
 
-    protected function assertSetsEqual(array $expected, array $actual): void {
+/*    protected function assertSetsEqual(array $expected, array $actual): void {
         $this->assertCount(count($expected), $actual);
         foreach ($expected as $expect) {
             // @TODO: Better implementation, not O(n^2)?
             $this->assertContains($expect, $actual);
         }
-    }
+    }*/
 
     protected function env(): mixed {
         return Env::instance();

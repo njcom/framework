@@ -23,14 +23,15 @@ class GrammarVisitor {
         if (method_exists($this, $method)) {
             return $this->$method($node, ...$args);
         }
-        $this->genericVisit($node, ...$args);
+        return $this->genericVisit($node, ...$args);
     }
 
     /**
      * Called if no explicit visitor function exists for a node.
      * def generic_visit(self, node: Iterable[Any], *args: Any, **kwargs: Any) -> Any:
+     * @noinspection PhpMixedReturnTypeCanBeReducedInspection
      */
-    private function genericVisit($node, ...$args): void {
+    private function genericVisit($node, ...$args): mixed {
         foreach ($node as $value) {
             if (is_array($value)) { // @todo: replace is_array() with is_iterable()?
                 foreach ($value as $item) {
@@ -40,5 +41,6 @@ class GrammarVisitor {
                 $this->visit($value, ...$args);
             }
         }
+        return null;
     }
 }

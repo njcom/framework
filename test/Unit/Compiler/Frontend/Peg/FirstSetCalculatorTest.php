@@ -22,272 +22,311 @@ class FirstSetCalculatorTest extends TestCase {
         $this->assertInstanceOf(GrammarVisitor::class, new FirstSetCalculator([]));
     }
 
-    public function testAlternatives() {
-        $grammarSource = file_get_contents($this->getTestDirPath() . '/000-alternative.gram');
-        $this->assertSame(
+    public function testAlternatives(): void {
+        $grammar = file_get_contents($this->getTestDirPath() . '/000-alternative.gram');
+        $this->checkCalculator(
             [
-                "A" => ["'a'", "'-'"],
-                "B" => ["'+'", "'b'"],
-                "expr" => ["'+'", "'a'", "'b'", "'-'"],
+                "A"     => ["'a'", "'-'"],
+                "B"     => ["'+'", "'b'"],
+                "expr"  => ["'+'", "'a'", "'b'", "'-'"],
                 "start" => ["'+'", "'a'", "'b'", "'-'"],
             ],
-            $this->calculateFirstSets($grammarSource)
+            $grammar
         );
     }
 
-/*
-    def test_optionals(self) -> None:
-        grammar = """
-            start: expr NEWLINE
-            expr: ['a'] ['b'] 'c'
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {
-                "expr": {"'c'", "'a'", "'b'"},
-                "start": {"'c'", "'a'", "'b'"},
-            },
-        )
+    public function testOptionals(): void {
+        $grammar = <<<OUT
+        start: expr NEWLINE
+        expr: ['a'] ['b'] 'c'
+        OUT;
+        $this->checkCalculator(
+            [
+                'expr'  => ["'c'", "'a'", "'b'"],
+                'start' => ["'c'", "'a'", "'b'"],
+            ],
+            $grammar
+        );
+    }
 
-    def test_repeat_with_separator(self) -> None:
-        grammar = """
+    public function testRepeatWithSeparator(): void {
+        $grammar = <<<OUT
         start: ','.thing+ NEWLINE
         thing: NUMBER
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {"thing": {"NUMBER"}, "start": {"NUMBER"}},
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                'thing' => ['NUMBER'],
+                'start' => ['NUMBER'],
+            ],
+            $grammar
+        );
+    }
 
-    def test_optional_operator(self) -> None:
-        grammar = """
+    public function testOptionalOperator(): void {
+        $grammar = <<<OUT
         start: sum NEWLINE
         sum: (term)? 'b'
         term: NUMBER
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {
-                "term": {"NUMBER"},
-                "sum": {"NUMBER", "'b'"},
-                "start": {"'b'", "NUMBER"},
-            },
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                "term"  => ["NUMBER"],
+                "sum"   => ["NUMBER", "'b'"],
+                "start" => ["'b'", "NUMBER"],
+            ],
+            $grammar,
+        );
+    }
 
-    def test_optional_literal(self) -> None:
-        grammar = """
+    public function testOptionalLiteral(): void {
+        $grammar = <<<OUT
         start: sum NEWLINE
         sum: '+' ? term
         term: NUMBER
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {
-                "term": {"NUMBER"},
-                "sum": {"'+'", "NUMBER"},
-                "start": {"'+'", "NUMBER"},
-            },
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                'term'  => ['NUMBER'],
+                'sum'   => ["'+'", "NUMBER"],
+                "start" => ["'+'", "NUMBER"],
+            ],
+            $grammar
+        );
+    }
 
-    def test_optional_after(self) -> None:
-        grammar = """
-        start: term NEWLINE
-        term: NUMBER ['+']
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {"term": {"NUMBER"}, "start": {"NUMBER"}},
-        )
-
-    def test_optional_before(self) -> None:
-        grammar = """
+    public function testOptionalBefore(): void {
+        $grammar = <<<OUT
         start: term NEWLINE
         term: ['+'] NUMBER
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {"term": {"NUMBER", "'+'"}, "start": {"NUMBER", "'+'"}},
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                "term"  => ["NUMBER", "'+'"],
+                "start" => ["NUMBER", "'+'"],
+            ],
+            $grammar,
+        );
+    }
 
-    def test_repeat_0(self) -> None:
-        grammar = """
+    public function testRepeat0(): void {
+        $grammar = <<<OUT
         start: thing* "+" NEWLINE
         thing: NUMBER
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {"thing": {"NUMBER"}, "start": {'"+"', "NUMBER"}},
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                "thing" => ["NUMBER"],
+                "start" => ['"+"', "NUMBER"],
+            ],
+            $grammar,
+        );
+    }
 
-    def test_repeat_0_with_group(self) -> None:
-        grammar = """
+    public function testRepeat0WithGroup(): void {
+        $grammar = <<<OUT
         start: ('+' '-')* term NEWLINE
         term: NUMBER
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {"term": {"NUMBER"}, "start": {"'+'", "NUMBER"}},
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                "term"  => ["NUMBER"],
+                "start" => ["'+'", "NUMBER"],
+            ],
+            $grammar,
+        );
+    }
 
-    def test_repeat_1(self) -> None:
-        grammar = """
+    public function testRepeat1(): void {
+        $grammar = <<<OUT
         start: thing+ '-' NEWLINE
         thing: NUMBER
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {"thing": {"NUMBER"}, "start": {"NUMBER"}},
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                "thing" => ["NUMBER"],
+                "start" => ["NUMBER"],
+            ],
+            $grammar,
+        );
+    }
 
-    def test_repeat_1_with_group(self) -> None:
-        grammar = """
+    public function testRepeat1WithGroup(): void {
+        $grammar = <<<OUT
         start: ('+' term)+ term NEWLINE
         term: NUMBER
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar), {"term": {"NUMBER"}, "start": {"'+'"}}
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                "term"  => ["NUMBER"],
+                "start" => ["'+'"],
+            ],
+            $grammar,
+        );
+    }
 
-    def test_gather(self) -> None:
-        grammar = """
+    public function testGather(): void {
+        $grammar = <<<OUT
         start: ','.thing+ NEWLINE
         thing: NUMBER
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {"thing": {"NUMBER"}, "start": {"NUMBER"}},
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                "thing" => ["NUMBER"],
+                "start" => ["NUMBER"],
+            ],
+            $grammar,
+        );
+    }
 
-    def test_positive_lookahead(self) -> None:
-        grammar = """
+    public function testPositiveLookahead(): void {
+        $grammar = <<<OUT
         start: expr NEWLINE
         expr: &'a' opt
         opt: 'a' | 'b' | 'c'
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {
-                "expr": {"'a'"},
-                "start": {"'a'"},
-                "opt": {"'b'", "'c'", "'a'"},
-            },
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                "expr"  => ["'a'"],
+                "start" => ["'a'"],
+                "opt"   => ["'b'", "'c'", "'a'"],
+            ],
+            $grammar,
+        );
+    }
 
-    def test_negative_lookahead(self) -> None:
-        grammar = """
+    public function testNegativeLookahead(): void {
+        $grammar = <<<OUT
         start: expr NEWLINE
         expr: !'a' opt
         opt: 'a' | 'b' | 'c'
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {
-                "opt": {"'b'", "'a'", "'c'"},
-                "expr": {"'b'", "'c'"},
-                "start": {"'b'", "'c'"},
-            },
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                "opt"   => ["'b'", "'a'", "'c'"],
+                "expr"  => ["'b'", "'c'"],
+                "start" => ["'b'", "'c'"],
+            ],
+            $grammar,
+        );
+    }
 
-    def test_left_recursion(self) -> None:
-        grammar = """
+    public function testLeftRecursion(): void {
+        $grammar = <<<OUT
         start: expr NEWLINE
         expr: ('-' term | expr '+' term | term)
         term: NUMBER
         foo: 'foo'
         bar: 'bar'
         baz: 'baz'
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {
-                "expr": {"NUMBER", "'-'"},
-                "term": {"NUMBER"},
-                "start": {"NUMBER", "'-'"},
-                "foo": {"'foo'"},
-                "bar": {"'bar'"},
-                "baz": {"'baz'"},
-            },
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                "expr"  => ["NUMBER", "'-'"],
+                "term"  => ["NUMBER"],
+                "start" => ["NUMBER", "'-'"],
+                "foo"   => ["'foo'"],
+                "bar"   => ["'bar'"],
+                "baz"   => ["'baz'"],
+            ],
+            $grammar,
+        );
+    }
 
-    def test_advance_left_recursion(self) -> None:
-        grammar = """
+    public function testAdvanceLeftRecursion(): void {
+        $grammar = <<<OUT
         start: NUMBER | sign start
         sign: ['-']
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {"sign": {"'-'", ""}, "start": {"'-'", "NUMBER"}},
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                "sign"  => ["'-'", ""],
+                "start" => ["'-'", "NUMBER"],
+            ],
+            $grammar,
+        );
+    }
 
-    def test_mutual_left_recursion(self) -> None:
-        grammar = """
+    public function testMutualLeftRecursion(): void {
+        $grammar = <<<OUT
         start: foo 'E'
         foo: bar 'A' | 'B'
         bar: foo 'C' | 'D'
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {
-                "foo": {"'D'", "'B'"},
-                "bar": {"'D'"},
-                "start": {"'D'", "'B'"},
-            },
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                "foo"   => ["'D'", "'B'"],
+                "bar"   => ["'D'"],
+                "start" => ["'D'", "'B'"],
+            ],
+            $grammar,
+        );
+    }
 
-    def test_nasty_left_recursion(self) -> None:
+    public function testNastyLeftRecursion(): void {
         # TODO: Validate this
-        grammar = """
+        $grammar = <<<OUT
         start: target '='
         target: maybe '+' | NAME
         maybe: maybe '-' | target
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {"maybe": set(), "target": {"NAME"}, "start": {"NAME"}},
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                "maybe"  => [],
+                "target" => ["NAME"],
+                "start"  => ["NAME"],
+            ],
+            $grammar,
+        );
+    }
 
-    def test_nullable_rule(self) -> None:
-        grammar = """
+    public function testNullableRule(): void {
+        $grammar = <<<OUT
         start: sign thing $
         sign: ['-']
         thing: NUMBER
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {
-                "sign": {"", "'-'"},
-                "thing": {"NUMBER"},
-                "start": {"NUMBER", "'-'"},
-            },
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                "sign"  => ["", "'-'"],
+                "thing" => ["NUMBER"],
+                "start" => ["NUMBER", "'-'"],
+            ],
+            $grammar,
+        );
+    }
 
-    def test_epsilon_production_in_start_rule(self) -> None:
-        grammar = """
+    public function testEpsilonProductionInStartRule(): void {
+        $grammar = <<<OUT
         start: ['-'] $
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar), {"start": {"ENDMARKER", "'-'"}}
-        )
+        OUT;
+        $this->checkCalculator(
+            [
+                "start" => ["ENDMARKER", "'-'"],
+            ],
+            $grammar,
+        );
+    }
 
-    def test_multiple_nullable_rules(self) -> None:
-        grammar = """
+    public function testMultipleNullableRules(): void {
+        $grammar = <<<OUT
         start: sign thing other another $
         sign: ['-']
         thing: ['+']
         other: '*'
         another: '/'
-        """
-        self.assertEqual(
-            self.calculate_first_sets(grammar),
-            {
-                "sign": {"", "'-'"},
-                "thing": {"'+'", ""},
-                "start": {"'+'", "'-'", "'*'"},
-                "other": {"'*'"},
-                "another": {"'/'"},
-            },
-        )
- */
+        OUT;
+        $this->checkCalculator(
+            [
+                "sign"    => ["", "'-'"],
+                "thing"   => ["'+'", ""],
+                "start"   => ["'+'", "'-'", "'*'"],
+                "other"   => ["'*'"],
+                "another" => ["'/'"],
+            ],
+            $grammar,
+        );
+    }
 
     private function parseString(string $s): Grammar {
         $tokenizer = new GrammarTokenizer(Tokenizer::tokenize($s));
@@ -306,5 +345,25 @@ class FirstSetCalculatorTest extends TestCase {
     private function calculateFirstSets(string $sourceGrammar): array {
         $grammar = $this->parseString($sourceGrammar);
         return (new FirstSetCalculator($grammar->rules))->calculate();
+    }
+
+    private function checkCalculator(array $expected, string $grammar) {
+        $this->assertSetsEquals($expected, $this->calculateFirstSets($grammar));
+    }
+
+    private function sortRecursive(array|string $val): array|string {
+        if (!is_array($val)) {
+            return $val;
+        }
+        asort($val, SORT_NATURAL);
+        $sorted = [];
+        foreach ($val as $v) {
+            $sorted[] = $this->sortRecursive($v);
+        }
+        return $sorted;
+    }
+
+    private function assertSetsEquals(array $expected, array $actual): void {
+        $this->assertSame($this->sortRecursive($expected), $this->sortRecursive($actual));
     }
 }
