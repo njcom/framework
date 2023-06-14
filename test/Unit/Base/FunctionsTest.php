@@ -21,20 +21,25 @@ use UnexpectedValueException;
 
 use function call_user_func;
 use function count;
-use function fclose;
 use function file_put_contents;
 use function get_class_methods;
 use function Morpho\Base\{all, append, appendFn, camelize, camelizeKeys, capture, cartesianProduct, classify, compose, dasherize, deleteDups, enumVals, formatBytes, formatFloat, fromJson, humanize, indent, index, isEnumCase, isSubset, isUtf8Text, last, lastPos, lines, memoize, merge, normalizeEols, not, op, partial, permutations, pipe, prepend, prependFn, q, qq, reorderKeys, sanitize, setProps, setsEqual, shorten, subsets, symDiff, titleize, toIt, toJson, tpl, etrim, ucfirst, underscore, underscoreKeys, unindent, union, uniqueName, unsetMany, unsetOne, unsetRecursive, with, caseVal, waitUntilNumOfAttempts, waitUntilTimeout, words, wrap, wrapFn};
 use function property_exists;
 
-class FunctionsTest extends TestCase {
-    private $tmpHandle;
+use const Morpho\Base\PHP_FILE_FULL_RE;
 
-    protected function tearDown(): void {
-        parent::tearDown();
-        if (isset($this->tmpHandle)) {
-            fclose($this->tmpHandle);
-        }
+class FunctionsTest extends TestCase {
+    public function testPhpFilesFullRe() {
+        $phpFileRe = PHP_FILE_FULL_RE;
+        $this->assertEquals(1, preg_match($phpFileRe, __FILE__));
+        $this->assertEquals(1, preg_match($phpFileRe, basename(__FILE__)));
+        $this->assertEquals(1, preg_match($phpFileRe, 'foo/.php'));
+        $this->assertEquals(1, preg_match($phpFileRe, '.php'));
+
+        $this->assertEquals(0, preg_match($phpFileRe, __FILE__ . '.ts'));
+        $this->assertEquals(0, preg_match($phpFileRe, basename(__FILE__) . '.ts'));
+        $this->assertEquals(0, preg_match($phpFileRe, 'foo/.ts'));
+        $this->assertEquals(0, preg_match($phpFileRe, '.ts'));
     }
 
     public function testIsEnumCase() {

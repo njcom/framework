@@ -27,12 +27,12 @@ class StatTest extends TestCase {
         parent::tearDown();
     }
 
-    public function testModeAndModeStr() {
+    public function testPermsAndPermStr() {
         $tmpFilePath = $this->createTmpFile();
-        $mode = 0644;
+        $mode = 0704;
         $this->assertTrue(chmod($tmpFilePath, $mode));
-        $this->assertSame($mode, Stat::mode($tmpFilePath));
-        $this->assertSame('0644', Stat::modeStr($tmpFilePath));
+        $this->assertSame($mode, Stat::perms($tmpFilePath));
+        $this->assertSame('704', Stat::perms($tmpFilePath, true));
     }
 
     public function testIsBlockDev() {

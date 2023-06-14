@@ -242,7 +242,7 @@ abstract class TestCase extends BaseTestCase {
             rewind($stream);
             $this->streams[] = $stream;
             return $stream;
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             if (isset($stream)) {
                 fclose($stream);
             }

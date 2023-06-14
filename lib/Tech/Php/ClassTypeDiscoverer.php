@@ -44,12 +44,16 @@ class ClassTypeDiscoverer {
         return $this->discoverStrategy()->classTypesDefinedInFile($filePath);
     }
 
-    public function classTypesDefinedInDir(string|iterable $dirPaths, string $regExp = null, array $conf = null): array {
-        $conf = (array) $conf + ['recursive' => true];
-        $filePaths = Dir::filePaths($dirPaths, $regExp ?: Dir::PHP_FILE_RE, $conf);
+    public function classTypesDefinedInDir(string|iterable $dirPaths, callable|string $filter = null, bool $recursive = true): array {
         $map = [];
+        if (is_string($filter)) {
+            $filter = fn($filePath) => preg_match($filter, $filePath);
+        }
         $discoverStrategy = $this->discoverStrategy();
-        foreach ($filePaths as $filePath) {
+        foreach (Dir::filePaths($dirPaths, $recursive) as $filePath) {
+            if ($filter && !$filter($filePath)) {
+                continue;
+            }
             foreach ($discoverStrategy->classTypesDefinedInFile($filePath) as $classType) {
                 if (isset($map[$classType])) {
                     throw new RuntimeException(
@@ -76,10 +80,12 @@ class ClassTypeDiscoverer {
 
     protected function filterClassTypes(ClassTypeDepsCollector $depsCollector, string $filePath, bool $excludeStdClasses): array {
         $classTypes = $depsCollector->classTypes();
-        return array_values($this->excludeClassTypesDefinedInTheSameFile(
-            $excludeStdClasses ? $this->excludeStdClassTypes($classTypes) : $classTypes,
-            $filePath,
-        ));
+        return array_values(
+            $this->excludeClassTypesDefinedInTheSameFile(
+                $excludeStdClasses ? $this->excludeStdClassTypes($classTypes) : $classTypes,
+                $filePath,
+            )
+        );
     }
 
     private function excludeClassTypesDefinedInTheSameFile(array $classTypes, string $filePath): array {

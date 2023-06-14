@@ -11,7 +11,7 @@ use Morpho\Caching\ICache;
 use function Morpho\Caching\cacheKey;
 
 class ClassTypeMapAutoloader extends Autoloader {
-    protected $processor;
+    protected $filter;
 
     protected string|iterable $searchDirPaths;
 
@@ -21,9 +21,9 @@ class ClassTypeMapAutoloader extends Autoloader {
 
     protected string $cacheKey;
 
-    public function __construct(string|iterable $searchDirPaths, string|callable $processor = null, ICache $cache = null) {
+    public function __construct(string|iterable $searchDirPaths, string|callable $filter = null, ICache $cache = null) {
         $this->searchDirPaths = $searchDirPaths;
-        $this->processor = $processor;
+        $this->filter = $filter;
         $this->cache = $cache;
         $this->cacheKey = cacheKey($this, __FUNCTION__);
     }
@@ -47,11 +47,7 @@ class ClassTypeMapAutoloader extends Autoloader {
 
     protected function mkMap(): array {
         $classTypeDiscoverer = new ClassTypeDiscoverer();
-        return $classTypeDiscoverer->classTypesDefinedInDir(
-            $this->searchDirPaths,
-            $this->processor,
-            ['followLinks' => true]
-        );
+        return $classTypeDiscoverer->classTypesDefinedInDir($this->searchDirPaths, $this->filter);
     }
 
     public function clearMap(): void {

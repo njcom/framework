@@ -31,20 +31,20 @@ class Stat {
     public const DIR_PERMS = 0755; // DIR_BASE_PERMS (0777)  - UMASK (0022)
     public const FILE_PERMS = 0644; // FILE_BASE_PERMS (0666) - UMASK (0022)
 
-/*    public static function modeToStr(int $mode): string {
-        return sprintf('%04o', $mode & 07777);
-    }
-
     /**
-     * Returns value of bits [11..0] of the stat.st_mode as string.
-    public static function modeStr(string $path): string {
-        return sprintf('%04o', self::mode($path));
-    }
-
-    public static function mode(string $path): int {
+     * Returns file permissions, 9 least significant bits of the stat.st_mode as int or string.
+     * @param string $path
+     * @param bool   $asStr
+     * @return int|string
+     */
+    public static function perms(string $path, bool $asStr = false): int|string {
         clearstatcache(true, $path);
-        return fileperms($path) & 07777;
-    }*/
+        $perms = fileperms($path) & 0777;
+        if ($asStr) {
+            return sprintf('%03o', $perms);
+        }
+        return $perms;
+    }
 
     /**
      * @return bool Returns true if the $path is valid path of any of: Directory, Character device, Block device, Regular file, FIFO/Named pipe, Symbolic link, Socket.

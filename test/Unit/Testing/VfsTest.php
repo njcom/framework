@@ -4,7 +4,7 @@
  * It is distributed under the 'Apache License Version 2.0' license.
  * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
-namespace Morpho\Test\Unit\Test;
+namespace Morpho\Test\Unit\Testing;
 
 use Exception;
 use Morpho\Fs\IFs;
@@ -246,7 +246,7 @@ class VfsTest extends TestCase {
         $stat = fstat($handle);
         fclose($handle);
 
-        $this->assertSame((Stat::FILE_BASE_MODE & ~umask()) | Stat::FILE, $stat['mode']);
+        $this->assertSame((Stat::FILE_BASE_PERMS & ~umask()) | Stat::FILE, $stat['mode']);
         $this->assertSame(strlen($contents), $stat['size']);
         $this->assertCount(13 * 2, $stat);
     }

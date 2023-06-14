@@ -8,8 +8,6 @@ namespace Morpho\Test\Unit\Fs;
 
 use DirectoryIterator;
 use FilesystemIterator;
-use LogicException;
-use Morpho\Base\InvalidConfException;
 use Morpho\Fs\Dir;
 use Morpho\Fs\Exception as FsException;
 use Morpho\Fs\Stat;
@@ -29,8 +27,6 @@ use function is_dir;
 use function is_file;
 use function iterator_to_array;
 use function mkdir;
-use function preg_grep;
-use function preg_match;
 use function preg_quote;
 use function preg_replace;
 use function sort;
@@ -39,18 +35,6 @@ use function symlink;
 use function touch;
 
 class DirTest extends TestCase {
-    public function testPhpFilesRe() {
-        $this->assertEquals(1, preg_match(Dir::PHP_FILE_FULL_RE, __FILE__));
-        $this->assertEquals(1, preg_match(Dir::PHP_FILE_FULL_RE, basename(__FILE__)));
-        $this->assertEquals(1, preg_match(Dir::PHP_FILE_FULL_RE, 'foo/.php'));
-        $this->assertEquals(1, preg_match(Dir::PHP_FILE_FULL_RE, '.php'));
-
-        $this->assertEquals(0, preg_match(Dir::PHP_FILE_FULL_RE, __FILE__ . '.ts'));
-        $this->assertEquals(0, preg_match(Dir::PHP_FILE_FULL_RE, basename(__FILE__) . '.ts'));
-        $this->assertEquals(0, preg_match(Dir::PHP_FILE_FULL_RE, 'foo/.ts'));
-        $this->assertEquals(0, preg_match(Dir::PHP_FILE_FULL_RE, '.ts'));
-    }
-
     public function testIn() {
         $curDirPath = getcwd();
         $otherDirPath = $this->createTmpDir();
@@ -602,9 +586,9 @@ class DirTest extends TestCase {
 
     private function pathsInDir(string $dirPath, bool $stripDirPath = true): array {
         $paths = [];
-/*        if (!is_dir($dirPath)) {
-            return $paths;
-        }*/
+        /*        if (!is_dir($dirPath)) {
+                    return $paths;
+                }*/
         $dirPath = str_replace('\\', '/', $dirPath);
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dirPath, FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS), RecursiveIteratorIterator::SELF_FIRST) as $entry) {
             if ($stripDirPath) {
