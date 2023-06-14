@@ -10,7 +10,7 @@ use Iterator;
 use Morpho\Base\NotImplementedException;
 
 /**
- * Based on https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/tokenizer.py
+ * Based on https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/tokenizer.py
  */
 class GrammarTokenizer implements IGrammarTokenizer {
     private int $index = 0;

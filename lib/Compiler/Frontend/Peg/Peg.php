@@ -9,25 +9,31 @@
  * 1. https://medium.com/@gvanrossum_83706/peg-parsing-series-de5d41b2ed60
  * 2. https://www.python.org/dev/peps/pep-0617/
  * 3. https://www.youtube.com/watch?v=QppWTvh7_sI
- *
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
 use Morpho\Compiler\Frontend\IParserGen;
 
 class Peg implements IParserGen {
-    public static function build(): array {
+    /**
+     * [build_parser()](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/build.py)
+     * @param string|resource $source Stream for the grammar or source of the grammar
+     * @return array
+     * @noinspection PhpMissingParamTypeInspection
+     */
+    public static function build($source): array {
+        $tokenizer = new GrammarTokenizer(Tokenizer::tokenize($source));
+        $parser = new GrammarParser($tokenizer);
+        $grammar = $parser->start();
+        if (!$grammar) {
+            throw $parser->mkSyntaxError('Unable to parse grammar');
+        }
         return [$grammar, $parser, $tokenizer];
     }
 
     public function frontend(): callable {
-        return function (mixed $context): mixed {
-            $tokenGen = function () {
-                // todo
-                yield [];
-            };
-            $context = (new GrammarParser(new GrammarTokenizer($tokenGen())))($context);
-            return (new GrammarChecker())($context);
+        return function (mixed $context): array {
+            return self::build($context['file'] ?? $context);
         };
     }
 
@@ -39,12 +45,13 @@ class Peg implements IParserGen {
 
     public function backend(): callable {
         return function (mixed $context): mixed {
+            d($context);
             return new ParserGen($context);
         };
     }
 
-    public function __invoke(mixed $context): mixed {
-        $context = $this->frontend()($context);
+    public function __invoke(mixed $val): mixed {
+        $context = $this->frontend()($val);
         $context = $this->midend()($context);
         return $this->backend()($context);
     }

@@ -98,8 +98,13 @@ class RuleCheckingVisitor(GrammarVisitor):
         if node.name and node.name.startswith("_"):
             raise GrammarError(f"Variable names cannot start with underscore: '{node.name}'")
         self.visit(node.item)
+*/
 
+class ParserGen {
 
+}
+
+/*
 class ParserGenerator:
 
     callmakervisitor: GrammarVisitor

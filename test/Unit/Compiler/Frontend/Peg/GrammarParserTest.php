@@ -17,14 +17,11 @@ use Morpho\Testing\TestCase;
 class GrammarParserTest extends TestCase {
     private GrammarParser $parser;
 
-    /**
-     * @throws \ReflectionException
-     */
     protected function setUp(): void {
         parent::setUp();
         $this->parser = new GrammarParser(
             new GrammarTokenizer(
-                Tokenizer::tokenize($this->mkStream($this->getTestDirPath() . '/peg.peg'))
+                Tokenizer::tokenize($this->mkStream('foo: bar'))
             )
         );
     }

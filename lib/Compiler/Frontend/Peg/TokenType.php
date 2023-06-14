@@ -7,7 +7,7 @@
 namespace Morpho\Compiler\Frontend\Peg;
 
 /**
- * https://github.com/python/cpython/blob/main/Lib/token.py
+ * https://github.com/python/cpython/blob/3.12/Lib/token.py
  */
 enum TokenType: int {
     /*

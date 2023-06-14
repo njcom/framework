@@ -14,7 +14,8 @@ use function Morpho\Base\q;
 use function Morpho\Base\qq;
 
 /**
- * https://github.com/python/cpython/blob/fc94d55ff453a3101e4c00a394d4e38ae2fece13/Lib/tokenize.py#L46
+ * https://github.com/python/cpython/blob/3.12/Lib/tokenize.py#L47
+ * @todo: Unify with Compiler\Token
  */
 readonly class Token implements Stringable {
     public TokenType $type;
