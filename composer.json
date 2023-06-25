@@ -24,6 +24,7 @@
         "ext-dom": "*",
         "ext-iconv": "*",
         "ext-libxml": "*",
+        "ext-mbstring": "*",
         "ext-pcntl": "*",
         "ext-pcre": "*",
         "ext-pdo": "*",

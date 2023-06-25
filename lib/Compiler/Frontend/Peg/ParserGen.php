@@ -7,127 +7,35 @@
 namespace Morpho\Compiler\Frontend\Peg;
 
 /**
- * Based on https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/parser_generator.py
+ * Based on https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/parser_generator.py
  */
-
-
-/*
- import ast
-import contextlib
-import re
-from abc import abstractmethod
-from typing import (
-    IO,
-    AbstractSet,
-    Any,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Set,
-    Text,
-    Tuple,
-    Union,
-)
-
-from pegen import sccutils
-from pegen.grammar import (
-    Alt,
-    Cut,
-    Forced,
-    Gather,
-    Grammar,
-    GrammarError,
-    GrammarVisitor,
-    Group,
-    Lookahead,
-    NamedItem,
-    NameLeaf,
-    Opt,
-    Plain,
-    Repeat0,
-    Repeat1,
-    Rhs,
-    Rule,
-    StringLeaf,
-)
-
-
-class RuleCollectorVisitor(GrammarVisitor):
-    """Visitor that invokes a provieded callmaker visitor with just the NamedItem nodes"""
-
-    def __init__(self, rules: Dict[str, Rule], callmakervisitor: GrammarVisitor) -> None:
-        self.rulses = rules
-        self.callmaker = callmakervisitor
-
-    def visit_Rule(self, rule: Rule) -> None:
-        self.visit(rule.flatten())
-
-    def visit_NamedItem(self, item: NamedItem) -> None:
-        self.callmaker.visit(item)
-
-
-class KeywordCollectorVisitor(GrammarVisitor):
-    """Visitor that collects all the keywods and soft keywords in the Grammar"""
-
-    def __init__(self, gen: "ParserGenerator", keywords: Dict[str, int], soft_keywords: Set[str]):
-        self.generator = gen
-        self.keywords = keywords
-        self.soft_keywords = soft_keywords
-
-    def visit_StringLeaf(self, node: StringLeaf) -> None:
-        val = ast.literal_eval(node.value)
-        if re.match(r"[a-zA-Z_]\w*\Z", val):  # This is a keyword
-            if node.value.endswith("'") and node.value not in self.keywords:
-                self.keywords[val] = self.generator.keyword_type()
-            else:
-                return self.soft_keywords.add(node.value.replace('"', ""))
-
-
-class RuleCheckingVisitor(GrammarVisitor):
-    def __init__(self, rules: Dict[str, Rule], tokens: Set[str]):
-        self.rules = rules
-        self.tokens = tokens
-
-    def visit_NameLeaf(self, node: NameLeaf) -> None:
-        if node.value not in self.rules and node.value not in self.tokens:
-            raise GrammarError(f"Dangling reference to rule {node.value!r}")
-
-    def visit_NamedItem(self, node: NamedItem) -> None:
-        if node.name and node.name.startswith("_"):
-            raise GrammarError(f"Variable names cannot start with underscore: '{node.name}'")
-        self.visit(node.item)
-*/
-
 class ParserGen {
+    private GrammarVisitor $callMakerVisitor;
 
-}
-
+    public function __construct() {
+        /*
+            def __init__(self, grammar: Grammar, tokens: Set[str], file: Optional[IO[Text]]):
+                self.grammar = grammar
+                self.tokens = tokens
+                self.keywords: Dict[str, int] = {}
+                self.soft_keywords: Set[str] = set()
+                self.rules = grammar.rules
+                self.validate_rule_names()
+                if "trailer" not in grammar.metas and "start" not in self.rules:
+                    raise GrammarError("Grammar without a trailer must have a 'start' rule")
+                checker = RuleCheckingVisitor(self.rules, self.tokens)
+                for rule in self.rules.values():
+                    checker.visit(rule)
+                self.file = file
+                self.level = 0
+                self.first_graph, self.first_sccs = compute_left_recursives(self.rules)
+                self.counter = 0  # For name_rule()/name_loop()
+                self.keyword_counter = 499  # For keyword_type()
+                self.all_rules: Dict[str, Rule] = self.rules.copy()  # Rules + temporal rules
+                self._local_variable_stack: List[List[str]] = []
+         */
+    }
 /*
-class ParserGenerator:
-
-    callmakervisitor: GrammarVisitor
-
-    def __init__(self, grammar: Grammar, tokens: Set[str], file: Optional[IO[Text]]):
-        self.grammar = grammar
-        self.tokens = tokens
-        self.keywords: Dict[str, int] = {}
-        self.soft_keywords: Set[str] = set()
-        self.rules = grammar.rules
-        self.validate_rule_names()
-        if "trailer" not in grammar.metas and "start" not in self.rules:
-            raise GrammarError("Grammar without a trailer must have a 'start' rule")
-        checker = RuleCheckingVisitor(self.rules, self.tokens)
-        for rule in self.rules.values():
-            checker.visit(rule)
-        self.file = file
-        self.level = 0
-        self.first_graph, self.first_sccs = compute_left_recursives(self.rules)
-        self.counter = 0  # For name_rule()/name_loop()
-        self.keyword_counter = 499  # For keyword_type()
-        self.all_rules: Dict[str, Rule] = self.rules.copy()  # Rules + temporal rules
-        self._local_variable_stack: List[List[str]] = []
 
     def validate_rule_names(self) -> None:
         for rule in self.rules:
@@ -235,74 +143,52 @@ class ParserGenerator:
             name = f"{origname}_{counter}"
         self.local_variable_names.append(name)
         return name
+ */
+/*
+class RuleCollectorVisitor(GrammarVisitor):
+    """Visitor that invokes a provieded callmaker visitor with just the NamedItem nodes"""
+
+    def __init__(self, rules: Dict[str, Rule], callmakervisitor: GrammarVisitor) -> None:
+        self.rulses = rules
+        self.callmaker = callmakervisitor
+
+    def visit_Rule(self, rule: Rule) -> None:
+        self.visit(rule.flatten())
+
+    def visit_NamedItem(self, item: NamedItem) -> None:
+        self.callmaker.visit(item)
 
 
-class NullableVisitor(GrammarVisitor):
-    def __init__(self, rules: Dict[str, Rule]) -> None:
+class KeywordCollectorVisitor(GrammarVisitor):
+    """Visitor that collects all the keywods and soft keywords in the Grammar"""
+
+    def __init__(self, gen: "ParserGenerator", keywords: Dict[str, int], soft_keywords: Set[str]):
+        self.generator = gen
+        self.keywords = keywords
+        self.soft_keywords = soft_keywords
+
+    def visit_StringLeaf(self, node: StringLeaf) -> None:
+        val = ast.literal_eval(node.value)
+        if re.match(r"[a-zA-Z_]\w*\Z", val):  # This is a keyword
+            if node.value.endswith("'") and node.value not in self.keywords:
+                self.keywords[val] = self.generator.keyword_type()
+            else:
+                return self.soft_keywords.add(node.value.replace('"', ""))
+
+
+class RuleCheckingVisitor(GrammarVisitor):
+    def __init__(self, rules: Dict[str, Rule], tokens: Set[str]):
         self.rules = rules
-        self.visited: Set[Any] = set()
-        self.nullables: Set[Union[Rule, NamedItem]] = set()
+        self.tokens = tokens
 
-    def visit_Rule(self, rule: Rule) -> bool:
-        if rule in self.visited:
-            return False
-        self.visited.add(rule)
-        if self.visit(rule.rhs):
-            self.nullables.add(rule)
-        return rule in self.nullables
+    def visit_NameLeaf(self, node: NameLeaf) -> None:
+        if node.value not in self.rules and node.value not in self.tokens:
+            raise GrammarError(f"Dangling reference to rule {node.value!r}")
 
-    def visit_Rhs(self, rhs: Rhs) -> bool:
-        for alt in rhs.alts:
-            if self.visit(alt):
-                return True
-        return False
-
-    def visit_Alt(self, alt: Alt) -> bool:
-        for item in alt.items:
-            if not self.visit(item):
-                return False
-        return True
-
-    def visit_Forced(self, force: Forced) -> bool:
-        return True
-
-    def visit_LookAhead(self, lookahead: Lookahead) -> bool:
-        return True
-
-    def visit_Opt(self, opt: Opt) -> bool:
-        return True
-
-    def visit_Repeat0(self, repeat: Repeat0) -> bool:
-        return True
-
-    def visit_Repeat1(self, repeat: Repeat1) -> bool:
-        return False
-
-    def visit_Gather(self, gather: Gather) -> bool:
-        return False
-
-    def visit_Cut(self, cut: Cut) -> bool:
-        return False
-
-    def visit_Group(self, group: Group) -> bool:
-        return self.visit(group.rhs)
-
-    def visit_NamedItem(self, item: NamedItem) -> bool:
-        if self.visit(item.item):
-            self.nullables.add(item)
-        return item in self.nullables
-
-    def visit_NameLeaf(self, node: NameLeaf) -> bool:
-        if node.value in self.rules:
-            return self.visit(self.rules[node.value])
-        # Token or unknown; never empty.
-        return False
-
-    def visit_StringLeaf(self, node: StringLeaf) -> bool:
-        # The string token '' is considered empty.
-        return not node.value
-
-
+    def visit_NamedItem(self, node: NamedItem) -> None:
+        if node.name and node.name.startswith("_"):
+            raise GrammarError(f"Variable names cannot start with underscore: '{node.name}'")
+        self.visit(node.item)
 
 class InitialNamesVisitor(GrammarVisitor):
     def __init__(self, rules: Dict[str, Rule]) -> None:
@@ -392,3 +278,4 @@ def make_first_graph(rules: Dict[str, Rule]) -> Dict[str, AbstractSet[str]]:
     return graph
 
  */
+}

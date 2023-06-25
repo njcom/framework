@@ -26,7 +26,7 @@ class Tokenizer implements ITokenizer {
     /**
      * @param resource|string $stream
      * @return Iterator
-     * @noinspection PhpMissingParamTypeInspection
+ * @noinspection PhpMissingParamTypeInspection
      */
     public static function tokenize($stream): Iterator {
         if (is_string($stream)) {

@@ -7,17 +7,21 @@
 namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
 use Morpho\Compiler\Frontend\Peg\FirstSetCalculator;
-use Morpho\Compiler\Frontend\Peg\Grammar;
-use Morpho\Compiler\Frontend\Peg\GrammarParser;
-use Morpho\Compiler\Frontend\Peg\GrammarTokenizer;
 use Morpho\Compiler\Frontend\Peg\GrammarVisitor;
-use Morpho\Compiler\Frontend\Peg\Tokenizer;
 use Morpho\Testing\TestCase;
+use SebastianBergmann\Diff\ParserTest;
 
 /**
  * Based on https://github.com/python/cpython/blob/main/Lib/test/test_peg_generator/test_first_sets.py
  */
 class FirstSetCalculatorTest extends TestCase {
+    private ParserTestHelper $testHelper;
+
+    protected function setUp(): void {
+        parent::setUp();
+        $this->testHelper = new ParserTestHelper();
+    }
+
     public function testInterface() {
         $this->assertInstanceOf(GrammarVisitor::class, new FirstSetCalculator([]));
     }
@@ -264,7 +268,6 @@ class FirstSetCalculatorTest extends TestCase {
     }
 
     public function testNastyLeftRecursion(): void {
-        # TODO: Validate this
         $grammar = <<<OUT
         start: target '='
         target: maybe '+' | NAME
@@ -328,22 +331,13 @@ class FirstSetCalculatorTest extends TestCase {
         );
     }
 
-    private function parseString(string $s): Grammar {
-        $tokenizer = new GrammarTokenizer(Tokenizer::tokenize($s));
-        $parser = new GrammarParser($tokenizer);
-        $grammar = $parser->start();
-        if (!$grammar) {
-            throw $parser->mkSyntaxError('Unable to parse grammar');
-        }
-        return $grammar;
-    }
 
     /**
      * @param string $sourceGrammar
      * @return array<string, string>
      */
     private function calculateFirstSets(string $sourceGrammar): array {
-        $grammar = $this->parseString($sourceGrammar);
+        $grammar = $this->testHelper->parseString($sourceGrammar);
         return (new FirstSetCalculator($grammar->rules))->calculate();
     }
 
@@ -351,23 +345,11 @@ class FirstSetCalculatorTest extends TestCase {
         $this->assertSetsEquals($expected, $this->calculateFirstSets($grammar));
     }
 
-    private function sortRecursive(array $val): array {
-        ksort($val);
-        $sortedKeys = array_keys($val);
-        array_multisort($val);
-        $sorted = [];
-        foreach ($sortedKeys as $key) {
-            $v = $val[$key];
-            $sorted[$key] = is_array($v) ? $this->sortRecursive($v) : $v;
-        }
-        return $sorted;
-    }
-
     private function assertSetsEquals(array $expected, array $actual): void {
         $expectedLen = count($expected);
         $actualLen = count($actual);
-        $expected = $this->sortRecursive($expected);
-        $actual = $this->sortRecursive($actual);
+        $expected = $this->testHelper->sortRecursive($expected);
+        $actual = $this->testHelper->sortRecursive($actual);
         $this->assertCount($expectedLen, $expected);
         $this->assertCount($actualLen, $actual);
         $this->assertSame($expected, $actual);

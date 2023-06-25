@@ -22,4 +22,11 @@ if [[ ! -b /dev/loop0 ]]; then
 fi
 declare -r CI_OPTIONS="--log-junit $TEST_DIR_PATH/test-result.xml"
 # shellcheck disable=SC2046
-php -f "$PHPUNIT_BIN_FILE_PATH" -- -c "$PHPUNIT_CONF_FILE_PATH"$([[ -n "${MORPHO_CI-}" ]] && echo " $CI_OPTIONS") "$@"
+php -f "$PHPUNIT_BIN_FILE_PATH" -- --configuration "$PHPUNIT_CONF_FILE_PATH" $([[ -n "${MORPHO_CI-}" ]] && echo " $CI_OPTIONS") \
+    --display-incomplete \
+    --display-skipped \
+    --display-deprecations \
+    --display-errors \
+    --display-notices \
+    --display-warnings \
+    "$@"

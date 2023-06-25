@@ -5,10 +5,7 @@
  * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
 /**
- * The implementation is based on Python's PEG:
- * 1. https://medium.com/@gvanrossum_83706/peg-parsing-series-de5d41b2ed60
- * 2. https://www.python.org/dev/peps/pep-0617/
- * 3. https://www.youtube.com/watch?v=QppWTvh7_sI
+ * Based on https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/grammar.py
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
@@ -17,18 +14,14 @@ use Morpho\Base\NotImplementedException;
 use Morpho\Compiler\Frontend\IGrammar;
 use Traversable;
 
+use function Morpho\Base\q;
+
 /*
 class GrammarError(Exception):
     pass
-
 */
 
-/*
-# Global flag whether we want actions in __str__() -- default off.
-SIMPLE_STR = True
-*/
-
-readonly class Grammar implements IGrammar, IGrammarItem {
+readonly class Grammar implements IGrammar, IGrammarNode {
     public iterable $rules;
     private iterable $metas;
 
@@ -44,8 +37,11 @@ readonly class Grammar implements IGrammar, IGrammarItem {
     }
 
     public function __toString(): string {
-        throw new NotImplementedException();
-        //return "\n".join(str(rule) for name, rule in self.rules.items())
+        $res = '';
+        foreach ($this->rules as $rule) {
+            $res .= $rule->__toString() . "\n";
+        }
+        return $res;
     }
 
     public function repr(): string {
@@ -71,7 +67,12 @@ readonly class Grammar implements IGrammar, IGrammarItem {
     }
 }
 
-readonly class Rule implements IGrammarItem {
+/*
+ # Global flag whether we want actions in __str__() -- default off.
+SIMPLE_STR = True
+*/
+
+readonly class Rule implements IGrammarNode {
     public string $name;
     public readonly Rhs $rhs;
     private ?string $type;
@@ -100,25 +101,25 @@ readonly class Rule implements IGrammarItem {
     def is_gather(self) -> bool:
         return self.name.startswith("_gather")
     */
+
     public function __toString(): string {
-        throw new NotImplementedException();
-        /*
-        def __str__(self) -> str:
-            if SIMPLE_STR or self.type is None:
-                res = f"{self.name}: {self.rhs}"
-            else:
-                res = f"{self.name}[{self.type}]: {self.rhs}"
-            if len(res) < 88:
-                return res
-            lines = [res.split(":")[0] + ":"]
-            lines += [f"    | {alt}" for alt in self.rhs.alts]
-            return "\n".join(lines)
-        */
+        if (/*SIMPLE_STR* || */null === $this->type) {
+            $res = "{$this->name}: {$this->rhs}";
+        } else {
+            $res = "{$this->name}[{$this->type}: {$this->rhs}";
+        }
+        if (mb_strlen($res) < 80) {
+            return $res;
+        }
+        $lines = [explode(':', $res)[0] . ':'];
+        foreach ($this->rhs->alts as $alt) {
+            $lines[] = "    | {$alt}";
+        }
+        return implode("\n", $lines);
     }
 
     public function repr(): string {
-        throw new NotImplementedException();
-        //return f"Rule({self.name!r}, {self.type!r}, {self.rhs!r})"
+        return 'Rule(' . q($this->name) . ', ' . (null === $this->type ? 'None' : q($this->type)) . ', ' . $this->rhs->repr() . ')';
     }
 
     // def __iter__(self) -> Iterator[Rhs]
@@ -141,8 +142,8 @@ readonly class Rule implements IGrammarItem {
     */
 }
 
-abstract readonly class Leaf implements IGrammarItem {
-    public readonly string $val;
+abstract readonly class Leaf implements IGrammarNode {
+    public string $val;
 
     public function __construct(string $val) {
         $this->val = $val;
@@ -162,27 +163,25 @@ abstract readonly class Leaf implements IGrammarItem {
 
 readonly class NameLeaf extends Leaf {
     public function __toString(): string {
-        throw new NotImplementedException();
-        /*    if self.value == "ENDMARKER":
-                return "$"
-            return super().__str__()*/
+        if ($this->val == 'ENDMARKER') {
+            return '$';
+        }
+        return parent::__toString();
     }
 
     public function repr(): string {
-        //return f"NameLeaf({self.value!r})"
-        throw new NotImplementedException();
+        return 'NameLeaf(' . q($this->val) . ')';
     }
 }
 
-//"""The value is a string literal, including quotes."""
+// The value is a string literal, including quotes.
 readonly class StringLeaf extends Leaf {
     public function repr(): string {
-        //return f"StringLeaf({self.value!r})"
-        throw new NotImplementedException();
+        return 'StringLeaf(' . q($this->val) . ')';
     }
 }
 
-readonly class Rhs implements IGrammarItem {
+readonly class Rhs implements IGrammarNode {
     /**
      * @var array<Alt>
      */
@@ -198,8 +197,11 @@ readonly class Rhs implements IGrammarItem {
     }
 
     public function __toString(): string {
-        //return " | ".join(str(alt) for alt in self.alts)
-        throw new NotImplementedException();
+        $res = [];
+        foreach ($this->alts as $alt) {
+            $res[] = $alt->__toString();
+        }
+        return implode(' | ', $res);
     }
 
     public function repr(): string {
@@ -213,28 +215,28 @@ readonly class Rhs implements IGrammarItem {
     }
 }
 
-readonly class Alt implements IGrammarItem {
-    public readonly NamedItemList $items;
+readonly class Alt implements IGrammarNode {
+    public NamedNodeList $items;
     private int $icut;
     private ?string $action;
 
     // def __init__(self, items: List[NamedItem], *, icut: int = -1, action: Optional[str] = None):
-    public function __construct(NamedItemList $items, int $icut = -1, ?string $action = null) {
+    public function __construct(NamedNodeList $items, int $icut = -1, ?string $action = null) {
         $this->items = $items;
         $this->icut = $icut;
         $this->action = $action;
     }
 
     public function __toString(): string {
-        /*
-    def __str__(self) -> str:
-        core = " ".join(str(item) for item in self.items)
-        if not SIMPLE_STR and self.action:
-            return f"{core} {{ {self.action} }}"
-        else:
-            return core
-    */
-        throw new NotImplementedException();
+        $core = '';
+        foreach ($this->items as $item) {
+            $core .= ' ' . $item->__toString();
+        }
+        $core = substr($core, 1);
+        if (/* not SIMPLE_STR */$this->action) {
+            return "{$core} {{ {$this->action} }}";
+        }
+        return $core;
     }
 
     public function repr(): string {
@@ -255,9 +257,9 @@ readonly class Alt implements IGrammarItem {
     }
 }
 
-readonly class NamedItem implements IGrammarItem {
+readonly class NamedNode implements IGrammarNode {
     private ?string $name;
-    public readonly Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $item;
+    public Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $item;
     private ?string $type;
     private bool $nullable;
 
@@ -270,14 +272,10 @@ readonly class NamedItem implements IGrammarItem {
     }
 
     public function __toString(): string {
-        throw new NotImplementedException();
-        /*
-        def __str__(self) -> str:
-            if not SIMPLE_STR and self.name:
-                return f"{self.name}={self.item}"
-            else:
-                return str(self.item)
-        */
+        if (/* not SIMPLE_STR*/$this->name) {
+            return "{$this->name}={$this->item}";
+        }
+        return $this->item->__toString();
     }
 
     public function repr(): string {
@@ -288,23 +286,23 @@ readonly class NamedItem implements IGrammarItem {
 
     public function getIterator(): Traversable {
         throw new NotImplementedException();
-/*        def __iter__(self) -> Iterator[Item]:
-            yield self.item*/
+        /*        def __iter__(self) -> Iterator[Item]:
+                    yield self.item*/
     }
 }
 
-readonly class Forced implements IGrammarItem {
+readonly class Forced implements IGrammarNode {
     private Leaf|Group $node;
 
     public function __construct(Leaf|Group $node) {
         $this->node = $node;
     }
-    
+
     public function __toString(): string {
         throw new NotImplementedException();
         //return f"&&{self.node}"
     }
-    
+
     public function repr(): string {
         throw new NotImplementedException();
     }
@@ -315,8 +313,8 @@ readonly class Forced implements IGrammarItem {
     }
 }
 
-abstract readonly class Lookahead implements IGrammarItem {
-    public readonly Leaf|Group $node;
+abstract readonly class Lookahead implements IGrammarNode {
+    public Leaf|Group $node;
     private string $sign;
 
     public function __construct(Leaf|Group $node, string $sign) {
@@ -357,27 +355,27 @@ readonly class NegativeLookahead extends Lookahead {
     }
 }
 
-readonly class Opt implements IGrammarItem {
-    public readonly Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $node;
+readonly class Opt implements IGrammarNode {
+    public Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $node;
 
     public function __construct(Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $node) {
         $this->node = $node;
     }
 
     public function __toString(): string {
-    /*def __str__(self) -> str:
-        s = str(self.node)
-        # TODO: Decide whether to use [X] or X? based on type of X
-        if " " in s:
-            return f"[{s}]"
-        else:
-            return f"{s}?"*/
+        /*def __str__(self) -> str:
+            s = str(self.node)
+            # TODO: Decide whether to use [X] or X? based on type of X
+            if " " in s:
+                return f"[{s}]"
+            else:
+                return f"{s}?"*/
         throw new NotImplementedException();
     }
 
     public function repr(): string {
         throw new NotImplementedException();
-    //    return f"Opt({self.node!r})"
+        //    return f"Opt({self.node!r})"
     }
 
     //def __iter__(self) -> Iterator[Item]:
@@ -387,8 +385,8 @@ readonly class Opt implements IGrammarItem {
 }
 
 // Shared base class for x* and x+.
-abstract readonly class Repeat implements IGrammarItem {
-    public readonly Leaf|Group $node;
+abstract readonly class Repeat implements IGrammarNode {
+    public Leaf|Group $node;
 
     // self.memo: Optional[Tuple[Optional[str], str]] = None
     private ?array $memo;
@@ -407,37 +405,35 @@ abstract readonly class Repeat implements IGrammarItem {
 
 readonly class Repeat0 extends Repeat {
     public function __toString(): string {
-    /*def __str__(self) -> str:
-        s = str(self.node)
-        # TODO: Decide whether to use (X)* or X* based on type of X
-        if " " in s:
-            return f"({s})*"
-        else:
-            return f"{s}*"*/
+        /*def __str__(self) -> str:
+            s = str(self.node)
+            # TODO: Decide whether to use (X)* or X* based on type of X
+            if " " in s:
+                return f"({s})*"
+            else:
+                return f"{s}*"*/
         throw new NotImplementedException();
     }
 
     public function repr(): string {
-        //return f"Repeat0({self.node!r})"
-        throw new NotImplementedException();
+        return 'Repeat0(' . $this->node->repr() . ')';
     }
 }
 
 readonly class Repeat1 extends Repeat {
     public function __toString(): string {
         throw new NotImplementedException();
-    /*def __str__(self) -> str:
-        s = str(self.node)
-        # TODO: Decide whether to use (X)+ or X+ based on type of X
-        if " " in s:
-            return f"({s})+"
-        else:
-            return f"{s}+"*/
+        /*def __str__(self) -> str:
+            s = str(self.node)
+            # TODO: Decide whether to use (X)+ or X+ based on type of X
+            if " " in s:
+                return f"({s})+"
+            else:
+                return f"{s}+"*/
     }
 
     public function repr(): string {
-        //return f"Repeat1({self.node!r})"
-        throw new NotImplementedException();
+        return 'Repeat1(' . $this->node->repr() . ')';
     }
 }
 
@@ -451,7 +447,7 @@ readonly class Gather extends Repeat {
     }
 
     public function __toString(): string {
-    //    return f"{self.separator!s}.{self.node!s}+"
+        //    return f"{self.separator!s}.{self.node!s}+"
         throw new NotImplementedException();
     }
 
@@ -461,7 +457,7 @@ readonly class Gather extends Repeat {
     }
 }
 
-readonly class Group implements IGrammarItem {
+readonly class Group implements IGrammarNode {
     public readonly Rhs $rhs;
 
     // def __init__(self, rhs: Rhs):
@@ -485,7 +481,7 @@ readonly class Group implements IGrammarItem {
     }
 }
 
-readonly class Cut implements IGrammarItem {
+readonly class Cut implements IGrammarNode {
     public function __toString(): string {
         return '~';
     }
@@ -518,7 +514,7 @@ Item = Union[Plain, Opt, Repeat, Forced, Lookahead, Rhs, Cut]
 */
 
 // RuleName = Tuple[str, str]
-class RuleName extends ArrayObject implements IGrammarItem {
+class RuleName extends ArrayObject implements IGrammarNode {
     public function __construct(string $val, ?string $annotation) {
         parent::__construct([$val, $annotation]);
     }
@@ -533,7 +529,7 @@ class RuleName extends ArrayObject implements IGrammarItem {
 }
 
 // MetaTuple = Tuple[str, Optional[str]]
-class MetaTuple extends ArrayObject implements IGrammarItem {
+class MetaTuple extends ArrayObject implements IGrammarNode {
     public function __construct(string $name, ?string $val) {
     }
 
@@ -547,7 +543,7 @@ class MetaTuple extends ArrayObject implements IGrammarItem {
 }
 
 // MetaList = List[MetaTuple]
-class MetaList extends ArrayObject implements IGrammarItem {
+class MetaList extends ArrayObject implements IGrammarNode {
     public function __toString(): string {
         throw new NotImplementedException();
     }
@@ -558,7 +554,7 @@ class MetaList extends ArrayObject implements IGrammarItem {
 }
 
 // RuleList = List[Rule]
-class RuleList extends ArrayObject implements IGrammarItem {
+class RuleList extends ArrayObject implements IGrammarNode {
     public function __toString(): string {
         throw new NotImplementedException();
     }
@@ -569,7 +565,7 @@ class RuleList extends ArrayObject implements IGrammarItem {
 }
 
 // NamedItemList = List[NamedItem]
-class NamedItemList extends ArrayObject implements IGrammarItem {
+class NamedNodeList extends ArrayObject implements IGrammarNode {
     public function __toString(): string {
         throw new NotImplementedException();
     }

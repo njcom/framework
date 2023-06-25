@@ -9,6 +9,6 @@ namespace Morpho\Compiler\Frontend\Peg;
 use IteratorAggregate;
 use Stringable;
 
-interface IGrammarItem extends Stringable, IteratorAggregate {
+interface IGrammarNode extends Stringable, IteratorAggregate {
     public function repr(): string;
 }

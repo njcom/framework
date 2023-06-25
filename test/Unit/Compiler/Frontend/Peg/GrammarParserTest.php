@@ -14,6 +14,10 @@ use Morpho\Compiler\Frontend\Peg\Parser;
 use Morpho\Compiler\Frontend\Peg\Tokenizer;
 use Morpho\Testing\TestCase;
 
+/**
+ * Based on
+ * https://github.com/python/cpython/blob/3.12/Lib/test/test_peg_generator/test_pegen.py
+ */
 class GrammarParserTest extends TestCase {
     private GrammarParser $parser;
 

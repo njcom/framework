@@ -83,7 +83,7 @@ class NullableVisitor extends GrammarVisitor {
         return $this->visit($group->rhs);
     }
 
-    protected function visitNamedItem(NamedItem $item): bool {
+    protected function visitNamedItem(NamedNode $item): bool {
         if ($this->visit($item->item)) {
             $this->nullables[] = $item;
         }

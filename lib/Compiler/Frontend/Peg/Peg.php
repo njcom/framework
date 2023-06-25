@@ -4,24 +4,21 @@
  * It is distributed under the 'Apache License Version 2.0' license.
  * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
-/**
- * The implementation is based on Python's PEG:
- * 1. https://medium.com/@gvanrossum_83706/peg-parsing-series-de5d41b2ed60
- * 2. https://www.python.org/dev/peps/pep-0617/
- * 3. https://www.youtube.com/watch?v=QppWTvh7_sI
- */
 namespace Morpho\Compiler\Frontend\Peg;
 
-use Morpho\Compiler\Frontend\IParserGen;
+use Morpho\Compiler\ICompiler;
 
-class Peg implements IParserGen {
+/**
+ * Based on https://peps.python.org/pep-0617/ and other related Python's resources.
+ */
+class Peg implements ICompiler {
     /**
      * [build_parser()](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/build.py)
      * @param string|resource $source Stream for the grammar or source of the grammar
      * @return array
      * @noinspection PhpMissingParamTypeInspection
      */
-    public static function build($source): array {
+    public static function parse($source): array {
         $tokenizer = new GrammarTokenizer(Tokenizer::tokenize($source));
         $parser = new GrammarParser($tokenizer);
         $grammar = $parser->start();
@@ -33,7 +30,7 @@ class Peg implements IParserGen {
 
     public function frontend(): callable {
         return function (mixed $context): array {
-            return self::build($context['file'] ?? $context);
+            return static::parse($context['file'] ?? $context);
         };
     }
 
@@ -46,7 +43,7 @@ class Peg implements IParserGen {
     public function backend(): callable {
         return function (mixed $context): mixed {
             d($context);
-            return new ParserGen($context);
+            return new Peg($context);
         };
     }
 

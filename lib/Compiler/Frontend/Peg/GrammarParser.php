@@ -269,10 +269,10 @@ class GrammarParser extends Parser {
                 $index = $this->index();
                 if (($items = $this->items()) && ($this->expect('$')) && ($action = $this->action())) {
                     return new Alt(
-                        new NamedItemList(
+                        new NamedNodeList(
                             array_merge(
                                 $items->getArrayCopy(),
-                                [new NamedItem(null, new NameLeaf('ENDMARKER'))]
+                                [new NamedNode(null, new NameLeaf('ENDMARKER'))]
                             )
                         ), action: $action
                     );
@@ -280,10 +280,10 @@ class GrammarParser extends Parser {
                 $this->reset($index);
                 if (($items = $this->items()) && ($this->expect('$'))) {
                     return new Alt(
-                        new NamedItemList(
+                        new NamedNodeList(
                             array_merge(
                                 $items->getArrayCopy(),
-                                [new NamedItem(null, new NameLeaf('ENDMARKER'))]
+                                [new NamedNode(null, new NameLeaf('ENDMARKER'))]
                             )
                         ), action: null
                     );
@@ -305,17 +305,17 @@ class GrammarParser extends Parser {
     /**
      * items: named_item items | named_item
      */
-    private function items(): ?NamedItemList {
+    private function items(): ?NamedNodeList {
         return $this->memoize(
             __METHOD__,
-            function (): ?NamedItemList {
+            function (): ?NamedNodeList {
                 $index = $this->index();
                 if (($namedItem = $this->namedItem()) && ($items = $this->items())) {
-                    return new NamedItemList(array_merge([$namedItem], $items->getArrayCopy()));
+                    return new NamedNodeList(array_merge([$namedItem], $items->getArrayCopy()));
                 }
                 $this->reset($index);
                 if ($namedItem = $this->namedItem()) {
-                    return new NamedItemList([$namedItem]);
+                    return new NamedNodeList([$namedItem]);
                 }
                 $this->reset($index);
                 return null;
@@ -326,10 +326,10 @@ class GrammarParser extends Parser {
     /**
      * named_item: NAME annotation '=' ~ item | NAME '=' ~ item | item | forced_atom | lookahead
      */
-    private function namedItem(): ?NamedItem {
+    private function namedItem(): ?NamedNode {
         return $this->memoize(
             __METHOD__,
-            function (): ?NamedItem {
+            function (): ?NamedNode {
                 $index = $this->index();
                 $cut = false;
                 if (
@@ -339,7 +339,7 @@ class GrammarParser extends Parser {
                     && ($cut = true)
                     && ($item = $this->item())
                 ) {
-                    return new NamedItem($name->val, $item, $annotation);
+                    return new NamedNode($name->val, $item, $annotation);
                 }
                 $this->reset($index);
                 if ($cut) {
@@ -350,22 +350,22 @@ class GrammarParser extends Parser {
                     && $this->expect('=')
                     && ($cut = true)
                     && ($item = $this->item())) {
-                    return new NamedItem($name->val, $item);
+                    return new NamedNode($name->val, $item);
                 }
                 $this->reset($index);
                 if ($cut) {
                     return null;
                 }
                 if ($item = $this->item()) {
-                    return new NamedItem(null, $item);
+                    return new NamedNode(null, $item);
                 }
                 $this->reset($index);
                 if ($it = $this->forcedAtom()) {
-                    return new NamedItem(null, $it);
+                    return new NamedNode(null, $it);
                 }
                 $this->reset($index);
                 if ($it = $this->lookahead()) {
-                    return new NamedItem(null, $it);
+                    return new NamedNode(null, $it);
                 }
                 $this->reset($index);
                 return null;
