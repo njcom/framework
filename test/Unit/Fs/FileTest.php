@@ -9,6 +9,7 @@ namespace Morpho\Test\Unit\Fs;
 use ArrayIterator;
 use InvalidArgumentException;
 use Morpho\Fs\Entry;
+use Morpho\Fs\Exception;
 use Morpho\Fs\Exception as FsException;
 use Morpho\Fs\File;
 use Morpho\Testing\TestCase;
@@ -453,7 +454,7 @@ OUT
                 break;
             }
             $this->fail();
-        } catch (Throwable $e) {
+        } catch (Exception) {
             $this->markTestAsNotRisky();
         }
     }

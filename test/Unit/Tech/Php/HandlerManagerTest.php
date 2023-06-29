@@ -8,7 +8,7 @@ namespace Morpho\Test\Unit\Tech\Php;
 
 use InvalidArgumentException;
 use Morpho\Tech\Php\HandlerManager;
-use PHPUnit\Util\Error\Handler as PHPUnitErrorHandler;
+use PHPUnit\Util\ErrorHandler as PHPUnitErrorHandler;
 use RuntimeException;
 
 use function array_diff;

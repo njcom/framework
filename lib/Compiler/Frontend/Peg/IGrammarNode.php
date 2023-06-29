@@ -12,3 +12,4 @@ use Stringable;
 interface IGrammarNode extends Stringable, IteratorAggregate {
     public function repr(): string;
 }
+

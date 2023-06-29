@@ -77,7 +77,7 @@ class DispatchErrorHandlerTest extends TestCase {
     }
 
     public function testThrowErrorsAccessor() {
-        $this->checkBoolAccessor([new DispatchErrorHandler(), 'throwErrors'], false);
+        $this->checkBoolAccessor((new DispatchErrorHandler())->throwErrors(...), false);
     }
 
     public function testHandleException_MustRethrowExceptionIfThrowErrorsIsSet() {

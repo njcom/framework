@@ -67,20 +67,16 @@ readonly class Grammar implements IGrammar, IGrammarNode {
     }
 }
 
-/*
- # Global flag whether we want actions in __str__() -- default off.
-SIMPLE_STR = True
-*/
-
-readonly class Rule implements IGrammarNode {
-    public string $name;
+class Rule implements IGrammarNode, IRenderingActions {
+    public readonly string $name;
     public readonly Rhs $rhs;
-    private ?string $type;
-    private ?object $memo;
-    private bool $visited;
-    private bool $nullable;
-    private bool $leftRecursive;
-    private bool $leader;
+    private readonly ?string $type;
+    private readonly ?object $memo;
+    private readonly bool $visited;
+    private readonly bool $nullable;
+    private readonly bool $leftRecursive;
+    private readonly bool $leader;
+    private bool $renderActions = false;
 
     // def __init__(self, name: str, type: Optional[str], rhs: Rhs, memo: Optional[object] = None):
     public function __construct(string $name, ?string $type, Rhs $rhs, ?object $memo = null) {
@@ -103,12 +99,12 @@ readonly class Rule implements IGrammarNode {
     */
 
     public function __toString(): string {
-        if (/*SIMPLE_STR* || */null === $this->type) {
+        if (!$this->renderActions || null === $this->type) {
             $res = "{$this->name}: {$this->rhs}";
         } else {
             $res = "{$this->name}[{$this->type}: {$this->rhs}";
         }
-        if (mb_strlen($res) < 80) {
+        if (mb_strlen($res) < 88) {
             return $res;
         }
         $lines = [explode(':', $res)[0] . ':'];
@@ -125,6 +121,13 @@ readonly class Rule implements IGrammarNode {
     // def __iter__(self) -> Iterator[Rhs]
     public function getIterator(): Traversable {
         return $this->rhs;
+    }
+
+    public function renderActions($flag = null): bool {
+        if (null !== $flag) {
+            $this->renderActions = $flag;
+        }
+        return $this->renderActions;
     }
 
     /*
@@ -205,8 +208,15 @@ readonly class Rhs implements IGrammarNode {
     }
 
     public function repr(): string {
-        //return f"Rhs({self.alts!r})"
-        throw new NotImplementedException();
+        $items = [];
+        foreach ($this->alts as $alt) {
+            if ($alt instanceof IGrammarNode) {
+                $items[] = $alt->repr();
+            } else {
+                $items[] = (string)$alt;
+            }
+        }
+        return 'Rhs([' . implode(', ', $items) . '])';
     }
 
     // def __iter__(self) -> Iterator[List[Alt]]:
@@ -215,13 +225,14 @@ readonly class Rhs implements IGrammarNode {
     }
 }
 
-readonly class Alt implements IGrammarNode {
-    public NamedNodeList $items;
-    private int $icut;
-    private ?string $action;
+class Alt implements IGrammarNode, IRenderingActions {
+    public readonly NamedItemList $items;
+    private readonly int $icut;
+    private readonly ?string $action;
+    private bool $renderActions = false;
 
     // def __init__(self, items: List[NamedItem], *, icut: int = -1, action: Optional[str] = None):
-    public function __construct(NamedNodeList $items, int $icut = -1, ?string $action = null) {
+    public function __construct(NamedItemList $items, int $icut = -1, ?string $action = null) {
         $this->items = $items;
         $this->icut = $icut;
         $this->action = $action;
@@ -233,21 +244,21 @@ readonly class Alt implements IGrammarNode {
             $core .= ' ' . $item->__toString();
         }
         $core = substr($core, 1);
-        if (/* not SIMPLE_STR */$this->action) {
+        if ($this->renderActions && $this->action) {
             return "{$core} {{ {$this->action} }}";
         }
         return $core;
     }
 
     public function repr(): string {
-        /*def __repr__(self) -> str:
-            args = [repr(self.items)]
-            if self.icut >= 0:
-                args.append(f"icut={self.icut}")
-            if self.action:
-                args.append(f"action={self.action!r}")
-            return f"Alt({', '.join(args)})"*/
-        throw new NotImplementedException();
+        $args = [$this->items->repr()];
+        if ($this->icut >= 0) {
+            $args[] = 'icut=' . $this->icut;
+        }
+        if ($this->action) {
+            $args[] = 'action=' . $this->action;
+        }
+        return 'Alt(' . implode(', ', $args) . ')';
     }
 
     //def __iter__(self) -> Iterator[List[NamedItem]]:
@@ -255,13 +266,21 @@ readonly class Alt implements IGrammarNode {
         throw new NotImplementedException();
         //yield self.items
     }
+
+    public function renderActions($flag = null): bool {
+        if (null !== $flag) {
+            $this->renderActions = $flag;
+        }
+        return $this->renderActions;
+    }
 }
 
-readonly class NamedNode implements IGrammarNode {
-    private ?string $name;
-    public Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $item;
-    private ?string $type;
-    private bool $nullable;
+class NamedItem implements IGrammarNode, IRenderingActions {
+    private readonly ?string $name;
+    public readonly Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $item;
+    private readonly ?string $type;
+    private readonly bool $nullable;
+    private bool $renderActions = false;
 
     // def __init__(self, name: Optional[str], item: Item, type: Optional[str] = None): $nullab;e
     public function __construct(?string $name, Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $item, string $type = null) {
@@ -272,22 +291,27 @@ readonly class NamedNode implements IGrammarNode {
     }
 
     public function __toString(): string {
-        if (/* not SIMPLE_STR*/$this->name) {
+        if ($this->renderActions && $this->name) {
             return "{$this->name}={$this->item}";
         }
         return $this->item->__toString();
     }
 
     public function repr(): string {
-        /*def __repr__(self) -> str:
-            return f"NamedItem({self.name!r}, {self.item!r})"*/
-        throw new NotImplementedException();
+        return 'NamedItem(' . (null === $this->name ? 'None' : q($this->name)) . ', ' . $this->item->repr() . ')';
     }
 
     public function getIterator(): Traversable {
         throw new NotImplementedException();
         /*        def __iter__(self) -> Iterator[Item]:
                     yield self.item*/
+    }
+
+    public function renderActions($flag = null): bool {
+        if (null !== $flag) {
+            $this->renderActions = $flag;
+        }
+        return $this->renderActions;
     }
 }
 
@@ -565,13 +589,21 @@ class RuleList extends ArrayObject implements IGrammarNode {
 }
 
 // NamedItemList = List[NamedItem]
-class NamedNodeList extends ArrayObject implements IGrammarNode {
+class NamedItemList extends ArrayObject implements IGrammarNode {
     public function __toString(): string {
         throw new NotImplementedException();
     }
 
     public function repr(): string {
-        throw new NotImplementedException();
+        $items = [];
+        foreach ($this as $val) {
+            if ($val instanceof IGrammarNode) {
+                $items[] = $val->repr();
+            } else {
+                $items[] = (string)$val;
+            }
+        }
+        return '[' . implode(', ', $items) . ']';
     }
 }
 

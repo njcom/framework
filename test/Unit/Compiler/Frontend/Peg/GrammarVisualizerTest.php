@@ -13,6 +13,9 @@ use Morpho\Testing\TestCase;
  * https://github.com/python/cpython/blob/3.12/Lib/test/test_peg_generator/test_pegen.py
  */
 class GrammarVisualizerTest extends TestCase {
+    public function testFoo() {
+        $this->markTestIncomplete();
+    }
 /*
 class TestGrammarVisitor:
     class Visitor(GrammarVisitor):

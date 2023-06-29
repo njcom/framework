@@ -16,8 +16,8 @@ use Morpho\Compiler\Frontend\Peg\Group;
 use Morpho\Compiler\Frontend\Peg\IGrammarNode;
 use Morpho\Compiler\Frontend\Peg\MetaList;
 use Morpho\Compiler\Frontend\Peg\MetaTuple;
-use Morpho\Compiler\Frontend\Peg\NamedNode;
-use Morpho\Compiler\Frontend\Peg\NamedNodeList;
+use Morpho\Compiler\Frontend\Peg\NamedItem;
+use Morpho\Compiler\Frontend\Peg\NamedItemList;
 use Morpho\Compiler\Frontend\Peg\NameLeaf;
 use Morpho\Compiler\Frontend\Peg\NegativeLookahead;
 use Morpho\Compiler\Frontend\Peg\Opt;
@@ -41,8 +41,8 @@ class GrammarTest extends TestCase {
         $this->assertInstanceOf(IGrammarNode::class, new Rule('foo', 'foo', new Rhs([])));
         $this->assertInstanceOf(IGrammarNode::class, new NameLeaf('foo'));
         $this->assertInstanceOf(IGrammarNode::class, new StringLeaf('foo'));
-        $this->assertInstanceOf(IGrammarNode::class, new Alt(new NamedNodeList()));
-        $this->assertInstanceOf(IGrammarNode::class, new NamedNode('foo', new Cut()));
+        $this->assertInstanceOf(IGrammarNode::class, new Alt(new NamedItemList()));
+        $this->assertInstanceOf(IGrammarNode::class, new NamedItem('foo', new Cut()));
         $this->assertInstanceOf(IGrammarNode::class, new Forced(new StringLeaf('foo')));
         $this->assertInstanceOf(IGrammarNode::class, new PositiveLookahead(new StringLeaf('foo')));
         $this->assertInstanceOf(IGrammarNode::class, new NegativeLookahead(new StringLeaf('foo')));
@@ -57,7 +57,7 @@ class GrammarTest extends TestCase {
         $this->assertInstanceOf(IGrammarNode::class, new MetaTuple('foo', null));
         $this->assertInstanceOf(IGrammarNode::class, new MetaList());
         $this->assertInstanceOf(IGrammarNode::class, new RuleList());
-        $this->assertInstanceOf(IGrammarNode::class, new NamedNodeList());
+        $this->assertInstanceOf(IGrammarNode::class, new NamedItemList());
     }
 
     public function testRepr_EmptyGrammar() {

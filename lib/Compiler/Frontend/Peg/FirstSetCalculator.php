@@ -131,10 +131,10 @@ class FirstSetCalculator extends GrammarVisitor {
     }
 
     /**
-     * @param \Morpho\Compiler\Frontend\Peg\NamedNode $item
+     * @param \Morpho\Compiler\Frontend\Peg\NamedItem $item
      * @return array Set[str]
      */
-    protected function visitNamedItem(NamedNode $item): array {
+    protected function visitNamedItem(NamedItem $item): array {
         return $this->visit($item->item);
     }
 
