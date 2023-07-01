@@ -27,9 +27,19 @@ jobs:
       - name: Testing PHP version
         run: |
           php -v
-          #php -r "if(strpos(phpversion(), '${{ matrix.php-version }}') === false) {throw new Exception('Wrong PHP version Installed');}"
+          #php -r "if(strpos(phpversion(), '${{ matrix.php-version }}') === false) throw new Exception('Wrong PHP version Installed');"
 
-      - name: Run CI script
-        run: .github/workflows/test
+      - name: Create a file to validate completion of tests
+        run: |
+          touch 56914c9a23b80267cb66c41ab26c55e5-remove-me-after-tests-completed
+
+      - name: Run tests
+        run: |
+          .github/workflows/test
+          rm -fv 56914c9a23b80267cb66c41ab26c55e5-remove-me-after-tests-completed
+
+      - name: Ensure tests completed
+        run: |
+          test ! -e 56914c9a23b80267cb66c41ab26c55e5-remove-me-after-tests-completed 
 
 
