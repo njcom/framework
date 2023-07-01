@@ -18,6 +18,8 @@ class JsonResponseRendererTest extends TestCase {
         $result = new Ok(['foo' => 'bar']);
 
         $request = new class ($result) implements IRequest {
+            private $response;
+
             public function __construct($result) {
                 $this->response = new class ($result) extends ArrayObject implements IResponse {
                     private $body, $headers;

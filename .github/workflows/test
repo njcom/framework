@@ -2,14 +2,15 @@
 
 set -eu
 
-readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+declare -r SCRIPT_DIR_PATH
+BASE_DIR_PATH=$(realpath -e "$SCRIPT_DIR_PATH"/../..)
+declare -r BASE_DIR_PATH
+declare -r BACKEND_DIR_PATH=$BASE_DIR_PATH/backend
+declare -r FRONTEND_DIR_PATH=$BASE_DIR_PATH/frontend
+declare -r TEST_DB=test
 
-readonly BASE_DIR_PATH=$(realpath -e "$SCRIPT_DIR_PATH"/../..)
-readonly BACKEND_DIR_PATH=$BASE_DIR_PATH/backend
-readonly FRONTEND_DIR_PATH=$BASE_DIR_PATH/frontend
-readonly TEST_DB=test
-
-showFacts() {
+show_facts() {
 #    env
     pwd
     ls -al "$BASE_DIR_PATH"
@@ -19,14 +20,17 @@ showFacts() {
     php --version
 }
 
-installComposerPackages() {
-    local -r majorPhpVer=$(php -r 'echo PHP_MAJOR_VERSION;')
+install_composer_packages() {
+    major_php_ver=$(php -r 'echo PHP_MAJOR_VERSION;')
+    declare -r major_php_ver
+
     composer --version
-    composer$([[ $majorPhpVer -ge 8 ]] && echo ' --ignore-platform-reqs') --no-ansi --no-interaction install
+    # shellcheck disable=2046
+    composer$([[ $major_php_ver -ge 8 ]] && echo ' --ignore-platform-reqs') --no-ansi --no-interaction install
     #  - composer config -g github-oauth.github.com ${COMPOSER_TOKEN} &> /dev/null
 }
 
-prepareEnv() {
+prepare_env() {
     export MORPHO_CI=GitHub MORPHO_CI_DEBUG=1 MORPHO_TEST_WEB_SERVER_DOMAIN=localhost MORPHO_TEST_WEB_SERVER_PORT=80 MORPHO_GECKO_BIN_FILE_PATH=/usr/bin/geckodriver
 
     # Create block device
@@ -64,7 +68,7 @@ prepareEnv() {
     sudo chown -R www-data:www-data "$FRONTEND_DIR_PATH" "$BACKEND_DIR_PATH"/localhost/{log,cache}
     sudo systemctl restart nginx
 
-    installComposerPackages
+    install_composer_packages
 
     sudo systemctl restart mysql
     export MORPHO_TEST_DB_USER=root MORPHO_TEST_DB_PASSWORD=root MORPHO_TEST_DB_DB="$TEST_DB"
@@ -72,27 +76,28 @@ prepareEnv() {
     mysql -u"$MORPHO_TEST_DB_USER" -p"$MORPHO_TEST_DB_PASSWORD" -e "SHOW DATABASES"
 }
 
-showSep() {
+show_sep() {
     echo --------------------------------------------------------------------------------
 }
 
-runTests() {
+run_tests() {
     set +e
     make test
-    local -r exitCode=$?
+    declare -r exit_code=$?
     set -e
-    if [[ $exitCode -ne 0 ]]; then
+    if [[ $exit_code -ne 0 ]]; then
         if [[ -d $BACKEND_DIR_PATH/localhost/log ]]; then
-            showSep
+            show_sep
+            mkdir -p "$BACKEND_DIR_PATH/localhost/log/"
             echo "$BACKEND_DIR_PATH/localhost/log/*"
             sudo sh -c "cat $BACKEND_DIR_PATH/localhost/log/*"
         fi
-        exit $exitCode
+        exit $exit_code
     fi
     php "$BASE_DIR_PATH"/bin/lint
 }
 
-deployResults() {
+deploy_results() {
     :
     ## https://docs.travis-ci.com/user/deployment/pages/
     ## deploy nightly builds
@@ -111,17 +116,17 @@ deployResults() {
 }
 
 main() {
-    showSep
-    showFacts
+    show_sep
+    show_facts
 
-    showSep
-    prepareEnv
+    show_sep
+    prepare_env
 
-    showSep
-    runTests
+    show_sep
+    run_tests
 
-    showSep
-    deployResults
+    show_sep
+    deploy_results
 }
 
 main

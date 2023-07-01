@@ -15,7 +15,8 @@ use Morpho\Testing\TestCase;
 class HtmlResponseRendererTest extends TestCase {
     public function testInvoke() {
         $response = new class extends ArrayObject implements IResponse {
-            private $body;
+            private string $body;
+            private ArrayObject $headers;
 
             public function __construct() {
                 parent::__construct();
@@ -59,7 +60,7 @@ class HtmlResponseRendererTest extends TestCase {
         $renderer = new class (new class {
         }, new class {
         }, 'foo/bar', $htmlSample) extends HtmlResponseRenderer {
-            private $htmlSample;
+            private string $htmlSample;
 
             public function __construct(
                 $templateEngine,
@@ -71,7 +72,7 @@ class HtmlResponseRendererTest extends TestCase {
                 $this->htmlSample = $htmlSample;
             }
 
-            protected function renderHtml($request) {
+            protected function renderHtml($request): string {
                 return $this->htmlSample;
             }
         };

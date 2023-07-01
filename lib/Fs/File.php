@@ -144,7 +144,10 @@ class File extends Entry {
             $defaultConf['skipEmptyLines'] = false;
         }
         $conf = Conf::check($defaultConf, (array) $conf);
-        $handle = fopen($filePath, 'r');
+        $handle = false;
+        if (is_readable($filePath)) {
+            $handle = fopen($filePath, 'r');
+        }
         if (!$handle) {
             throw new Exception("Unable to open the '$filePath' file for reading");
         }

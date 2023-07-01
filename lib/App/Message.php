@@ -7,6 +7,8 @@
 namespace Morpho\App;
 
 use ArrayObject;
+use AllowDynamicProperties;
 
+#[AllowDynamicProperties]
 abstract class Message extends ArrayObject implements IMessage {
 }

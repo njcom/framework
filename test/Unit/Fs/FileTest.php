@@ -450,7 +450,8 @@ OUT
 
     public function testReadLines_NonExistingFile() {
         try {
-            foreach (File::readLines(__DIR__ . '/non-existing-file.php') as $line) {
+            /** @noinspection PhpLoopNeverIteratesInspection */
+            foreach (File::readLines(__DIR__ . '/non-existing-file.php') as $_) {
                 break;
             }
             $this->fail();

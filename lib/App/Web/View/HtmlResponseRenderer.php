@@ -24,18 +24,18 @@ class HtmlResponseRenderer implements IFn {
         $this->pageRenderingModule = $pageRenderingModule;
     }
 
-    public function __invoke(mixed $request): IRequest {
-        $response = $request->response();
-        $html = $this->renderHtml($request);
+    public function __invoke(mixed $val): IRequest {
+        $response = $val->response();
+        $html = $this->renderHtml($val);
 
         $response->setBody($html);
         // https://tools.ietf.org/html/rfc7231#section-3.1.1
         $response->headers()['Content-Type'] = 'text/html;charset=utf-8';
 
-        return $request;
+        return $val;
     }
 
-    protected function renderHtml($request) {
+    protected function renderHtml($request): string {
         $response = $request->response();
         $handler = $request->handler();
 

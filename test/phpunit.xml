@@ -7,9 +7,24 @@
          requireCoverageMetadata="false"
          beStrictAboutCoverageMetadata="true"
          beStrictAboutOutputDuringTests="true"
+         stopOnDefect="true"
+         stopOnError="true"
+         stopOnFailure="true"
+         stopOnWarning="true"
+         stopOnIncomplete="false"
+         stopOnRisky="true"
+         stopOnSkipped="true"
+         failOnEmptyTestSuite="true"
+         failOnIncomplete="false"
          failOnRisky="true"
+         failOnSkipped="true"
          failOnWarning="true"
-         stopOnDefect="true">
+         displayDetailsOnIncompleteTests="true"
+         displayDetailsOnSkippedTests="true"
+         displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnTestsThatTriggerErrors="true"
+         displayDetailsOnTestsThatTriggerNotices="true"
+         displayDetailsOnTestsThatTriggerWarnings="true">
     <testsuites>
         <testsuite name="lib">
             <!-- <file>TestSuite.php</file> -->

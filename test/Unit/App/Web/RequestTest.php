@@ -19,6 +19,7 @@ use function rawurlencode;
 
 class RequestTest extends TestCase {
     private IRequest $request;
+    private array $serverVars;
 
     protected function setUp(): void {
         parent::setUp();

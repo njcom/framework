@@ -15,6 +15,8 @@ use Morpho\Compiler\Frontend\Peg\TokenType;
 use Morpho\Testing\TestCase;
 
 class GrammarTokenizerTest extends TestCase {
+    private GrammarTokenizer $tokenizer;
+
     protected function setUp(): void {
         parent::setUp();
         $this->tokenizer = new GrammarTokenizer(new ArrayIterator([
