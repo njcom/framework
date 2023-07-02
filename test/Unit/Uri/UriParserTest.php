@@ -13,6 +13,10 @@ use Morpho\Testing\TestCase;
 class UriParserTest extends TestCase {
     use TUriParserDataProvider;
 
+    public function testInterface() {
+        $this->assertIsCallable(new UriParser());
+    }
+
     /**
      * @dataProvider dataParse
      */

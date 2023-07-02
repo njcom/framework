@@ -103,4 +103,9 @@ class HostNameValidatorTest extends TestCase {
         $validator = new HostNameValidator([$ip]);
         $this->assertFalse($validator->currentHostName());
     }
+
+    public function testIsValid_NotScalarValue() {
+        $validator = new HostNameValidator(['foo']);
+        $this->assertFalse($validator->isValid([]));
+    }
 }

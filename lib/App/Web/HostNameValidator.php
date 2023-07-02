@@ -23,10 +23,7 @@ class HostNameValidator implements IHostNameValidator {
         $this->allowedHostNames = $allowedHostNames;
     }
 
-    /**
-     * @return string|false
-     */
-    public function currentHostName() {
+    public function currentHostName(): string|false {
         // Use the `Host` header field-value, see https://tools.ietf.org/html/rfc3986#section-3.2.2
         $host = $_SERVER['HTTP_HOST'] ?? null;
 
@@ -51,7 +48,7 @@ class HostNameValidator implements IHostNameValidator {
         } else {
             // IPv4 or domain name
             $hostWithoutPort = explode(':', strtolower((string) $host), 2)[0];
-            if (substr($hostWithoutPort, 0, 4) === 'www.' && strlen($hostWithoutPort) > 4) {
+            if (str_starts_with($hostWithoutPort, 'www.') && strlen($hostWithoutPort) > 4) {
                 $hostWithoutPort = substr($hostWithoutPort, 4);
             }
         }
@@ -61,7 +58,7 @@ class HostNameValidator implements IHostNameValidator {
     /**
      * @throws RuntimeException
      */
-    public function throwInvalidSiteError(): void {
+    public function throwInvalidSiteError(): never {
         throw new BadRequestException("Invalid host or site");
     }
 

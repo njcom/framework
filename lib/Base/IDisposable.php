@@ -8,4 +8,6 @@ namespace Morpho\Base;
 
 interface IDisposable {
     public function dispose(): void;
+
+    public function __invoke(mixed $val): mixed;
 }

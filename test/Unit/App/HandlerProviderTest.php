@@ -7,13 +7,13 @@
 namespace Morpho\Test\Unit\App;
 
 use Morpho\App\BackendModule;
-use Morpho\App\HandlerInstanceProvider;
+use Morpho\App\HandlerProvider;
 use Morpho\App\ModuleIndex;
 use Morpho\App\Web\Request;
 use Morpho\Base\IServiceManager;
 use Morpho\Testing\TestCase;
 
-class HandlerInstanceProviderTest extends TestCase {
+class HandlerProviderTest extends TestCase {
     public function testInvoke() {
         $serviceManager = $this->createMock(IServiceManager::class);
 
@@ -39,9 +39,9 @@ class HandlerInstanceProviderTest extends TestCase {
                 }
             );
 
-        $handlerInstanceProvider = new HandlerInstanceProvider($serviceManager);
+        $handlerProvider = new HandlerProvider($serviceManager);
 
-        $controllerClass = __NAMESPACE__ . '\\HandlerInstanceProviderTest_TestController';
+        $controllerClass = __NAMESPACE__ . '\\HandlerProviderTest_TestController';
 
         $handler = [
             'module' => $moduleName,
@@ -53,11 +53,13 @@ class HandlerInstanceProviderTest extends TestCase {
             ->method('handler')
             ->willReturn($handler);
 
-        $instance = $handlerInstanceProvider($request);
+        $instance = $handlerProvider($request);
 
         $this->assertInstanceOf($controllerClass, $instance);
     }
 }
 
-class HandlerInstanceProviderTest_TestController {
+class HandlerProviderTest_TestController {
+    public function __invoke() {
+    }
 }

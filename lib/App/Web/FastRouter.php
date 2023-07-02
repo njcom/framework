@@ -20,7 +20,7 @@ use function Morpho\Base\compose;
 use function Morpho\Base\only;
 use function Morpho\Caching\cacheKey;
 
-class FastRouter implements IHasServiceManager, IRouter {
+class FastRouter implements IHasServiceManager {
     protected IServiceManager $serviceManager;
 
     protected ICache $cache;
@@ -37,28 +37,23 @@ class FastRouter implements IHasServiceManager, IRouter {
         return $this;
     }
 
-    public function route(IRequest $request): void {
-        $routeInfo = $this->mkDispatcher()
+    public function __invoke(IRequest $request): array {
+        $routeInfo = $this->mkRouteDispatcher()
             ->dispatch($request->method()->value, $request->uri()->path()->toStr(false));
         switch ($routeInfo[0]) {
             case IDispatcher::NOT_FOUND: // 404 Not Found
-                $handler = $this->conf()['handlers']['notFound'];
-                $request->setHandler($handler);
-                break;
+                return $this->conf()['handlers']['notFound'];
             case IDispatcher::METHOD_NOT_ALLOWED: // 405 Method Not Allowed
-                $handler = $this->conf()['handlers']['methodNotAllowed'];
-                $request->setHandler($handler);
-                break;
+                return $this->conf()['handlers']['methodNotAllowed'];
             case IDispatcher::FOUND: // 200 OK
                 $handlerMeta = $routeInfo[1];
-                $request->setHandler(array_merge($handlerMeta, ['args' => $routeInfo[2] ?? []]));
-                break;
+                return array_merge($handlerMeta, ['args' => $routeInfo[2] ?? []]);
             default:
                 throw new UnexpectedValueException();
         }
     }
 
-    protected function mkDispatcher(): IDispatcher {
+    protected function mkRouteDispatcher(): IDispatcher {
         if (!$this->cache->has($this->cacheKey)) {
             $this->rebuildRoutes();
         }
@@ -92,12 +87,7 @@ class FastRouter implements IHasServiceManager, IRouter {
                 yield $moduleIndex->module($moduleName);
             }
         };
-        return compose(
-            $this->serviceManager['routeMetaProvider'],
-            new ActionMetaProvider(),
-        )(
-            $modules
-        );
+        return compose($this->serviceManager['routeMetaProvider'], new ActionMetaProvider())($modules);
     }
 
     protected function conf(): array {

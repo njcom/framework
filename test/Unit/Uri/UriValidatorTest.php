@@ -12,6 +12,10 @@ use Morpho\Testing\TestCase;
 use function print_r;
 
 class UriValidatorTest extends TestCase {
+    public function testInterface() {
+        $this->assertIsCallable(new UriValidator());
+    }
+
     public static function dataValidateScheme() {
         return [
             [

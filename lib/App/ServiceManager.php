@@ -11,12 +11,12 @@ use Morpho\Caching\ICache;
 use Morpho\Caching\VarExportFileCache;
 
 abstract class ServiceManager extends BaseServiceManager {
-    protected function mkHandlerInstanceProviderService() {
-        return new HandlerInstanceProvider($this);
+    protected function mkHandlerProviderService() {
+        return new HandlerProvider($this);
     }
 
     protected function mkDispatcherService() {
-        return new Dispatcher($this['handlerInstanceProvider'], $this['eventManager']);
+        return new Dispatcher($this['handlerProvider'], $this['eventManager']);
     }
 
     protected abstract function mkEventManagerService();

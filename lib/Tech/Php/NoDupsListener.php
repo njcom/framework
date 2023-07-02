@@ -7,7 +7,6 @@
 namespace Morpho\Tech\Php;
 
 use Exception;
-use Morpho\Base\IFn;
 use Throwable;
 
 use function chmod;
@@ -34,7 +33,7 @@ use function unlink;
  * Basic idea and code was found at:
  * @link https://github.com/DmitryKoterov/debug_errorhook.
  */
-class NoDupsListener implements IFn {
+class NoDupsListener {
     const DEFAULT_PERIOD = 300;
     // 5 min.
     const ERROR_FILE_EXT = ".error";

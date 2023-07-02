@@ -56,8 +56,9 @@ class Site implements ISite {
         try {
             /** @var IRequest $request */
             $request = $serviceManager['request'];
-            $serviceManager['router']->route($request);
-            $serviceManager['dispatcher']->dispatch($request);
+            $handler = $serviceManager['router']->__invoke($request);
+            $request->setHandler($handler);
+            $request = $serviceManager['dispatcher']->__invoke($request);
             $response = $request->response();
             $response->send();
             return $response;

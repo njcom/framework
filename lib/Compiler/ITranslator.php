@@ -6,8 +6,7 @@
  */
 namespace Morpho\Compiler;
 
-use Morpho\Base\IFn;
-
 // ILang (source/in) -> ILang (target/out)
-interface ITranslator extends IFn {
+interface ITranslator {
+    public function __invoke(mixed $context): mixed;
 }

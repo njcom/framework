@@ -6,10 +6,9 @@
  */
 namespace Morpho\Compiler\Frontend;
 
-use Morpho\Base\IFn;
-
 /**
  * Translates an input program into IR/Intermediate Representation.
  */
-interface IFrontend extends IFn {
+interface IFrontend {
+    public function __invoke(mixed $context): mixed;
 }

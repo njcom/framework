@@ -12,12 +12,9 @@ interface IHostNameValidator {
     /**
      * @throws RuntimeException
      */
-    public function throwInvalidSiteError(): void;
+    public function throwInvalidSiteError(): never;
 
-    /**
-     * @return string|false
-     */
-    public function currentHostName();
+    public function currentHostName(): string|false;
 
     public function isValid($hostName): bool;
 }

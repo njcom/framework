@@ -10,7 +10,6 @@ use ArrayIterator;
 use IteratorAggregate;
 use Morpho\Base\Exception;
 use Morpho\Base\IDisposable;
-use Morpho\Base\IFn;
 use Morpho\Test\Unit\Base\FunctionsTest\Foo;
 use Morpho\Testing\TestCase;
 use RuntimeException;
@@ -449,10 +448,10 @@ class FunctionsTest extends TestCase {
         $this->assertEquals('fghello', compose($f, $g)('hello'));
     }
 
-    public static function dataCompose_IFnWithClosure() {
-        $ifn = new class implements IFn {
+    public static function dataCompose_InvokableClassWithClosure() {
+        $invokable = new class {
             public function __invoke(mixed $value): mixed {
-                return 'IFn called ' . $value;
+                return 'Invokable called ' . $value;
             }
         };
         $closure = function ($value) {
@@ -460,27 +459,27 @@ class FunctionsTest extends TestCase {
         };
         return [
             [
-                'IFn called Closure called test',
-                $ifn,
+                'Invokable called Closure called test',
+                $invokable,
                 $closure,
             ],
             [
-                'Closure called IFn called test',
+                'Closure called Invokable called test',
                 $closure,
-                $ifn,
+                $invokable,
             ],
             [
-                'IFn called IFn called test',
-                $ifn,
-                $ifn,
+                'Invokable called Invokable called test',
+                $invokable,
+                $invokable,
             ],
         ];
     }
 
     /**
-     * @dataProvider dataCompose_IFnWithClosure
+     * @dataProvider dataCompose_InvokableClassWithClosure
      */
-    public function testCompose_IFnWithClosure($expected, $f, $g) {
+    public function testCompose_InvokableWithClosure($expected, $f, $g) {
         $this->assertSame($expected, compose($f, $g)('test'));
     }
 
@@ -688,7 +687,7 @@ class FunctionsTest extends TestCase {
     }
 
     public function testWith_CallsInvoke() {
-        $disposable = new class implements IDisposable, IFn {
+        $disposable = new class implements IDisposable {
             public $disposeArgs;
             public $invokeArgs;
 
@@ -708,7 +707,7 @@ class FunctionsTest extends TestCase {
     }
 
     public function testWith_CallsDispose() {
-        $disposable = new class implements IDisposable, IFn {
+        $disposable = new class implements IDisposable {
             public $disposeArgs;
             public $invokeArgs;
 

@@ -7,7 +7,6 @@
 namespace Morpho\Tech\Php;
 
 use Morpho\Base\Err;
-use Morpho\Base\IFn;
 use Morpho\Base\Ok;
 use Morpho\Base\Result;
 use Morpho\Fs\Path;
@@ -21,7 +20,7 @@ use function Morpho\Base\init;
 use function Morpho\Base\last;
 use function Morpho\Base\q;
 
-class PhpFileHeaderFixer implements IFn {
+class PhpFileHeaderFixer {
     private ?string $licenseComment;
 
     /**

@@ -7,7 +7,6 @@
 namespace Morpho\Test\Unit\App\Web;
 
 use Morpho\App\Web\ActionMetaProvider;
-use Morpho\Base\IFn;
 use Morpho\Testing\TestCase;
 
 use function iterator_to_array;
@@ -21,7 +20,7 @@ class ActionMetaProviderTest extends TestCase {
     }
 
     public function testInterface() {
-        $this->assertInstanceOf(IFn::class, $this->actionMetaProvider);
+        $this->assertIsCallable($this->actionMetaProvider);
     }
 
     /**

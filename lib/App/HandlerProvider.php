@@ -6,11 +6,10 @@
  */
 namespace Morpho\App;
 
-use Morpho\Base\IFn;
 use Morpho\Base\IHasServiceManager;
 use Morpho\Base\IServiceManager;
 
-class HandlerInstanceProvider implements IFn {
+class HandlerProvider {
     protected ModuleIndex $moduleIndex;
 
     private array $registeredModules = [];
@@ -22,7 +21,7 @@ class HandlerInstanceProvider implements IFn {
         $this->serviceManager = $serviceManager;
     }
 
-    public function __invoke(mixed $request): mixed {
+    public function __invoke(mixed $request): callable {
         $handler = $request->handler();
 
         $module = $this->moduleIndex->module($handler['module']);

@@ -6,9 +6,7 @@
  */
 namespace Morpho\App\Web\View;
 
-use Morpho\Base\IFn;
-
-abstract class Plugin implements IFn {
+abstract class Plugin {
     public function __invoke(mixed $value = null): mixed {
         return $this;
     }

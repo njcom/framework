@@ -19,6 +19,10 @@ class HtmlSemiParserTest extends TestCase {
         $this->parser = new HtmlSemiParser();
     }
 
+    public function testInterface() {
+        $this->assertIsCallable($this->parser);
+    }
+
     public function testCallsTagHandler() {
         $handler = $this->parser->attachHandlersFrom(new MyTagHandler());
         $html = <<<HTML

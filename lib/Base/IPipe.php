@@ -9,5 +9,6 @@ namespace Morpho\Base;
 use Countable;
 use Iterator;
 
-interface IPipe extends IFn, Iterator, Countable {
+interface IPipe extends Iterator, Countable {
+    public function __invoke(mixed $context): mixed;
 }

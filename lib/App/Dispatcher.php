@@ -23,7 +23,7 @@ class Dispatcher {
         $this->eventManager = $eventManager;
     }
 
-    public function dispatch(IRequest $request): void {
+    public function __invoke(IRequest $request): IRequest {
         $i = 0;
         do {
             $request->isHandled(false);
@@ -46,6 +46,8 @@ class Dispatcher {
             }
             $i++;
         } while (!$request->isHandled());
+
+        return $request;
     }
 
     public function setMaxNoOfDispatchIterations(int $n): void {

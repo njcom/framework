@@ -7,7 +7,6 @@
 namespace Morpho\Tech\Php;
 
 use Morpho\Base\Err;
-use Morpho\Base\IFn;
 use Morpho\Base\Ok;
 use Morpho\Base\Result;
 
@@ -17,7 +16,7 @@ use function Morpho\App\Cli\showOk;
 use function Morpho\Base\indent;
 use function Morpho\Base\q;
 
-class CliPhpFileHeaderFixer implements IFn {
+class CliPhpFileHeaderFixer {
     public function __invoke(mixed $conf): mixed {
         $result = null;
         foreach ($conf['files'] as [$filePaths, $context]) {

@@ -6,9 +6,7 @@
  */
 namespace Morpho\App;
 
-use Morpho\Base\IFn;
-
-abstract class Controller implements IFn {
+abstract class Controller {
     public function __invoke(mixed $request): mixed {
         $this->beforeEach($request);
         $this->runAction($request);

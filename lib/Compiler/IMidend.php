@@ -6,7 +6,6 @@
  */
 namespace Morpho\Compiler;
 
-use Morpho\Base\IFn;
-
-interface IMidend extends IFn {
+interface IMidend {
+    public function __invoke(mixed $context): mixed;
 }

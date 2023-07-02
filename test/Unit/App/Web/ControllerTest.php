@@ -15,6 +15,10 @@ use Morpho\Testing\TestCase;
 use Morpho\Uri\Uri;
 
 class ControllerTest extends TestCase {
+    public function testInterface() {
+        $this->assertIsCallable(new class extends Controller {});
+    }
+
     public function testReturnResultInstanceFromAction() {
         $val = 'test';
 

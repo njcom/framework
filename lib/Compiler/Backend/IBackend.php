@@ -6,10 +6,9 @@
  */
 namespace Morpho\Compiler\Backend;
 
-use Morpho\Base\IFn;
-
 /**
  * Translates an IR/Intermediate Representation into the output program.
  */
-interface IBackend extends IFn {
+interface IBackend {
+    public function __invoke(mixed $context): mixed;
 }

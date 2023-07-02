@@ -9,13 +9,12 @@ namespace Morpho\Test\Unit\Base;
 use Countable;
 use Iterator;
 use Morpho\Base\ArrPipe;
-use Morpho\Base\IFn;
 use Morpho\Testing\TestCase;
 
 class ArrPipeTest extends TestCase {
     public function testInterface() {
         $pipe = new ArrPipe([]);
-        $this->assertInstanceOf(IFn::class, $pipe);
+        $this->assertIsCallable($pipe);
         $this->assertInstanceOf(Iterator::class, $pipe);
         $this->assertInstanceOf(Countable::class, $pipe);
     }

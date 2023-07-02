@@ -13,6 +13,10 @@ use UnexpectedValueException;
  * Useful for monadic error-handling code which can be composed. Inspired by F#, Haskell (Maybe) and Rust.
  */
 abstract class Result extends Monad implements JsonSerializable {
+    /**
+     * @param callable $fn
+     * @return \Morpho\Base\Result|$this
+     */
     public function bind(callable $fn): Result {
         if ($this instanceof Err) {
             return $this;

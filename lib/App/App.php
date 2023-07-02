@@ -19,12 +19,13 @@ use function umask;
 
 class App extends EventManager {
     protected array $conf;
+    private ?IServiceManager $serviceManager = null;
 
-    public function __construct($conf = null) {
+    public function __construct(array $conf = null) {
         $this->setConf($conf ?: []);
     }
 
-    public function setConf($conf): void {
+    public function setConf(array $conf): void {
         $this->conf = $conf;
     }
 
@@ -38,6 +39,7 @@ class App extends EventManager {
             return $event->args['exitCode'];
         } catch (Throwable $e) {
             if (Env::boolIniVal('display_errors')) {
+                /** @noinspection PhpStatementHasEmptyBodyInspection */
                 while (@ob_end_clean());
                 echo $e;
             }
@@ -46,16 +48,32 @@ class App extends EventManager {
         return Env::FAILURE_CODE;
     }
 
-    /**
-     * @return IResponse|false
-     */
-    public function run() {
+    public function run(): IResponse|false {
         $serviceManager = $this->init();
         $site = $serviceManager['site'];
         return $site->__invoke($serviceManager);
     }
 
     public function init(): IServiceManager {
+        if ($this->serviceManager) {
+            // Already initialized.
+            return $this->serviceManager;
+        }
+        return $this->serviceManager = $this->_init();
+    }
+
+    protected static function logErrorFallback(Throwable $e): void {
+        if (ErrorHandler::isErrorLogEnabled()) {
+            // @TODO: check how error logging works on PHP core level, remove unnecessary calls and checks.
+            error_log(addslashes((string)$e));
+        }
+    }
+
+    public function conf(): array {
+        return $this->conf;
+    }
+
+    protected function _init(): IServiceManager {
         /** @var SiteFactory $siteFactory */
         $siteFactory = $this->conf['siteFactory']($this);
         $site = $siteFactory->__invoke();
@@ -76,16 +94,5 @@ class App extends EventManager {
         $appInitializer->init();
 
         return $serviceManager;
-    }
-
-    protected static function logErrorFallback(Throwable $e): void {
-        if (ErrorHandler::isErrorLogEnabled()) {
-            // @TODO: check how error logging works on PHP core level, remove unnecessary calls and checks.
-            error_log(addslashes((string) $e));
-        }
-    }
-
-    public function conf() {
-        return $this->conf;
     }
 }

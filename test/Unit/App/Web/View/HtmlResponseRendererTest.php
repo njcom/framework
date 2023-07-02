@@ -13,6 +13,10 @@ use Morpho\App\Web\View\HtmlResponseRenderer;
 use Morpho\Testing\TestCase;
 
 class HtmlResponseRendererTest extends TestCase {
+    public function testInterface() {
+        $this->assertIsCallable(new HtmlResponseRenderer(null, null, ''));
+    }
+
     public function testInvoke() {
         $response = new class extends ArrayObject implements IResponse {
             private string $body;

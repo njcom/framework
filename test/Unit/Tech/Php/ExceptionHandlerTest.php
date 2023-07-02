@@ -7,7 +7,6 @@
 namespace Morpho\Test\Unit\Tech\Php;
 
 use ArrayObject;
-use Morpho\Base\IFn;
 use Morpho\Tech\Php\ExceptionHandler;
 use Morpho\Testing\TestCase;
 use RuntimeException;
@@ -22,7 +21,7 @@ class ExceptionHandlerTest extends TestCase {
                 $called = true;
             }
         );
-        $ifnListener = new class implements IFn {
+        $fnListener = new class {
             public $called;
 
             public function __invoke(mixed $value): mixed {
@@ -30,9 +29,9 @@ class ExceptionHandlerTest extends TestCase {
                 return null;
             }
         };
-        $listeners->append($ifnListener);
+        $listeners->append($fnListener);
         $exceptionHandler->handleException(new RuntimeException());
         $this->assertTrue($called);
-        $this->assertTrue($ifnListener->called);
+        $this->assertTrue($fnListener->called);
     }
 }

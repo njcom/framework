@@ -8,7 +8,6 @@ namespace Morpho\Test\Unit\Base;
 
 use Countable;
 use Iterator;
-use Morpho\Base\IFn;
 use Morpho\Base\Pipe;
 use Morpho\Testing\TestCase;
 
@@ -22,7 +21,7 @@ class PipeTest extends TestCase {
                 return 0;
             }
         };
-        $this->assertInstanceOf(IFn::class, $pipe);
+        $this->assertIsCallable($pipe);
         $this->assertInstanceOf(Iterator::class, $pipe);
         $this->assertInstanceOf(Countable::class, $pipe);
     }

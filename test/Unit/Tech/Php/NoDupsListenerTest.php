@@ -7,12 +7,11 @@
 namespace Morpho\Test\Unit\Tech\Php;
 
 use Exception;
-use Morpho\Base\IFn;
 use Morpho\Tech\Php\NoDupsListener;
 use Morpho\Testing\TestCase;
 
 class NoDupsListenerTest extends TestCase {
-    private $lockFileDirPath;
+    private string $lockFileDirPath;
 
     protected function setUp(): void {
         parent::setUp();
@@ -20,15 +19,22 @@ class NoDupsListenerTest extends TestCase {
     }
 
     public function testInterface() {
-        $this->assertInstanceOf(IFn::class, new NoDupsListener($this->createMock(IFn::class), $this->lockFileDirPath));
+        $this->assertIsCallable(new NoDupsListener(fn () => null, $this->lockFileDirPath));
     }
 
     public function testNoDupsOnException() {
-        $listener = $this->createMock(IFn::class);
+        $numOfCalls = 0;
+        $argsOfCalls = [];
+        $listener = function (...$args) use (&$numOfCalls, &$argsOfCalls) {
+            $numOfCalls++;
+            $argsOfCalls[] = $args;
+        };
         $ex = new Exception();
-        $listener->expects($this->once())->method('__invoke')->with($this->identicalTo($ex));
+        //$listener->expects($this->once())->method('__invoke')->with($this->identicalTo($ex));
         $listener = new NoDupsListener($listener, $this->lockFileDirPath);
         $listener->__invoke($ex);
         $listener->__invoke($ex);
+        $this->assertSame(1, $numOfCalls);
+        $this->assertSame([[$ex]], $argsOfCalls);
     }
 }

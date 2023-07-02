@@ -7,7 +7,6 @@
 namespace Morpho\Test\Unit\App\Web;
 
 use Morpho\App\Web\RouteMetaProvider;
-use Morpho\Base\IFn;
 use Morpho\Testing\TestCase;
 
 use function iterator_to_array;
@@ -22,7 +21,7 @@ class RouteMetaProviderTest extends TestCase {
     }
 
     public function testInterface() {
-        $this->assertInstanceOf(IFn::class, new RouteMetaProvider());
+        $this->assertIsCallable(new RouteMetaProvider());
     }
 
     public static function dataInvoke_RestActions() {

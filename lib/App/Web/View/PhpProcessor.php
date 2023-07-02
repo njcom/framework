@@ -6,13 +6,12 @@
  */
 namespace Morpho\App\Web\View;
 
-use Morpho\Base\IFn;
 use PhpParser\Lexer;
 use PhpParser\NodeTraverser;
 use PhpParser\Parser\Php7 as Parser;
 use PhpParser\PrettyPrinter\Standard as PrettyPrinter;
 
-class PhpProcessor implements IFn {
+class PhpProcessor {
     public function __invoke(mixed $context): mixed {
         $ast = $this->parse($context['program']);
         $ast = $this->rewrite($ast, $context);

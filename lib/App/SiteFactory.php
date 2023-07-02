@@ -6,13 +6,12 @@
  */
 namespace Morpho\App;
 
-use Morpho\Base\IFn;
 use RuntimeException;
 
 use function is_file;
 use function Morpho\Base\merge;
 
-class SiteFactory implements IFn {
+class SiteFactory {
     protected IHostNameValidator $hostNameValidator;
     protected array $appConf;
 
@@ -21,7 +20,11 @@ class SiteFactory implements IFn {
         $this->appConf = $appConf;
     }
 
-    public function __invoke(mixed $_ = null): ISite {
+    /**
+     * @throws \RuntimeException
+     * @return \Morpho\App\ISite
+     */
+    public function __invoke(): ISite {
         $hostName = $this->hostNameValidator->currentHostName();
         foreach ($this->appConf['sites'] as $siteName => $siteConf) {
             if ($this->hostNameValidator->isValid($hostName)) {

@@ -6,9 +6,7 @@
  */
 namespace Morpho\App\Web;
 
-use Morpho\Base\IFn;
-
-class ActionResultRenderer implements IFn {
+class ActionResultRenderer {
     private $contentNegotiator;
 
     private $rendererFactory;

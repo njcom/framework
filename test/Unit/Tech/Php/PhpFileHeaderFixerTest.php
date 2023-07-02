@@ -22,6 +22,10 @@ class PhpFileHeaderFixerTest extends TestCase {
         $this->fixer = new PhpFileHeaderFixer(LICENSE_COMMENT);
     }
 
+    public function testInterface() {
+        $this->assertIsCallable($this->fixer);
+    }
+
     public static function dataCheckAndFix_EmptyFile() {
         (yield ['']);
         (yield ['<?php']);

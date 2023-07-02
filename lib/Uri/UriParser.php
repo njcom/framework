@@ -7,7 +7,6 @@
 namespace Morpho\Uri;
 
 use LogicException;
-use Morpho\Base\IFn;
 
 use function count;
 use function explode;
@@ -19,7 +18,7 @@ use function strpos;
 /**
  * [RFC 3986](https://tools.ietf.org/html/rfc3986) compatible URI parser.
  */
-class UriParser implements IFn {
+class UriParser {
     protected ?Uri $uri = null;
 
     protected array $match;

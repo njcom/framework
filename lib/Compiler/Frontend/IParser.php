@@ -6,8 +6,7 @@
  */
 namespace Morpho\Compiler\Frontend;
 
-use Morpho\Base\IFn;
-
 // Aka SyntaxAnalyzer
-interface IParser extends IFn {
+interface IParser {
+    public function __invoke(mixed $context): mixed;
 }

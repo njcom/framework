@@ -6,16 +6,19 @@
  */
 namespace Morpho\Test\Unit\DataProcessing;
 
-use Morpho\Base\IFn;
 use Morpho\DataProcessing\PriceFilter;
 use Morpho\Testing\TestCase;
 
 class PriceFilterTest extends TestCase {
-    private IFn $filter;
+    private PriceFilter $filter;
 
     protected function setUp(): void {
         parent::setUp();
         $this->filter = new PriceFilter();
+    }
+
+    public function testInterface() {
+        $this->assertIsCallable($this->filter);
     }
 
     public function testReturnsNullIfNotPossibleToFilter() {

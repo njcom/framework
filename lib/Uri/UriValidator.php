@@ -6,12 +6,11 @@
  */
 namespace Morpho\Uri;
 
-use Morpho\Base\IFn;
 use Morpho\Base\NotImplementedException;
 
 use function preg_match;
 
-class UriValidator implements IFn {
+class UriValidator {
     private const HEX_DIGIT_RE = '[0-9A-F]';
     private const ALPHA_RE = '[A-Z]';
     private const DIGIT_RE = '\d';

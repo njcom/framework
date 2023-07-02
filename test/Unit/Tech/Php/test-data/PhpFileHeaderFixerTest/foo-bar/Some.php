@@ -6,9 +6,8 @@
  */
 namespace Morpho\Test\Unit\Tech\Php\PhpFileHeaderFixerTest\SomeInvalidNs;
 
-use Morpho\Base\IFn;
 
-class Some implements IFn {
+class Some {
     public function __invoke(mixed $val): mixed {
         return null;
     }

@@ -6,12 +6,12 @@
  */
 namespace Morpho\App;
 
-use Morpho\Base\IFn;
-
 /**
  * site: {conf, module[]}
  */
-interface ISite extends IFn {
+interface ISite {
+    public function __invoke(mixed $serviceManager): IResponse|false;
+
     /**
      * Returns site's name.
      */

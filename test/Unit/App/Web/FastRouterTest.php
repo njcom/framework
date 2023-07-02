@@ -81,11 +81,11 @@ class FastRouterTest extends TestCase {
         $router = $this->createPartialMock(
             FastRouter::class,
             [
-                'mkDispatcher',
+                'mkRouteDispatcher',
             ]
         );
         $router->expects($this->once())
-            ->method('mkDispatcher')
+            ->method('mkRouteDispatcher')
             ->willReturn($dispatcher);
 
         $serviceManager = $this->createMock(IServiceManager::class);
@@ -108,9 +108,7 @@ class FastRouterTest extends TestCase {
             );
         $router->setServiceManager($serviceManager);
 
-        $router->route($request);
-
-        $this->assertSame($expectedHandler, $request->handler());
+        $this->assertSame($expectedHandler, $router->__invoke($request));
     }
 
     protected function mkRequest(Uri $uri, HttpMethod $httpMethod): IRequest {

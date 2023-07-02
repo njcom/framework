@@ -7,7 +7,6 @@
 namespace Morpho\App;
 
 use Closure;
-use Morpho\Base\IFn;
 use Morpho\Tech\Php\FileReflection;
 use ReflectionClass;
 use ReflectionException;
@@ -16,7 +15,7 @@ use ReflectionMethod;
 use function array_values;
 use function in_array;
 
-abstract class ActionMetaProvider implements IFn {
+abstract class ActionMetaProvider {
     protected $controllerFilter;
     protected $actionFilter;
 

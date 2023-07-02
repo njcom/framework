@@ -6,7 +6,6 @@
  */
 namespace Morpho\App\Web;
 
-use Morpho\Base\IFn;
 use Morpho\Fs\Path;
 use RuntimeException;
 use UnexpectedValueException;
@@ -24,7 +23,7 @@ use function substr;
 use const Morpho\App\CONTROLLER_SUFFIX;
 use const PREG_SET_ORDER;
 
-class RouteMetaProvider implements IFn {
+class RouteMetaProvider {
     private const CONTROLLER_CLASS_RE = '~(?P<controllerNs>.*?\\\\Web)\\\\(?P<controller>.*?)$~s';
 
     protected array $restActions = [

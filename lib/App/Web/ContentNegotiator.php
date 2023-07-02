@@ -6,14 +6,13 @@
  */
 namespace Morpho\App\Web;
 
-use Morpho\Base\IFn;
 use Negotiation\Accept;
 use Negotiation\Exception\InvalidArgument;
 use Negotiation\Negotiator;
 
 use function strtolower;
 
-class ContentNegotiator implements IFn {
+class ContentNegotiator {
     protected array $priorities = ['text/html', 'application/json'/*, 'application/xml;q=0.5'*/];
 
     protected string $defaultFormat = 'html';

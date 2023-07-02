@@ -1530,7 +1530,7 @@ function isUtf8Text(string $text): bool {
     return (bool)preg_match('/.*/us', $text); // [u/PCRE_UTF8](https://www.php.net/manual/en/reference.pcre.pattern.modifiers.php)
 }
 
-function with(IDisposable & IFn $disposable, mixed $val = null): mixed {
+function with(IDisposable $disposable, mixed $val = null): mixed {
     try {
         $result = $disposable($val);
     } finally {
