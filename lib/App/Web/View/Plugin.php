@@ -7,7 +7,7 @@
 namespace Morpho\App\Web\View;
 
 abstract class Plugin {
-    public function __invoke(mixed $value = null): mixed {
+    public function __invoke(mixed $context = null): static {
         return $this;
     }
 }

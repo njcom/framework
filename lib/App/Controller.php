@@ -7,11 +7,10 @@
 namespace Morpho\App;
 
 abstract class Controller {
-    public function __invoke(mixed $request): mixed {
+    public function __invoke(mixed $request): void {
         $this->beforeEach($request);
         $this->runAction($request);
         $this->afterEach($request);
-        return $request;
     }
 
     /**

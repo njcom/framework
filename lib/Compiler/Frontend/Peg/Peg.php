@@ -47,8 +47,8 @@ class Peg implements ICompiler {
         };
     }
 
-    public function __invoke(mixed $val): mixed {
-        $context = $this->frontend()($val);
+    public function __invoke(mixed $context): mixed {
+        $context = $this->frontend()($context);
         $context = $this->midend()($context);
         return $this->backend()($context);
     }

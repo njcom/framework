@@ -21,7 +21,7 @@ class HandlerProvider {
         $this->serviceManager = $serviceManager;
     }
 
-    public function __invoke(mixed $request): callable {
+    public function __invoke(IRequest $request): callable {
         $handler = $request->handler();
 
         $module = $this->moduleIndex->module($handler['module']);

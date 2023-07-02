@@ -11,10 +11,6 @@ use Morpho\App\Controller as BaseController;
 class Controller extends BaseController {
     private IRequest $request;
 
-    public function __invoke(mixed $request): IRequest {
-        return parent::__invoke($request);
-    }
-
     protected function beforeEach($request): void {
         parent::beforeEach($request);
         $this->request = $request;

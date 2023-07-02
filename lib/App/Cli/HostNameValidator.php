@@ -17,17 +17,11 @@ class HostNameValidator implements IHostNameValidator {
         $this->currentHostName = $currentHostName;
     }
 
-    /**
-     * @throws \Morpho\App\Cli\Exception
-     */
-    public function throwInvalidSiteError(): void {
+    public function throwInvalidSiteError(): never {
         throw new Exception('Invalid site');
     }
 
-    /**
-     * @return string|false
-     */
-    public function currentHostName() {
+    public function currentHostName(): string|false {
         return $this->currentHostName;
     }
 

@@ -10,10 +10,10 @@ use Morpho\Base\NotImplementedException;
 use Morpho\Compiler\ConfigurablePipe;
 use UnexpectedValueException;
 
-class Frontend extends ConfigurablePipe implements IFrontend {
-    public function __invoke(mixed $val): mixed {
+class Frontend extends ConfigurablePipe {
+    public function __invoke(mixed $context): mixed {
         //$parser = $conf['parser'];
-        return $val;
+        return $context;
     }
 
     public function current(): callable {

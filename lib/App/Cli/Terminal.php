@@ -30,7 +30,7 @@ class Terminal {
         fflush($this->stdout);
     }
 
-    public function writeErr(string $text, bool $newLn = true): void {
+    public function writeError(string $text, bool $newLn = true): void {
         fwrite($this->stderr, $text . ($newLn ? "\n" : ''));
         fflush($this->stderr);
     }

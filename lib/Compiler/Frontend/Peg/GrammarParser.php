@@ -14,7 +14,7 @@ require_once __DIR__ . '/Grammar.php';
  * https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/grammar_parser.py
  */
 class GrammarParser extends Parser {
-    public function __invoke(mixed $val): ?Grammar {
+    public function __invoke(mixed $context): ?Grammar {
         return $this->start();
     }
 

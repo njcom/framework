@@ -10,7 +10,7 @@ namespace Morpho\Compiler\Backend;
 
 use Morpho\Base\NotImplementedException;
 
-class Backend implements IBackend {
+class Backend {
     public function __invoke(mixed $context): mixed {
         do {
             $context = $this->optimizer($context);

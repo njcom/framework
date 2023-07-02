@@ -29,29 +29,8 @@ class App extends EventManager {
         $this->conf = $conf;
     }
 
-    public static function main($conf = null): int {
-        try {
-            $app = new static($conf);
-            $response = $app->run();
-            $exitCode = $response ? Env::SUCCESS_CODE : Env::FAILURE_CODE;
-            $event = new Event('exit', ['exitCode' => $exitCode, 'response' => $response]);
-            $app->trigger($event);
-            return $event->args['exitCode'];
-        } catch (Throwable $e) {
-            if (Env::boolIniVal('display_errors')) {
-                /** @noinspection PhpStatementHasEmptyBodyInspection */
-                while (@ob_end_clean());
-                echo $e;
-            }
-            self::logErrorFallback($e);
-        }
-        return Env::FAILURE_CODE;
-    }
-
-    public function run(): IResponse|false {
-        $serviceManager = $this->init();
-        $site = $serviceManager['site'];
-        return $site->__invoke($serviceManager);
+    public function conf(): array {
+        return $this->conf;
     }
 
     public function init(): IServiceManager {
@@ -62,15 +41,34 @@ class App extends EventManager {
         return $this->serviceManager = $this->_init();
     }
 
-    protected static function logErrorFallback(Throwable $e): void {
+    public function run(): mixed {
+        try {
+            $serviceManager = $this->init();
+            $site = $serviceManager['site'];
+
+            $response = $site->__invoke($serviceManager);
+
+            $exitCode = $response ? Env::SUCCESS_CODE : Env::FAILURE_CODE;
+            $event = new Event('exit', ['exitCode' => $exitCode, 'response' => $response]);
+            $this->trigger($event);
+
+            return $event->args['exitCode'];
+        } catch (Throwable $e) {
+            $this->logError($e);
+        }
+        return Env::FAILURE_CODE;
+    }
+
+    protected function logError(Throwable $e): void {
+        if (Env::boolIniVal('display_errors')) {
+            /** @noinspection PhpStatementHasEmptyBodyInspection */
+            while (@ob_end_clean());
+            echo $e;
+        }
         if (ErrorHandler::isErrorLogEnabled()) {
             // @TODO: check how error logging works on PHP core level, remove unnecessary calls and checks.
             error_log(addslashes((string)$e));
         }
-    }
-
-    public function conf(): array {
-        return $this->conf;
     }
 
     protected function _init(): IServiceManager {

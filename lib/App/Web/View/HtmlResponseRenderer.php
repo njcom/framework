@@ -8,12 +8,14 @@ namespace Morpho\App\Web\View;
 
 use Morpho\App\IRequest;
 
+use Morpho\App\ModuleIndex;
+
 use function Morpho\Base\dasherize;
 
 class HtmlResponseRenderer {
     private $templateEngine;
 
-    private $moduleIndex;
+    private ModuleIndex $moduleIndex;
 
     private string $pageRenderingModule;
 
@@ -23,15 +25,15 @@ class HtmlResponseRenderer {
         $this->pageRenderingModule = $pageRenderingModule;
     }
 
-    public function __invoke(mixed $val): IRequest {
-        $response = $val->response();
-        $html = $this->renderHtml($val);
+    public function __invoke(mixed $context): IRequest {
+        $response = $context->response();
+        $html = $this->renderHtml($context);
 
         $response->setBody($html);
         // https://tools.ietf.org/html/rfc7231#section-3.1.1
         $response->headers()['Content-Type'] = 'text/html;charset=utf-8';
 
-        return $val;
+        return $context;
     }
 
     protected function renderHtml($request): string {

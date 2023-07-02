@@ -18,10 +18,6 @@ abstract class WidgetPlugin extends Plugin implements IHasServiceManager, String
         return $this;
     }
 
-    public function __invoke(mixed $value = null): mixed {
-        return $this;
-    }
-
     protected function e(string|int|Stringable $text): string {
         $templateEngine = $this->serviceManager['templateEngine'];
         return $templateEngine->e($text);

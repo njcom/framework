@@ -25,10 +25,6 @@ abstract class Controller extends BaseController implements IHasServiceManager {
         return $this;
     }
 
-    public function __invoke(mixed $request): IRequest {
-        return parent::__invoke($request);
-    }
-
     protected function beforeEach($request): void {
         parent::beforeEach($request);
         $this->request = $request;

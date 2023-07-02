@@ -13,11 +13,11 @@ class ArrPipe implements IPipe {
         $this->steps = (array) $steps;
     }
 
-    public function __invoke(mixed $val): mixed {
+    public function __invoke(mixed $context): mixed {
         foreach ($this as $fn) {
-            $val = $fn($val);
+            $context = $fn($context);
         }
-        return $val;
+        return $context;
     }
 
     public function setSteps(array $steps): void {

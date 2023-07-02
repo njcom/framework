@@ -14,18 +14,18 @@ use function str_replace;
 use function strlen;
 
 class PriceFilter {
-    public function __invoke(mixed $value): mixed {
-        if (!is_scalar($value)) {
+    public function __invoke(mixed $val): ?float {
+        if (!is_scalar($val)) {
             return null;
         }
-        $value = str_replace(',', '.', (string) $value);
+        $val = str_replace(',', '.', (string) $val);
         $search = ['{\\.+}si', '{[^-\\d.]}si'];
         $replace = ['.', ''];
-        $value = preg_replace($search, $replace, $value);
-        if (!strlen($value) || !self::isFloat($value)) {
+        $val = preg_replace($search, $replace, $val);
+        if (!strlen($val) || !self::isFloat($val)) {
             return null;
         }
-        return floatval($value);
+        return floatval($val);
     }
 
     private static function isFloat(string $value): bool {

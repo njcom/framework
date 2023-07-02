@@ -13,5 +13,7 @@ interface IRequest extends IBaseRequest {
 
     public function response(): IResponse;
 
+    public function setArgs(array $args): void;
+
     public function args(string|array|null $namesOrIndexes = null): mixed;
 }
