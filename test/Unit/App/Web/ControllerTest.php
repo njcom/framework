@@ -38,7 +38,7 @@ class ControllerTest extends TestCase {
         $response = new Response();
         $request = $this->mkConfiguredRequest($response, 'http://example.local/');
 
-        $request = $controller->__invoke($request);
+        $controller->__invoke($request);
 
         $this->assertTrue($controller->called);
         $result = $request->response()['result'];
@@ -108,7 +108,7 @@ class ControllerTest extends TestCase {
             }
         };
 
-        $request = $controller->__invoke($request);
+        $controller->__invoke($request);
 
         $changedResponse = $request->response();
         $this->assertSame($changedResponse, $response);

@@ -54,12 +54,12 @@ class App extends EventManager {
 
             return $event->args['exitCode'];
         } catch (Throwable $e) {
-            $this->logError($e);
+            $this->handleException($e);
         }
         return Env::FAILURE_CODE;
     }
 
-    protected function logError(Throwable $e): void {
+    protected function handleException(Throwable $e): void {
         if (Env::boolIniVal('display_errors')) {
             /** @noinspection PhpStatementHasEmptyBodyInspection */
             while (@ob_end_clean());
