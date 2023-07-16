@@ -19,7 +19,7 @@ use function count;
 class Must {
     public static function beTruthy(mixed $val, string $message = null): mixed {
         if (!$val) {
-            throw new MustException((string)$message);
+            throw new MustException((string)$message, $val);
         }
         return $val;
     }
@@ -69,7 +69,7 @@ class Must {
     public static function haveAtLeastKeys(array $arr, array $keys, string $message = null): array {
         $intersection = array_intersect_key(array_flip($keys), $arr);
         if (count($intersection) != count($keys)) {
-            throw new MustException($message ?? 'The array must have the items with the specified keys');
+            throw new MustException($message ?? 'The array must have the items with the specified keys', ['arr' => $arr, 'keys' => $keys]);
         }
         return $arr;
     }
@@ -81,7 +81,7 @@ class Must {
             $invalid = array_keys($arr) !== $keys;
         }
         if ($invalid) {
-            throw new MustException($message ?? 'The array must have the items with the specified keys and no other items');
+            throw new MustException($message ?? 'The array must have the items with the specified keys and no other items', ['arr' => $arr, 'keys' => $keys]);
         }
         return $arr;
     }
