@@ -15,6 +15,7 @@ use Morpho\Compiler\Frontend\IGrammar;
 use Traversable;
 
 use function Morpho\Base\q;
+use function Morpho\Base\qq;
 
 /*
 class GrammarError(Exception):
@@ -180,7 +181,7 @@ readonly class NameLeaf extends Leaf {
 // The value is a string literal, including quotes.
 readonly class StringLeaf extends Leaf {
     public function repr(): string {
-        return 'StringLeaf(' . q($this->val) . ')';
+        return 'StringLeaf(' . qq($this->val) . ')';
     }
 }
 
@@ -471,13 +472,11 @@ readonly class Gather extends Repeat {
     }
 
     public function __toString(): string {
-        //    return f"{self.separator!s}.{self.node!s}+"
-        throw new NotImplementedException();
+        return $this->separator->__toString() . '.' . $this->node->__toString() . '+';
     }
 
     public function repr(): string {
-        //return f"Gather({self.separator!r}, {self.node!r})"
-        throw new NotImplementedException();
+        return 'Gather(' . $this->separator->repr() . ', ' . $this->node->repr() . ')';
     }
 }
 

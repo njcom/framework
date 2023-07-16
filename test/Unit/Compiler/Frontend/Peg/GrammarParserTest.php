@@ -7,12 +7,15 @@
 namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
 use Morpho\Compiler\Frontend\IParser;
+use Morpho\Compiler\Frontend\Location;
 use Morpho\Compiler\Frontend\Peg\Grammar;
 use Morpho\Compiler\Frontend\Peg\GrammarParser;
 use Morpho\Compiler\Frontend\Peg\GrammarTokenizer;
 use Morpho\Compiler\Frontend\Peg\IRenderingActions;
 use Morpho\Compiler\Frontend\Peg\Parser;
+use Morpho\Compiler\Frontend\Peg\Token;
 use Morpho\Compiler\Frontend\Peg\Tokenizer;
+use Morpho\Compiler\Frontend\Peg\TokenType;
 use Morpho\Testing\TestCase;
 
 /**
@@ -42,7 +45,7 @@ class GrammarParserTest extends TestCase {
         $grammar = $this->parser->start();
         $this->assertInstanceOf(Grammar::class, $grammar);
     }
-    
+
     public function testRenderActionsAccessor() {
         $grammar = $this->parser->start();
         $rule = $grammar->rules['foo'];
@@ -50,9 +53,8 @@ class GrammarParserTest extends TestCase {
         $this->checkBoolAccessor($rule->renderActions(...), false);
     }
 
-    // def test_parse_grammar(self) -> None
-    public function testParse_GrammarToString_GrammarRepr() {
-        $grammar = <<<OUT
+    public function testParseGrammar(): void {
+        $grammarSource = <<<OUT
         start: sum NEWLINE
         sum: t1=term '+' t2=term { action } | term
         term: NUMBER
@@ -62,7 +64,7 @@ class GrammarParserTest extends TestCase {
         sum: term '+' term | term
         term: NUMBER
         OUT;
-        $grammar = $this->testHelper->parseString($grammar);
+        $grammar = $this->testHelper->parseString($grammarSource);
         $rules = $grammar->rules;
         $this->assertSame($expected, rtrim($grammar->__toString()));
         $this->assertSame('start: sum NEWLINE', $rules['start']->__toString());
@@ -70,78 +72,76 @@ class GrammarParserTest extends TestCase {
         $this->assertSame("Rule('term', None, Rhs([Alt([NamedItem(None, NameLeaf('NUMBER'))])]))", $rules["term"]->repr());
     }
 
+    public function testLongRuleStr(): void {
+        $grammarSource = <<<OUT
+        start: zero | one | one zero | one one | one zero zero | one zero one | one one zero | one one one
+        OUT;
+        $expected = <<<OUT
+        start:
+            | zero
+            | one
+            | one zero
+            | one one
+            | one zero zero
+            | one zero one
+            | one one zero
+            | one one one
+        OUT;
+        $grammar = $this->testHelper->parseString($grammarSource);
+        $this->assertSame($expected, $grammar->rules['start']->__toString());
+    }
 
-    /*
-        def test_long_rule_str(self) -> None:
-            grammar_source = """
-            start: zero | one | one zero | one one | one zero zero | one zero one | one one zero | one one one
-            """
-            expected = """
-            start:
-                | zero
-                | one
-                | one zero
-                | one one
-                | one zero zero
-                | one zero one
-                | one one zero
-                | one one one
-            """
-            grammar: Grammar = parse_string(grammar_source, GrammarParser)
-            self.assertEqual(str(grammar.rules["start"]), textwrap.dedent(expected).strip())
-         */
+    public function testTypedRules(): void {
+        $grammarSource = <<<OUT
+        start[int]: sum NEWLINE
+        sum[int]: t1=term '+' t2=term { action } | term
+        term[int]: NUMBER
+        OUT;
+        $rules = $this->testHelper->parseString($grammarSource)->rules;
+        # Check the str() and repr() of a few rules; AST nodes don't support ==.
+        $this->assertSame("start: sum NEWLINE", $rules["start"]->__toString());
+        $this->assertSame("sum: term '+' term | term", $rules["sum"]->__toString());
+        $this->assertSame("Rule('term', 'int', Rhs([Alt([NamedItem(None, NameLeaf('NUMBER'))])]))", $rules['term']->repr());
+    }
 
-    /*
-        def test_typed_rules(self) -> None:
-            grammar = """
-            start[int]: sum NEWLINE
-            sum[int]: t1=term '+' t2=term { action } | term
-            term[int]: NUMBER
-            """
-            rules = parse_string(grammar, GrammarParser).rules
-            # Check the str() and repr() of a few rules; AST nodes don't support ==.
-            self.assertEqual(str(rules["start"]), "start: sum NEWLINE")
-            self.assertEqual(str(rules["sum"]), "sum: term '+' term | term")
-            self.assertEqual(
-                repr(rules["term"]),
-                "Rule('term', 'int', Rhs([Alt([NamedItem(None, NameLeaf('NUMBER'))])]))",
-            )
-         */
+    public function testGather(): void {
+        $grammarSource = <<<OUT
+        start: ','.thing+ NEWLINE
+        thing: NUMBER
+        OUT;
+        $grammar = $this->testHelper->parseString($grammarSource);
+        $rules = $grammar->rules;
+        $this->assertSame("start: ','.thing+ NEWLINE", $rules['start']->__toString());
+        $this->assertStringStartsWith(
+            "Rule('start', None, Rhs([Alt([NamedItem(None, Gather(StringLeaf(\"','\"), NameLeaf('thing'",
+            $rules['start']->repr()
+        );
+        $this->assertSame("thing: NUMBER", $rules["thing"]->__toString());
 
-    /*
-        def test_gather(self) -> None:
-            grammar = """
-            start: ','.thing+ NEWLINE
-            thing: NUMBER
-            """
-            rules = parse_string(grammar, GrammarParser).rules
-            self.assertEqual(str(rules["start"]), "start: ','.thing+ NEWLINE")
-            self.assertTrue(
-                repr(rules["start"]).startswith(
-                    "Rule('start', None, Rhs([Alt([NamedItem(None, Gather(StringLeaf(\"','\"), NameLeaf('thing'"
-                )
-            )
-            self.assertEqual(str(rules["thing"]), "thing: NUMBER")
-            parser_class = make_parser(grammar)
-            node = parse_string("42\n", parser_class)
-            node = parse_string("1, 2\n", parser_class)
-            self.assertEqual(
-                node,
+        $parserClass = $this->testHelper->generateParser($grammar);
+        //$node = $this->testHelper->parseString("42\n", $parserClass);
+        // @todo: Check $node representation
+        $line = "1, 2\n";
+        $node = $this->testHelper->parseString($line, $parserClass);
+        $this->assertSame(
+            [
                 [
-                    [
-                        TokenInfo(
-                            NUMBER, string="1", start=(1, 0), end=(1, 1), line="1, 2\n"
-                        ),
-                        TokenInfo(
-                            NUMBER, string="2", start=(1, 3), end=(1, 4), line="1, 2\n"
-                        ),
-                    ],
-                    TokenInfo(
-                        NEWLINE, string="\n", start=(1, 4), end=(1, 5), line="1, 2\n"
+                    new Token(
+                        TokenType::NUMBER, val: '1', start: new Location(1, 0), end: new Location(1, 1), line: $line
+                    ),
+                    new Token(
+                        TokenType::NUMBER, val: '2', start: new Location(1, 3), end: new Location(1, 4), line: $line
                     ),
                 ],
-            )
+                new Token(
+                    TokenType::NEWLINE, val: "\n", start: new Location(1, 4), end: new Location(1, 5), line: $line
+                ),
+            ],
+            $node
+        );
+    }
 
+    /*
         def test_expr_grammar(self) -> None:
             grammar = """
             start: sum NEWLINE

@@ -6,7 +6,7 @@
  */
 namespace Morpho\Compiler;
 
-interface ICompiler extends ITranslator {
+interface ICompiler {
     public function frontend(): callable;
 
     public function midend(): callable;

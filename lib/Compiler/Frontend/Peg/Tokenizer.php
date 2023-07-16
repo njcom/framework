@@ -9,7 +9,6 @@ namespace Morpho\Compiler\Frontend\Peg;
 use Iterator;
 use Morpho\Base\Must;
 use Morpho\Base\NotImplementedException;
-use Morpho\Compiler\Frontend\ITokenizer;
 use Morpho\Compiler\Frontend\Location;
 
 use RuntimeException;
@@ -22,7 +21,7 @@ use function Morpho\Base\mkStream;
 /**
  * Based on https://github.com/python/cpython/blob/fc94d55ff453a3101e4c00a394d4e38ae2fece13/Lib/tokenize.py
  */
-class Tokenizer implements ITokenizer {
+class Tokenizer {
     /**
      * @param resource|string $stream
      * @return Iterator
