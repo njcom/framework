@@ -9,8 +9,8 @@ namespace Morpho\Compiler\Frontend\Peg;
 /**
  * Based on https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/parser_generator.py
  */
-class ParserGen {
-    private GrammarVisitor $callMakerVisitor;
+abstract class ParserGenerator {
+    protected GrammarVisitor $callMakerVisitor;
 
     public function __construct() {
         /*

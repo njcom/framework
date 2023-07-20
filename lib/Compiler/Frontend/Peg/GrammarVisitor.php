@@ -12,7 +12,7 @@ use function Morpho\Base\last;
 /**
  * https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/grammar.py
  */
-class GrammarVisitor {
+class GrammarVisitor implements IGrammarVisitor {
     /**
      * Visit a node
      * def visit(self, node: Any, *args: Any, **kwargs: Any) -> Any:
@@ -31,7 +31,7 @@ class GrammarVisitor {
      * def generic_visit(self, node: Iterable[Any], *args: Any, **kwargs: Any) -> Any:
      * @noinspection PhpMixedReturnTypeCanBeReducedInspection
      */
-    private function genericVisit($node, ...$args): mixed {
+    protected function genericVisit($node, ...$args): mixed {
         foreach ($node as $value) {
             if (is_array($value)) { // @todo: replace is_array() with is_iterable()?
                 foreach ($value as $item) {

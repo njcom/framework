@@ -6,10 +6,14 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
+use function Morpho\Base\camelize;
+use function Morpho\Base\enumVals;
+use function Morpho\Base\last;
+
 /**
  * [class PythonParserGenerator(ParserGenerator, GrammarVisitor)](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/python_generator.py#L192)
  */
-class PhpParserGenerator {
+class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
 /*
     def __init__(
         self,
@@ -20,10 +24,14 @@ class PhpParserGenerator {
         unreachable_formatting: Optional[str] = None,
     )
  */
-    public function __construct(Grammar $grammar, null $out) {
+    public function __construct(Grammar $grammar, $file = null, $tokens = null, $locationFormatting = null, $unreachableFormatting = null) {
+        if (null === $tokens) {
+            $tokens = array_keys(enumVals(TokenType::class));
+            //$tokens[] = TokenType::SOFT_KEYWORD->value;
+        }
+        parent::__construct($grammar, $tokens, $file);
+        $this->callMakerVisitor = new PhpCallMakerVisitor($this);
 /*
-        tokens.add("SOFT_KEYWORD")
-        super().__init__(grammar, tokens, file)
         self.callmakervisitor: PythonCallMakerVisitor = PythonCallMakerVisitor(self)
         self.invalidvisitor: InvalidNodeVisitor = InvalidNodeVisitor()
         self.unreachable_formatting = unreachable_formatting or "None  # pragma: no cover"
@@ -174,4 +182,34 @@ class PhpParserGenerator {
             if has_cut:
                 self.print("if cut: return None")
  */
+    /**
+     * Visit a node
+     * def visit(self, node: Any, *args: Any, **kwargs: Any) -> Any:
+     * @todo: make $args array
+     */
+    public function visit(mixed $node, ...$args): mixed {
+        $method = 'visit' . camelize(last(get_class($node), '\\'), true);
+        if (method_exists($this, $method)) {
+            return $this->$method($node, ...$args);
+        }
+        return $this->genericVisit($node, ...$args);
+    }
+
+    /**
+     * Called if no explicit visitor function exists for a node.
+     * def generic_visit(self, node: Iterable[Any], *args: Any, **kwargs: Any) -> Any:
+     * @noinspection PhpMixedReturnTypeCanBeReducedInspection
+     */
+    protected function genericVisit($node, ...$args): mixed {
+        foreach ($node as $value) {
+            if (is_array($value)) { // @todo: replace is_array() with is_iterable()?
+                foreach ($value as $item) {
+                    $this->visit($item, ...$args);
+                }
+            } else {
+                $this->visit($value, ...$args);
+            }
+        }
+        return null;
+    }
 }
