@@ -7,8 +7,10 @@
 namespace Morpho\App\Web\View;
 
 use ArrayObject;
+use Morpho\Base\NotImplementedException;
 
 class ArrMessageStorage extends ArrayObject implements IMessageStorage {
     public function clear(): void {
+        throw new NotImplementedException();
     }
 }

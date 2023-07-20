@@ -12,6 +12,8 @@ use Morpho\App\Cli\ICommandResult;
 use Morpho\App\Cli\ShellCommandResult;
 use Morpho\Testing\TestCase;
 
+use Stringable;
+
 use function iterator_to_array;
 
 class ShellCommandResultTest extends TestCase {
@@ -44,5 +46,6 @@ OUT
         $this->assertInstanceOf(IteratorAggregate::class, $result);
         $this->assertInstanceOf(ICommandResult::class, $result);
         $this->assertInstanceOf(Countable::class, $result);
+        $this->assertInstanceOf(Stringable::class, $result);
     }
 }

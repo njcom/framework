@@ -178,24 +178,6 @@ class PhpTemplateEngine extends ArrPipe {
     }
 
     /**
-     * Evaluates PHP from the passed PHP file making elements of the $__vars be accessible as PHP variables for code in it.
-     */
-    public function evalPhpFile(string $__phpFilePath, array $__vars): string {
-        // NB: We can't use the Base\tpl() function here as we need to preserve $this
-        extract($__vars, EXTR_SKIP);
-        unset($__vars);
-        ob_start();
-        try {
-            require $__phpFilePath;
-        } catch (Throwable $e) {
-            // Don't output any result in case of Error
-            ob_end_clean();
-            throw $e;
-        }
-        return trim(ob_get_clean());
-    }
-
-    /**
      * Evaluates PHPTemplateEngine code.
      * @param string $sourceCode
      * @param array  $__vars
@@ -210,6 +192,24 @@ class PhpTemplateEngine extends ArrPipe {
         ob_start();
         try {
             eval('?>' . $__code);
+        } catch (Throwable $e) {
+            // Don't output any result in case of Error
+            ob_end_clean();
+            throw $e;
+        }
+        return trim(ob_get_clean());
+    }
+
+    /**
+     * Evaluates PHP from the passed PHP file making elements of the $__vars be accessible as PHP variables for code in it.
+     */
+    public function evalPhpFile(string $__phpFilePath, array $__vars = []): string {
+        // NB: We can't use the Base\tpl() function here as we need to preserve $this
+        extract($__vars, EXTR_SKIP);
+        unset($__vars);
+        ob_start();
+        try {
+            require $__phpFilePath;
         } catch (Throwable $e) {
             // Don't output any result in case of Error
             ob_end_clean();
