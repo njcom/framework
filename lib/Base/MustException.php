@@ -9,7 +9,8 @@ namespace Morpho\Base;
 class MustException extends Exception {
     private mixed $val;
 
-    public function __construct(string $message, mixed $val) {
+    public function __construct(string $message, mixed $val = null) {
+        parent::__construct($message);
         $this->val = $val;
     }
 

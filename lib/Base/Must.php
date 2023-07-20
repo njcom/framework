@@ -74,14 +74,14 @@ class Must {
         return $arr;
     }
 
-    public static function haveExactKeys(array $arr, array $keys, bool $ordered = true, string $message = null): array {
+    public static function haveExactKeys(array $arr, array $keys, string $message = null, bool $ordered = true): array {
         if (!$ordered) {
             $invalid = !empty(symDiff(array_keys($arr), $keys));
         } else {
             $invalid = array_keys($arr) !== $keys;
         }
         if ($invalid) {
-            throw new MustException($message ?? 'The array must have the items with the specified keys and no other items', ['arr' => $arr, 'keys' => $keys]);
+            throw new MustException($message ?? 'The array must have exactly the folllowing keys and no other items', ['arr' => $arr, 'keys' => $keys]);
         }
         return $arr;
     }
