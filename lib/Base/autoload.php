@@ -1548,16 +1548,16 @@ function withStream(callable $fn, string $bytes, string $source = null): mixed {
 
 /**
  * @param string      $bytes
- * @param string|null $source
+ * @param string|null $fileName
  * @return resource
  */
-function mkStream(string $bytes, string $source = null) {
-    if (null === $source) {
-        $source = 'php://memory';
+function mkStream(string $bytes, string $fileName = null) {
+    if (null === $fileName) {
+        $fileName = 'php://memory';
     } else {
-        Must::beTruthy(str_starts_with($source, 'php://'), 'The source must start with php://');
+        Must::beTruthy(str_starts_with($fileName, 'php://'), 'The source must start with php://');
     }
-    $stream = fopen($source, 'r+');
+    $stream = fopen($fileName, 'r+');
     if (!$stream) {
         throw new Exception('Unable to allocate memory');
     }
