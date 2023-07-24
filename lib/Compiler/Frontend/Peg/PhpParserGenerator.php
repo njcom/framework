@@ -14,6 +14,9 @@ use function Morpho\Base\last;
  * [class PythonParserGenerator(ParserGenerator, GrammarVisitor)](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/python_generator.py#L192)
  */
 class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
+    private InvalidVisitor $invalidVisitor;
+    private ?string $unreachableFormatting;
+    private ?string $locationFormatting;
 /*
     def __init__(
         self,
@@ -24,27 +27,23 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         unreachable_formatting: Optional[str] = None,
     )
  */
-    public function __construct(Grammar $grammar, $file = null, $tokens = null, $locationFormatting = null, $unreachableFormatting = null) {
+
+    public function __construct(Grammar $grammar, $stream, $tokens = null, string $locationFormatting = null, string $unreachableFormatting = null) {
         if (null === $tokens) {
             $tokens = array_keys(enumVals(TokenType::class));
-            //$tokens[] = TokenType::SOFT_KEYWORD->value;
+            //$tokens[] = TokenType::SOFT_KEYWORD;
+            //$tokens = array_unique($tokens);
         }
-        parent::__construct($grammar, $tokens, $file);
+        parent::__construct($grammar, $tokens, $stream);
         $this->callMakerVisitor = new PhpCallMakerVisitor($this);
-/*
-        self.callmakervisitor: PythonCallMakerVisitor = PythonCallMakerVisitor(self)
-        self.invalidvisitor: InvalidNodeVisitor = InvalidNodeVisitor()
-        self.unreachable_formatting = unreachable_formatting or "None  # pragma: no cover"
-        self.location_formatting = (
-            location_formatting
-            or "lineno=start_lineno, col_offset=start_col_offset, "
-            "end_lineno=end_lineno, end_col_offset=end_col_offset"
-        )
-*/
+        $this->invalidVisitor = new InvalidVisitor();
+        $this->unreachableFormatting = $unreachableFormatting ?? "null  // pragma: no cover";
+        $this->locationFormatting = ($locationFormatting ?? "lineno=start_lineno, col_offset=start_col_offset, ") . "end_lineno=end_lineno, end_col_offset=end_col_offset";
     }
 
-    // def generate(self, filename: str) -> None:
-    public function generate(string $string) {
+    public function generate(string $filePath): void {
+        $this->collectRules();
+        $header = d($this->grammar->metas);
 /*
             self.collect_rules()
             header = self.grammar.metas.get("header", MODULE_PREFIX)

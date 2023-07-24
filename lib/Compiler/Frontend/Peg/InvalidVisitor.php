@@ -4,12 +4,10 @@
  * It is distributed under the 'Apache License Version 2.0' license.
  * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
  */
-namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
+namespace Morpho\Compiler\Frontend\Peg;
 
-use Morpho\Testing\TestCase;
+class InvalidVisitor {
 
-class ParserGenTest extends TestCase {
-    public function testFoo() {
-        $this->markTestIncomplete();
+    public function __construct() {
     }
 }

@@ -14,8 +14,18 @@ use Morpho\Testing\TestCase;
 
 class PhpParserGeneratorTest extends TestCase {
     public function testInterface() {
-        $parserGen = new PhpParserGenerator(new Grammar([], []));
+        $parserGen = new PhpParserGenerator(new Grammar([], []), STDOUT);
         $this->assertInstanceOf(ParserGenerator::class, $parserGen);
         $this->assertInstanceOf(IGrammarVisitor::class, $parserGen);
+    }
+
+    public function testGenerate() {
+        $stream = fopen('php://memory', 'r+');
+        // @todo: use more complex grammar
+        $grammar = new Grammar([], []);
+        $parserGen = new PhpParserGenerator($grammar, $stream);
+        $parserGen->generate('??');
+        $generatedCode = stream_get_contents($stream);
+        $this->assertStringStartsWith('<?php declare(strict_types=1);' . "\n", $generatedCode);
     }
 }

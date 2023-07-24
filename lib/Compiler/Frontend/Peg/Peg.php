@@ -8,6 +8,8 @@ namespace Morpho\Compiler\Frontend\Peg;
 
 use Morpho\Compiler\ICompiler;
 
+use function Morpho\Base\mkStream;
+
 /**
  * Based on https://peps.python.org/pep-0617/ and other related Python's resources.
  */
@@ -49,9 +51,13 @@ class Peg implements ICompiler {
      * [generate_parser(grammar: Grammar) -> Type[Parser]](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/testutil.py#L26)
      */
     public static function generateParser(Grammar $grammar): string {
-        $out = null;
-        $gen = new PhpParserGenerator($grammar, $out);
-        $gen->generate("<string>");
+        $stream = mkStream('');
+        // out = io.StringIO()
+        $gen = new PhpParserGenerator($grammar, $stream);
+        $gen->generate('<string>');
+
+        $code = stream_get_contents($stream);
+        d($code);
         /*
             # Generate a parser.
             out = io.StringIO()

@@ -17,14 +17,15 @@ use Traversable;
 use function Morpho\Base\q;
 use function Morpho\Base\qq;
 
-/*
-class GrammarError(Exception):
-    pass
-*/
-
 readonly class Grammar implements IGrammar, IGrammarNode {
+    /**
+     * @var iterable Dict[str, Rule]
+     */
     public iterable $rules;
-    private iterable $metas;
+    /**
+     * @var iterable
+     */
+    public iterable $metas;
 
     // def __init__(self, rules: Iterable[Rule], metas: Iterable[Tuple[str, Optional[str]]]):
     public function __construct(iterable $rules, iterable $metas) {

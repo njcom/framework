@@ -36,7 +36,7 @@ class PhpCallMakerVisitor extends GrammarVisitor {
         */
         throw new NotImplementedException();
     }
-    
+
 /*
     def visit_StringLeaf(self, node: StringLeaf) -> Tuple[str, str]:
         return "literal", f"self.expect({node.value})"
