@@ -71,6 +71,16 @@ function showOk(string|Stringable $prefix = null, string|Stringable $suffix = nu
     );
 }
 
+function sep(string $ch = '-', int $n = CODE_WIDTH_1, string $prefix = null, string $suffix = null): string {
+    if (null !== $prefix) {
+        $n -= mb_strlen($prefix);
+    }
+    if (null !== $suffix) {
+        $n -= mb_strlen($suffix);
+    }
+    return $prefix . str_repeat($ch, $n) . $suffix . "\n";
+}
+
 /**
  * @param string      $ch Character to output
  * @param int         $n Number of times to output the character
@@ -80,17 +90,11 @@ function showOk(string|Stringable $prefix = null, string|Stringable $suffix = nu
  * @return void
  */
 function showSep(string $ch = '-', int $n = CODE_WIDTH_1, string $prefix = null, string $suffix = null, bool $stdErr = false): void {
-    if (null !== $prefix) {
-        $n -= mb_strlen($prefix);
-    }
-    if (null !== $suffix) {
-        $n -= mb_strlen($suffix);
-    }
-    $msg = $prefix . str_repeat($ch, $n) . $suffix;
+    $sep = sep($ch, $n, $prefix, $suffix);
     if ($stdErr) {
-        showErrorLine($msg);
+        showError($sep);
     } else {
-        showLine($msg);
+        echo $sep;
     }
 }
 

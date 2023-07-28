@@ -20,7 +20,7 @@ use function fclose;
 use function file_put_contents;
 use function fwrite;
 use function md5;
-use function Morpho\App\Cli\{arg, envVarsStr, earg, sh, showLine, showOk, showSep, stylize};
+use function Morpho\App\Cli\{arg, envVarsStr, earg, sep, sh, showLine, showOk, showSep, stylize};
 use function ob_get_clean;
 use function ob_start;
 use function proc_close;
@@ -62,12 +62,15 @@ class FunctionsTest extends TestCase {
         $this->assertSame("Test OK\n", ob_get_clean());
     }
 
-    public function testShowSep_DefaultSep() {
+    public function testSep_ShowSep_DefaultSep() {
         ob_start();
         showSep();
         $output = ob_get_clean();
-        $this->assertSame("--------------------------------------------------------------------------------\n", $output);
-        $this->assertSame(CODE_WIDTH_1 + 1, strlen($output));
+        foreach ([sep(), $output] as $sep) {
+
+            $this->assertSame("--------------------------------------------------------------------------------\n", $sep);
+            $this->assertSame(CODE_WIDTH_1 + 1, strlen($sep));
+        }
     }
 
     public function testShowSep_CustomSep() {
@@ -96,7 +99,7 @@ class FunctionsTest extends TestCase {
      */
     public function testWriteErrorAndWriteErrorLine($fn, $expectedMessage, $error) {
         $tmpFilePath = $this->createTmpFile();
-        $autoloadFilePath = BASE_DIR_PATH. '/vendor/autoload.php';
+        $autoloadFilePath = BASE_DIR_PATH . '/vendor/autoload.php';
         file_put_contents(
             $tmpFilePath,
             <<<OUT

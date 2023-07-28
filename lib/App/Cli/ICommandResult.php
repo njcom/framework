@@ -28,4 +28,9 @@ interface ICommandResult extends IteratorAggregate, Stringable, Countable {
     public function lines(bool $asArr = true): iterable;
 
     public function __toString(): string;
+
+    /**
+     * The value is mutable - can be changed by caller.
+     */
+    public function val(): ArrayObject;
 }

@@ -6,16 +6,24 @@
  */
 namespace Morpho\App\Cli;
 
+use ArrayObject;
+
 class ShellCommandResult extends CommandResult {
     protected string $stdOut;
     protected string $stdErr;
     protected string $command;
+    protected ArrayObject $val;
 
-    public function __construct(string $command, int $exitCode, string $stdOut, string $stdErr) {
+    public function __construct(string $command, int $exitCode, string $stdOut, string $stdErr, mixed $val = null) {
         parent::__construct($exitCode);
         $this->command = $command;
         $this->stdOut = $stdOut;
         $this->stdErr = $stdErr;
+        $this->val = $val ?: new ArrayObject();
+    }
+
+    public function val(): ArrayObject {
+        return $this->val;
     }
 
     public function command(): string {
