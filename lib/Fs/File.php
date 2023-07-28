@@ -278,11 +278,14 @@ class File extends Entry {
         return self::write($filePath, $content, Conf::check(['append' => true], (array) $conf));
     }
 
+    /**
+     * @throws \Throwable
+     */
     public static function writePhpVar(string $filePath, $var, bool $stripNumericKeys = true): string {
         if ($stripNumericKeys) {
             throw new NotImplementedException();
         }
-        return File::write($filePath, '<?php return ' . var_export($var, true) . ';');
+        return static::write($filePath, '<?php return ' . var_export($var, true) . ';');
     }
 
     /**
@@ -396,11 +399,8 @@ class File extends Entry {
         return $filePath;
     }
 
-    /**
-     * @return mixed
-     */
-    public static function usingTmp(callable $fn, string $tmpDirPath = null) {
-        $tmpFilePath = tempnam($tmpDirPath ?: Env::tmpDirPath(), __FUNCTION__);
+    public static function usingTmp(callable $fn, string $tmpDirPath = null): mixed {
+        $tmpFilePath = tempnam($tmpDirPath ?: Env::tmpDirPath(), 'using-tmp-');
         try {
             $res = $fn($tmpFilePath);
         } finally {
