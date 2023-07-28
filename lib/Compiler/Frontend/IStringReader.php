@@ -68,7 +68,7 @@ interface IStringReader {
      * @param string $re Pattern (PCRE) to match.
      * @return int|null The length of the match, or null.
      */
-    public function lookN(string $re): ?int;
+    public function lookLen(string $re): ?int;
 
     /**
      * Works like lookUntil(), but returns the length of match (integer) instead of string.
@@ -77,7 +77,7 @@ interface IStringReader {
      * @param string $re Pattern (PCRE) to match.
      * @return int|null
      */
-    public function lookNUntil(string $re): ?int;
+    public function lookLenUntil(string $re): ?int;
 
     /**
      * Reads the text (input) matching the pattern.
@@ -107,7 +107,7 @@ interface IStringReader {
      * @param string $re Pattern (PCRE) to match.
      * @return int|null The number of matched characters or null in case of no matching.
      */
-    public function readN(string $re): ?int;
+    public function readLen(string $re): ?int;
 
     /**
      * Works like readUntil(), but returns the length of the match (integer) instead of string.
@@ -115,7 +115,7 @@ interface IStringReader {
      * @param string $re Pattern (PCRE) to match.
      * @return int|null
      */
-    public function readNUntil(string $re): ?int;
+    public function readLenUntil(string $re): ?int;
 
     /**
      * Returns a string with length $n from the current offset.
@@ -202,7 +202,7 @@ interface IStringReader {
      *     [captures()](https://docs.ruby-lang.org/en/3.0.0/StringScanner.html#method-i-captures)
      * @return array|null
      */
-    public function subgroups(): ?array;
+    public function groups(): ?array;
 
     /**
      * Returns the “rest” of the string (i.e. everything after the scan pointer). If there is no more data (eos? = true), it returns "".

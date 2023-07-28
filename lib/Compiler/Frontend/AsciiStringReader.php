@@ -15,7 +15,7 @@ class AsciiStringReader implements IStringReader {
     protected int $prevOffset = 0;
     protected ?string $match = null;
     protected readonly bool $anchored;
-    protected ?array $subgroups = null;
+    protected ?array $groups = null;
 
     /**
      * @param string $input
@@ -77,16 +77,16 @@ class AsciiStringReader implements IStringReader {
     }
 
     /**
-     * @see IStringReader::lookN()
+     * @see IStringReader::lookLen()
      */
-    public function lookN(string $re): ?int {
+    public function lookLen(string $re): ?int {
         return $this->scan($re, false, false);
     }
 
     /**
-     * @see IStringReader::lookNUntil()
+     * @see IStringReader::lookLenUntil()
      */
-    public function lookNUntil(string $re): ?int {
+    public function lookLenUntil(string $re): ?int {
         return $this->scanUntil($re, false, false);
     }
 
@@ -105,16 +105,16 @@ class AsciiStringReader implements IStringReader {
     }
 
     /**
-     * @see IStringReader::readN()
+     * @see IStringReader::readLen()
      */
-    public function readN(string $re): ?int {
+    public function readLen(string $re): ?int {
         return $this->scan($re, true, false);
     }
 
     /**
-     * @see IStringReader::readNUntil()
+     * @see IStringReader::readLenUntil()
      */
-    public function readNUntil(string $re): ?int {
+    public function readLenUntil(string $re): ?int {
         return $this->scanUntil($re, true, false);
     }
 
@@ -133,14 +133,14 @@ class AsciiStringReader implements IStringReader {
      * @see IStringReader::char()
      */
     public function char(): ?string {
-        $this->subgroups = $this->match = null;
+        $this->groups = $this->match = null;
         if ($this->offset >= $this->strlen($this->input)) {
             return null;
         }
         $this->prevOffset = $this->offset;
         $match = $this->substr($this->input, $this->offset, 1);
         $this->offset += $this->strlen($match);
-        $this->subgroups = [$match];
+        $this->groups = [$match];
         return $this->match = $match;
     }
 
@@ -152,7 +152,7 @@ class AsciiStringReader implements IStringReader {
             throw new StringReaderException("Previous match record doesn't exist");
         }
         $this->match = null;
-        $this->subgroups = null;
+        $this->groups = null;
         $this->offset = $this->prevOffset;
     }
 
@@ -161,7 +161,7 @@ class AsciiStringReader implements IStringReader {
      */
     public function terminate(): void {
         $this->match = null;
-        $this->subgroups = null;
+        $this->groups = null;
         $this->offset = $this->strlen($this->input);
     }
 
@@ -171,7 +171,7 @@ class AsciiStringReader implements IStringReader {
     public function reset(): void {
         $this->match = null;
         $this->offset = $this->prevOffset = 0;
-        $this->subgroups = null;
+        $this->groups = null;
     }
 
     /**
@@ -231,10 +231,10 @@ class AsciiStringReader implements IStringReader {
     }
 
     /**
-     * @see IStringReader::subgroups()
+     * @see IStringReader::groups()
      */
-    public function subgroups(): ?array {
-        return $this->subgroups;
+    public function groups(): ?array {
+        return $this->groups;
     }
 
     /**
@@ -278,7 +278,7 @@ class AsciiStringReader implements IStringReader {
     }
 
     /**
-     * Can change or not the offset dependening from the $advanceOffset
+     * Can change or not the offset depending from the $advanceOffset
      * Changes the `match` register
      * @param string $re
      * @param bool $advanceOffset If true the offset will be advanced.
@@ -297,7 +297,7 @@ class AsciiStringReader implements IStringReader {
             }
         }
         $this->match = $match;
-        $this->subgroups = null === $match ? null : $m;
+        $this->groups = null === $match ? null : $m;
         if ($returnStr) {
             return $match;
         }
@@ -327,14 +327,14 @@ class AsciiStringReader implements IStringReader {
                 $this->prevOffset = $m[0][1];
                 $this->offset += $this->strlen($res);
             }
-            $this->subgroups = array_column($m, 0);
+            $this->groups = array_column($m, 0);
             $this->match = $m[0][0];
             if ($returnStr) {
                 return $res;
             }
             return $this->strlen($res);
         }
-        $this->subgroups = null;
+        $this->groups = null;
         $this->match = null;
         return null;
     }

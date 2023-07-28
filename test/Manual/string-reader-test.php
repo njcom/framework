@@ -19,12 +19,12 @@ var_dump(
     $res1,
     $reader1->offset(),
     $reader1->match(),
-    $reader1->subgroups(),
+    $reader1->groups(),
 );
 showSep();
 var_dump(
     $res2,
     $reader2->offset(),
     $reader2->match(),
-    $reader2->subgroups(),
+    $reader2->groups(),
 );

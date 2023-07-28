@@ -40,10 +40,10 @@ class Dialog {
         $checkedItems = [];
         while (true) {
             /** @noinspection PhpStatementHasEmptyBodyInspection */
-            if ($reader->readN('~' . Re::WHITESPACES . '~s') > 0) {
-            } elseif ($reader->readN('~' . Re::DOUBLE_QUOTED . '~s') > 0) {
-                $checkedItems[] = str_replace('\\"', '"', $reader->subgroups()[1]);
-            } elseif ($reader->readN('~' . Re::NOT_WHITESPACES . '~s') > 0) {
+            if ($reader->readLen('~' . Re::WHITESPACES . '~s') > 0) {
+            } elseif ($reader->readLen('~' . Re::DOUBLE_QUOTED . '~s') > 0) {
+                $checkedItems[] = str_replace('\\"', '"', $reader->groups()[1]);
+            } elseif ($reader->readLen('~' . Re::NOT_WHITESPACES . '~s') > 0) {
                 $checkedItems[] = $reader->match();
             } else {
                 break;
