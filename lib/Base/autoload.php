@@ -222,23 +222,35 @@ function unpackArgs(array $args): array {
 }
 
 /**
- * @param string|Stringable|iterable<mixed, string>|int|float $list
- * @param string                                              $pre
- * @param string|null                                         $post
+ * @param string|iterable|int|float|object $list
+ * @param string                           $pre
+ * @param string|null                      $post
  * @return string|array
  */
-function wrap(string|Stringable|iterable|int|float $list, string $pre, string $post = null): string|array {
+function wrap(string|iterable|int|float|object $list, string $pre, string $post = null): string|array {
     if (null === $post) {
         $post = $pre;
     }
     if (is_iterable($list)) {
         $r = [];
         foreach ($list as $k => $v) {
-            $r[$k] = $pre . $v . $post;
+            if ($v instanceof \BackedEnum) {
+                $r[$k] = $pre . $v->value . $post;
+            } else {
+                $r[$k] = $pre . $v . $post;
+            }
         }
         return $r;
     }
-    /** @var string $list */
+    if (is_object($list)) {
+        if (!$list instanceof Stringable) {
+            if (!$list instanceof \BackedEnum) { // enums extending `string` or `int` types
+                throw new \UnexpectedValueException();
+            }
+            return $pre . $list->value . $post;
+        }
+    }
+    // string or Stringable
     return $pre . $list . $post;
 }
 
@@ -282,11 +294,11 @@ function appendFn(string $suffix): Closure {
     };
 }
 
-function q(string|Stringable|iterable|int|float $list): string|array {
+function q(string|iterable|int|float|object $list): string|array {
     return wrap($list, "'");
 }
 
-function qq(string|Stringable|iterable|int|float $list): string|array {
+function qq(string|iterable|int|float|object $list): string|array {
     return wrap($list, '"');
 }
 

@@ -10,7 +10,8 @@ use ArrayIterator;
 use IteratorAggregate;
 use Morpho\Base\Exception;
 use Morpho\Base\IDisposable;
-use Morpho\Test\Unit\Base\FunctionsTest\Foo;
+use Morpho\Test\Unit\Base\FunctionsTest\IntBacked;
+use Morpho\Test\Unit\Base\FunctionsTest\StringBacked;
 use Morpho\Testing\TestCase;
 use RuntimeException;
 use SplStack;
@@ -22,7 +23,7 @@ use function call_user_func;
 use function count;
 use function file_put_contents;
 use function get_class_methods;
-use function Morpho\Base\{all, append, appendFn, camelize, camelizeKeys, capture, cartesianProduct, classify, compose, dasherize, deleteDups, enumVals, formatBytes, formatFloat, fromJson, humanize, indent, index, isEnumCase, isSubset, isUtf8Text, last, lastPos, lines, memoize, merge, normalizeEols, not, op, partial, permutations, pipe, prepend, prependFn, q, qq, reorderKeys, sanitize, setProps, setsEqual, shorten, subsets, symDiff, titleize, toIt, toJson, tpl, etrim, ucfirst, underscore, underscoreKeys, unindent, union, uniqueName, unsetMany, unsetOne, unsetRecursive, with, caseVal, waitUntilNumOfAttempts, waitUntilTimeout, words, wrap, wrapFn};
+use function Morpho\Base\{all, append, appendFn, camelize, camelizeKeys, capture, cartesianProduct, caseVal, classify, compose, dasherize, deleteDups, enumVals, etrim, formatBytes, formatFloat, fromJson, humanize, indent, index, isEnumCase, isSubset, isUtf8Text, last, lastPos, lines, memoize, merge, normalizeEols, not, op, partial, permutations, pipe, prepend, prependFn, q, qq, reorderKeys, sanitize, setProps, setsEqual, shorten, subsets, symDiff, titleize, toIt, toJson, tpl, ucfirst, underscore, underscoreKeys, unindent, union, uniqueName, unsetMany, unsetOne, unsetRecursive, waitUntilNumOfAttempts, waitUntilTimeout, with, words, wrap, wrapFn};
 use function property_exists;
 
 use const Morpho\Base\PHP_FILE_FULL_RE;
@@ -44,24 +45,24 @@ class FunctionsTest extends TestCase {
     public function testIsEnumCase() {
         $this->assertFalse(isEnumCase($this));
         $this->assertFalse(isEnumCase(__CLASS__));
-        $this->assertTrue(isEnumCase(Foo::First));
+        $this->assertTrue(isEnumCase(StringBacked::First));
     }
 
     public function testCaseVal() {
-        $this->assertSame(Foo::First->value, caseVal(Foo::First));
+        $this->assertSame(StringBacked::First->value, caseVal(StringBacked::First));
         $this->assertSame(123, caseVal(123));
     }
 
     public function testEnumVals() {
-        $this->assertSame(['First' => 'abc', 'Second' => 'def'], enumVals(Foo::class));
-        $this->assertSame(['abc', 'def'], enumVals(Foo::class, false));
+        $this->assertSame(['First' => 'abc', 'Second' => 'def'], enumVals(StringBacked::class));
+        $this->assertSame(['abc', 'def'], enumVals(StringBacked::class, false));
     }
 
     // -------------------------------------------------------------------------
 
     public static function dataAll_CommonCases() {
-        $falsePredicate = fn () => false;
-        $truePredicate = fn () => true;
+        $falsePredicate = fn() => false;
+        $truePredicate = fn() => true;
         $emptyString = '';
         $emptyArr = [];
         $emptyArrIt = new ArrayIterator($emptyArr);
@@ -207,11 +208,16 @@ class FunctionsTest extends TestCase {
     }
 
     public function testLines_AcceptsStringable() {
-        $this->assertSame(['foo', 'bar'], iterator_to_array(lines(new class implements Stringable {
-            public function __toString(): string {
-                return "foo\nbar";
-            }
-        })));
+        $this->assertSame(['foo', 'bar'],
+            iterator_to_array(
+                lines(
+                    new class implements Stringable {
+                        public function __toString(): string {
+                            return "foo\nbar";
+                        }
+                    }
+                )
+            ));
     }
 
     public function testLines_AcceptsIterable() {
@@ -244,11 +250,11 @@ class FunctionsTest extends TestCase {
 
     public function testWaitUntilTimeout_Timeout() {
         $this->expectException(Exception::class, 'The timeout has been reached');
-        $this->assertNull(waitUntilTimeout(fn () => usleep(2000), 1000));
+        $this->assertNull(waitUntilTimeout(fn() => usleep(2000), 1000));
     }
 
     public function testWaitUntilTimeout_NoTimeout() {
-        $this->assertSame('abc', waitUntilTimeout(fn () => 'abc', 2000));
+        $this->assertSame('abc', waitUntilTimeout(fn() => 'abc', 2000));
     }
 
     public function testNot() {
@@ -275,7 +281,7 @@ class FunctionsTest extends TestCase {
         $v1 = fromJson($json);
         $this->assertCount(count($v), $v1);
         $this->assertEquals($v['foo'], $v1['foo']);
-        $this->assertEquals((array) $v[1], $v1[1]);
+        $this->assertEquals((array)$v[1], $v1[1]);
     }
 
     public function testFromJson_InvalidJsonThrowsException() {
@@ -487,43 +493,6 @@ class FunctionsTest extends TestCase {
         return self::dataQ_("'");
     }
 
-    private static function dataQ_(string $quote) {
-        return [
-            [
-                "$quote$quote",
-                '',
-            ],
-            [
-                "{$quote}123{$quote}",
-                123,
-            ],
-            [
-                "{$quote}Hello{$quote}",
-                'Hello',
-            ],
-            [
-                [
-                    "{$quote}foo{$quote}",
-                    "{$quote}bar{$quote}",
-                ],
-                [
-                    'foo',
-                    'bar',
-                ],
-            ],
-            [
-                [
-                    'a' => "{$quote}foo{$quote}",
-                    'b' => "{$quote}bar{$quote}",
-                ],
-                [
-                    'a' => 'foo',
-                    'b' => 'bar',
-                ],
-            ],
-        ];
-    }
-
     /**
      * @dataProvider dataQ
      */
@@ -621,9 +590,12 @@ class FunctionsTest extends TestCase {
     }
 
     public function testCapture() {
-        $this->assertSame('capture works', capture(function () {
-            echo 'capture works';
-        }));
+        $this->assertSame(
+            'capture works',
+            capture(function () {
+                echo 'capture works';
+            })
+        );
     }
 
     public function testTpl() {
@@ -874,6 +846,9 @@ OUT;
         $this->assertSame(['!123!', '!123!'], wrap(['123', 123], '!'));
         $this->assertSame('!123!', wrap('123', '!'));
         $this->assertSame('!123!', wrap(123, '!'));
+
+        $this->assertSame('!abc!', wrap(StringBacked::First, '!'));
+        $this->assertSame('!7!', wrap(IntBacked::Seven, '!'));
     }
 
     public function testWrapFn() {
@@ -1537,8 +1512,8 @@ OUT;
 
     public function testPipe() {
         $iter = [
-            fn ($v) => $v + 5,
-            fn ($v) => $v * 3,
+            fn($v) => $v + 5,
+            fn($v) => $v * 3,
         ];
         $this->assertSame(36, pipe($iter, 7));
     }
@@ -1547,11 +1522,71 @@ OUT;
         $arr = ['foo' => 123, 'bar' => 456, 'baz' => 758];
         $this->assertSame(['bar' => 456, 'baz' => 758, 'foo' => 123], reorderKeys($arr, ['bar', 'baz', 'foo']));
     }
+
+    private static function dataQ_(string $quote) {
+        return [
+            [
+                "$quote$quote",
+                '',
+            ],
+            [
+                "{$quote}123{$quote}",
+                123,
+            ],
+            [
+                "{$quote}Hello{$quote}",
+                'Hello',
+            ],
+            [
+                [
+                    "{$quote}foo{$quote}",
+                    "{$quote}bar{$quote}",
+                ],
+                [
+                    'foo',
+                    'bar',
+                ],
+            ],
+            [
+                [
+                    'a' => "{$quote}foo{$quote}",
+                    'b' => "{$quote}bar{$quote}",
+                ],
+                [
+                    'a' => 'foo',
+                    'b' => 'bar',
+                ],
+            ],
+            [
+                [
+                    $quote . StringBacked::First->value . $quote,
+                    $quote . IntBacked::Seven->value . $quote,
+                ],
+                [
+                    StringBacked::First,
+                    IntBacked::Seven,
+                ],
+            ],
+            [
+                $quote . StringBacked::First->value . $quote,
+                StringBacked::First,
+            ],
+            [
+                $quote . IntBacked::Seven->value . $quote,
+                IntBacked::Seven,
+            ]
+        ];
+    }
 }
 
 namespace Morpho\Test\Unit\Base\FunctionsTest;
 
-enum Foo: string {
+enum StringBacked: string {
     case First = 'abc';
     case Second = 'def';
+}
+
+enum IntBacked: int {
+    case Three = 3;
+    case Seven = 7;
 }

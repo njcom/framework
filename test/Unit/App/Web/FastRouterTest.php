@@ -170,38 +170,6 @@ class FastRouterTest extends TestCase {
                 throw new NotImplementedException();
             }
 
-            public function isGetMethod(): bool {
-                throw new NotImplementedException();
-            }
-
-            public function isPatchMethod(): bool {
-                throw new NotImplementedException();
-            }
-
-            public function isPutMethod(): bool {
-                throw new NotImplementedException();
-            }
-
-            public function isHeadMethod(): bool {
-                throw new NotImplementedException();
-            }
-
-            public function post($name = null, callable|bool $filter = true): mixed {
-                throw new NotImplementedException();
-            }
-
-            public function hasPost(string $name): bool {
-                throw new NotImplementedException();
-            }
-
-            public function patch($name = null, callable|bool $filter = true): mixed {
-                throw new NotImplementedException();
-            }
-
-            public function data(array $source, $name = null, callable|bool $filter = true): mixed {
-                throw new NotImplementedException();
-            }
-
             public function isAjax(bool $flag = null): bool {
                 throw new NotImplementedException();
             }
@@ -222,31 +190,11 @@ class FastRouterTest extends TestCase {
                 return $this->method;
             }
 
-            public function isPostMethod(): bool {
-                throw new NotImplementedException();
-            }
-
-            public function isDeleteMethod(): bool {
-                throw new NotImplementedException();
-            }
-
-            public function knownMethods(): array {
-                throw new NotImplementedException();
-            }
-
             public function isKnownMethod($method): bool {
                 throw new NotImplementedException();
             }
 
-            public function args(array|string|null $names = null, callable|bool $filter = true): mixed {
-                throw new NotImplementedException();
-            }
-
-            public function query($name = null, callable|bool $filter = true): mixed {
-                throw new NotImplementedException();
-            }
-
-            public function hasQuery(string $name): bool {
+            public function args(mixed $filter = null): array {
                 throw new NotImplementedException();
             }
 
@@ -258,7 +206,7 @@ class FastRouterTest extends TestCase {
                 throw new NotImplementedException();
             }
 
-            public function prependWithBasePath(string $uri): Uri {
+            public function prependWithBasePath(string $path): Uri {
                 throw new NotImplementedException();
             }
 

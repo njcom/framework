@@ -18,6 +18,13 @@ class RequestTest extends MessageTest {
     protected function setUp(): void {
         parent::setUp();
         $this->request = new class extends Request {
+            public readonly string $test;
+
+            public function __construct() {
+                parent::__construct([]);
+                $this->test = '123';
+            }
+            
             public function response(): IResponse {
                 throw new NotImplementedException();
             }

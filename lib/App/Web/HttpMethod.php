@@ -8,17 +8,17 @@ namespace Morpho\App\Web;
 
 /**
  * Supported HTTP methods. See:
- *     [Method definitions in RFC 7231](https://tools.ietf.org/html/rfc7231#section-4.3)
+ *     [Method definitions in RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4)
  *     [PATCH method in RFC 5789](https://tools.ietf.org/html/rfc5789)
  */
 enum HttpMethod: string {
     case Get = 'GET';
-    case Post = 'POST';
-    case Delete = 'DELETE';
-    case Patch = 'PATCH';
-    case Put = 'PUT';
     case Head = 'HEAD';
-    //public const Connect = 'CONNECT';
-    //public const Options = 'OPTIONS';
-    //public const Trace = 'TRACE';
+    case Post = 'POST';
+    case Put = 'PUT';
+    case Delete = 'DELETE';
+    case Connect = 'CONNECT';
+    case Options = 'OPTIONS';
+    case Trace = 'TRACE';
+    case Patch = 'PATCH';
 }

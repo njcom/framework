@@ -27,10 +27,13 @@ abstract class Controller {
 
     protected function runAction($request): void {
         $handler = $request->handler();
+
+        // @todo: handler must be callable, don't use separate 'method'
         $methodName = $handler['method'];
-        // @todo: ensure that is is safe to pass ...$args
+        // @todo: ensure that is is safe to pass ...$args, use reflection and pass only provided arguments
         //$args = $handler['args'];
         $actionResult = $this->$methodName(/*...array_values($args)*/);
+
         $result = $this->handleResult($actionResult);
         if (!$result instanceof IResponse) {
             $response = $this->request()->response();

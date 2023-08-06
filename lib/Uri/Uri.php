@@ -30,9 +30,9 @@ class Uri {
             $uri = (new UriParser())->__invoke($uriStr);
 
             $scheme = $uri->scheme();
-            if (null !== $scheme) {
+            //if (null !== $scheme) {
                 $this->setScheme($scheme);
-            }
+            //}
 
             $authority = $uri->authority();
             if (!$authority->isNull()) {
@@ -40,9 +40,9 @@ class Uri {
             }
 
             $path = $uri->path();
-            if (null !== $path) {
+            //if (null !== $path) {
                 $this->setPath($path);
-            }
+            //}
 
             $query = $uri->query();
             if (!$query->isNull()) {

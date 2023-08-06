@@ -81,7 +81,7 @@ class Must {
             $invalid = array_keys($arr) !== $keys;
         }
         if ($invalid) {
-            throw new MustException($message ?? 'The array must have exactly the folllowing keys and no other items', ['arr' => $arr, 'keys' => $keys]);
+            throw new MustException($message ?? 'The array must have the items with the specified keys and no other items', ['arr' => $arr, 'keys' => $keys]);
         }
         return $arr;
     }

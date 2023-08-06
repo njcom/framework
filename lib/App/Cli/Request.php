@@ -9,8 +9,7 @@ namespace Morpho\App\Cli;
 use Morpho\App\Request as BaseRequest;
 
 class Request extends BaseRequest implements IRequest {
-    protected ?array $args = null;
-
+    #protected array|null $args = null;
     private ?IResponse $response = null;
 
     public function setResponse(IResponse $response): void {
@@ -28,14 +27,14 @@ class Request extends BaseRequest implements IRequest {
         return new Response();
     }
 
-    public function setArgs(array $args): void {
+/*    public function setArgs(array $args): void {
         $this->args = $args;
-    }
+    }*/
 
-    public function args(string|array|null $namesOrIndexes = null): mixed {
+/*    public function args(mixed $filter = null): array {
         if (null === $this->args) {
             $this->args = $_SERVER['argv'];
         }
         return $this->args;
-    }
+    }*/
 }

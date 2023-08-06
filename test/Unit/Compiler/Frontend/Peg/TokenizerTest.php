@@ -7,7 +7,6 @@
 namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
 use Iterator;
-use Morpho\Compiler\Frontend\ITokenizer;
 use Morpho\Compiler\Frontend\Location;
 use Morpho\Compiler\Frontend\Peg\Token;
 use Morpho\Compiler\Frontend\Peg\TokenException;
@@ -23,10 +22,6 @@ class TokenizerTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->tokenizer = new Tokenizer();
-    }
-
-    public function testInterface() {
-        $this->assertInstanceOf(ITokenizer::class, $this->tokenizer);
     }
 
     public function testTokenize_EmptyString() {

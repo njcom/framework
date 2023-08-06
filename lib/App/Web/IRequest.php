@@ -21,39 +21,11 @@ interface IRequest extends IBaseRequest {
 
     public function response(): IResponse;
 
+    public function isKnownMethod(string $method): bool;
+
     public function setMethod(HttpMethod $method): void;
 
     public function method(): HttpMethod;
-
-    public function isGetMethod(): bool;
-
-    public function isPostMethod(): bool;
-
-    public function isDeleteMethod(): bool;
-
-    public function isPatchMethod(): bool;
-
-    public function isPutMethod(): bool;
-
-    public function isHeadMethod(): bool;
-
-    public function knownMethods(): array;
-
-    public function isKnownMethod($method): bool;
-
-    public function args(string|array|null $names = null, callable|bool $filter = true): mixed;
-
-    public function query($name = null, callable|bool $filter = true): mixed;
-
-    public function hasQuery(string $name): bool;
-
-    public function post($name = null, callable|bool $filter = true): mixed;
-
-    public function hasPost(string $name): bool;
-
-    public function patch($name = null, callable|bool $filter = true): mixed;
-
-    public function data(array $source, $name = null, callable|bool $filter = true): mixed;
 
     public function isAjax(bool $flag = null): bool;
 

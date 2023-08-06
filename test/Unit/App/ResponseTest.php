@@ -16,7 +16,12 @@ class ResponseTest extends MessageTest {
     protected function setUp(): void {
         parent::setUp();
         $this->response = new class extends Response {
+            public readonly string $test;
 
+            public function __construct() {
+                parent::__construct([]);
+                $this->test = '123';
+            }
         };
     }
 

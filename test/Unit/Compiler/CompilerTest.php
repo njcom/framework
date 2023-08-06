@@ -8,25 +8,15 @@ namespace Morpho\Test\Unit\Compiler;
 
 use ArrayObject;
 use Morpho\Base\Pipe;
-use Morpho\Compiler\Backend\IInterpreter;
 use Morpho\Compiler\Compiler;
 use Morpho\Compiler\ICompiler;
-use Morpho\Compiler\ITranslator;
 
 class CompilerTest extends ConfigurablePipeTest {
     public function testCompilerInterface() {
         $compiler = new Compiler($this->mkCompilerConf());
         $this->assertIsCallable($compiler);
-        $this->assertInstanceOf(ITranslator::class, $compiler);
         $this->assertInstanceOf(ICompiler::class, $compiler);
         $this->assertInstanceOf(Pipe::class, $compiler);
-        $this->assertInstanceOf(
-            ITranslator::class,
-            new class implements IInterpreter {
-                public function __invoke(mixed $val): mixed {
-                }
-            }
-        );
     }
 
     private function mkCompilerConf(): array {

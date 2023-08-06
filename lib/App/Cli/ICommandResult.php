@@ -9,6 +9,7 @@ namespace Morpho\App\Cli;
 use IteratorAggregate;
 use Stringable;
 use Countable;
+use ArrayObject;
 
 interface ICommandResult extends IteratorAggregate, Stringable, Countable {
     public function command(): string;

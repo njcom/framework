@@ -12,8 +12,5 @@ interface IRequest extends IBaseRequest {
     public function setResponse(IResponse $response): void;
 
     public function response(): IResponse;
-
-    public function setArgs(array $args): void;
-
-    public function args(string|array|null $namesOrIndexes = null): mixed;
+    #public function setArgs(array $args): void;
 }

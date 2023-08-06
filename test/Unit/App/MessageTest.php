@@ -15,10 +15,11 @@ abstract class MessageTest extends TestCase {
         $message = $this->mkMessage();
         $this->assertInstanceOf(ArrayObject::class, $message, 'Message is \\ArrayObject');
 
-        $message->test = '123';
+        $this->assertSame('123', $message->test);
         $message['foo'] = 'bar';
         $this->assertSame(['foo' => 'bar'], $message->getArrayCopy(), 'Properties should be ignored');
     }
 
     abstract protected function mkMessage(): Message;
 }
+
