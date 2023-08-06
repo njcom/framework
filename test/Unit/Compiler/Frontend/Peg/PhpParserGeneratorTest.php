@@ -6,10 +6,19 @@
  */
 namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
+use Morpho\Compiler\Frontend\Peg\Alt;
+use Morpho\Compiler\Frontend\Peg\Gather;
 use Morpho\Compiler\Frontend\Peg\Grammar;
 use Morpho\Compiler\Frontend\Peg\IGrammarVisitor;
+use Morpho\Compiler\Frontend\Peg\NamedItem;
+use Morpho\Compiler\Frontend\Peg\NamedItemList;
+use Morpho\Compiler\Frontend\Peg\NameLeaf;
 use Morpho\Compiler\Frontend\Peg\ParserGenerator;
 use Morpho\Compiler\Frontend\Peg\PhpParserGenerator;
+use Morpho\Compiler\Frontend\Peg\Rhs;
+use Morpho\Compiler\Frontend\Peg\Rule;
+use Morpho\Compiler\Frontend\Peg\StringLeaf;
+use Morpho\Compiler\Frontend\Peg\TokenType;
 use Morpho\Testing\TestCase;
 
 class PhpParserGeneratorTest extends TestCase {
@@ -21,8 +30,26 @@ class PhpParserGeneratorTest extends TestCase {
 
     public function testGenerate() {
         $stream = fopen('php://memory', 'r+');
-        // @todo: use more complex grammar
-        $grammar = new Grammar([], []);
+        $grammar = new Grammar([
+            'start' => new Rule(
+                'start',
+                null,
+                new Rhs([
+                    new Alt(new NamedItemList([
+                        new NamedItem(null, new Gather(new StringLeaf(','), new NameLeaf('thing'))),
+                        new NamedItem(null, new NameLeaf('NEWLINE')),
+                    ])),
+                ])),
+            'thing' => new Rule(
+                'thing',
+                null,
+                new Rhs([
+                    new Alt(new NamedItemList([
+                        new NamedItem(null, new NameLeaf('NUMBER')),
+                    ]))
+                ]),
+            ),
+        ], []);
         $parserGen = new PhpParserGenerator($grammar, $stream);
         $parserGen->generate('??');
         $generatedCode = stream_get_contents($stream);

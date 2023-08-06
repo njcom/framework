@@ -19,13 +19,13 @@ use function Morpho\Base\qq;
 
 readonly class Grammar implements IGrammar, IGrammarNode {
     /**
-     * @var iterable Dict[str, Rule]
+     * @var array Dict[str, Rule]
      */
-    public iterable $rules;
+    public array $rules;
     /**
-     * @var iterable
+     * @var array Dict[?]
      */
-    public iterable $metas;
+    public array $metas;
 
     // def __init__(self, rules: Iterable[Rule], metas: Iterable[Tuple[str, Optional[str]]]):
     public function __construct(iterable $rules, iterable $metas) {
@@ -34,8 +34,7 @@ readonly class Grammar implements IGrammar, IGrammarNode {
             $rulesMap[$rule->name] = $rule;
         }
         $this->rules = $rulesMap;
-        $this->metas = $metas;
-        //self.metas = dict(metas)
+        $this->metas = iterator_to_array($metas);
     }
 
     public function __toString(): string {
@@ -52,10 +51,8 @@ readonly class Grammar implements IGrammar, IGrammarNode {
             '  [',
         ];
         foreach ($this->rules as $rule) {
-            throw new NotImplementedException();
+            $lines[] = '    ' . $rule->repr() . ',';
         }
-        /*    for rule in self.rules.values():
-                lines.append(f"    {repr(rule)},")*/
         $lines[] = '  ],';
         $lines[] = '  {repr(list(self.metas.items()))}';
         $lines[] = ')';
@@ -73,7 +70,7 @@ class Rule implements IGrammarNode, IRenderingActions {
     public readonly string $name;
     public readonly Rhs $rhs;
     private readonly ?string $type;
-    private readonly ?object $memo;
+    private readonly bool $memo;
     private readonly bool $visited;
     private readonly bool $nullable;
     private readonly bool $leftRecursive;
@@ -85,7 +82,7 @@ class Rule implements IGrammarNode, IRenderingActions {
         $this->name = $name;
         $this->type = $type;
         $this->rhs = $rhs;
-        $this->memo = $memo;
+        $this->memo = (bool)$memo;
         $this->visited = false;
         $this->nullable = false;
         $this->leftRecursive = false;
@@ -186,6 +183,9 @@ readonly class StringLeaf extends Leaf {
     }
 }
 
+/**
+ * Right part of the grammar rule.
+ */
 readonly class Rhs implements IGrammarNode {
     /**
      * @var array<Alt>
@@ -278,7 +278,7 @@ class Alt implements IGrammarNode, IRenderingActions {
 }
 
 class NamedItem implements IGrammarNode, IRenderingActions {
-    private readonly ?string $name;
+    public readonly ?string $name;
     public readonly Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut $item;
     private readonly ?string $type;
     private readonly bool $nullable;
@@ -588,7 +588,10 @@ class RuleList extends ArrayObject implements IGrammarNode {
     }
 }
 
-// NamedItemList = List[NamedItem]
+/**
+ * NamedItemList = List[NamedItem]
+ * PHP doesn't have the Python's behavior for the repr() which calls repr() for child elements, so the ArrayObject is used as replacement.
+ */
 class NamedItemList extends ArrayObject implements IGrammarNode {
     public function __toString(): string {
         throw new NotImplementedException();

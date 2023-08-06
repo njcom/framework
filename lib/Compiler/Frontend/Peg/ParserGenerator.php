@@ -6,6 +6,8 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
+use UnexpectedValueException;
+
 /**
  * Based on https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/parser_generator.py
  */
@@ -49,9 +51,9 @@ abstract class ParserGenerator {
     private int $keywordCounter = 499;
 
     /**
-     * @var iterable Dict[str, Rule]
+     * @var array Dict[str, Rule]
      */
-    private iterable $rules;
+    private array $rules;
 
     /**
      * @var mixed Dict[str, Rule]
@@ -68,19 +70,17 @@ abstract class ParserGenerator {
         $this->tokens = $tokens;
         $this->rules = $grammar->rules;
         $this->validateRuleNames();
-
-        /*
-                if "trailer" not in grammar.metas and "start" not in self.rules:
-                    raise GrammarError("Grammar without a trailer must have a 'start' rule")
-                checker = RuleCheckingVisitor(self.rules, self.tokens)
-                for rule in self.rules.values():
-                    checker.visit(rule)
-        */
+        if (!isset($this->grammar->metas['trailer']) && !isset($this->rules['start'])) {
+            throw new GrammarException("Grammar without a trailer must have a 'start' rule");
+        }
+        $checker = new RuleCheckingVisitor($this->rules, $this->tokens);
+        foreach ($this->rules as $rule) {
+            $checker->visit($rule);
+        }
         $this->stream = $stream; // self.file in Python
         [$this->firstGraph, $this->firstSccs] = $this->computeLeftRecursives($this->rules);
-
         // self.all_rules:  = self.rules.copy()
-        $this->allRules = $this->rules->copy(); # Rules + temporal rules
+        $this->allRules = $this->rules; # Rules + temporal rules
     }
 
     protected function validateRuleNames(): void {
@@ -147,38 +147,66 @@ abstract class ParserGenerator {
         }
     }
 
-    // def compute_left_recursives(rules: Dict[str, Rule]) -> Tuple[Dict[str, AbstractSet[str]], List[AbstractSet[str]]]:
-    private function computeLeftRecursive(array $rules): array {
+    /**
+     * def compute_left_recursives(rules: Dict[str, Rule]) -> Tuple[Dict[str, AbstractSet[str]], List[AbstractSet[str]]]:
+     */
+    private function computeLeftRecursives(array $rules): array {
         $graph = $this->makeFirstGraph($rules);
         //sccs = list(sccutils.strongly_connected_components(graph.keys(), graph))
         $sccs = Scc::stronglyConnectedComponents($graph->keys(), $graph);
+        foreach ($sccs as $scc) {
+            if (count($scc) > 1) {
+                foreach ($scc as $name) {
+                    $rules[$name]->leftRecursive = true;
+                }
+                // Try to find a leader such that all cycles go through it.
+                $leaders = array_unique($scc);
+                foreach ($scc as $start) {
+                    foreach (Scc::findCyclesInScc($graph, $scc, $start) as $cycle) {
+                        // print("Cycle:", " -> ".join(cycle))
+                        $leaders = array_diff($scc, array_unique($cycle));
+                        if (!$leaders) {
+                            throw new UnexpectedValueException("SCC {$scc} has no leadership candidate (no element is included in all cycles)");
+                        }
+                        // print("Leaders:", leaders)
+                    }
+                }
+                $leader = min($leaders); // Pick an arbitrary leader from the candidates.
+                $rules[$leader]->leader = true;
+            } else {
+                $name = min($scc); // The only element
+                d($graph->name);
+                //if (isset($this->graph))
 /*
-
-        graph = make_first_graph(rules)
-        for scc in sccs:
-            if len(scc) > 1:
-                for name in scc:
-                    rules[name].left_recursive = True
-                # Try to find a leader such that all cycles go through it.
-                leaders = set(scc)
-                for start in scc:
-                    for cycle in sccutils.find_cycles_in_scc(graph, scc, start):
-                        # print("Cycle:", " -> ".join(cycle))
-                        leaders -= scc - set(cycle)
-                        if not leaders:
-                            raise ValueError(
-                                f"SCC {scc} has no leadership candidate (no element is included in all cycles)"
-                            )
-                # print("Leaders:", leaders)
-                leader = min(leaders)  # Pick an arbitrary leader from the candidates.
-                rules[leader].leader = True
-            else:
-                name = min(scc)  # The only element.
+                 name = min(scc)  # The only element.
                 if name in graph[name]:
                     rules[name].left_recursive = True
                     rules[name].leader = True
-        return graph, sccs
  */
+            }
+        }
+        return [$graph, $sccs];
+    }
+
+    /**
+     * Compute the graph of left-invocations.
+     * def make_first_graph(rules: Dict[str, Rule]) -> Dict[str, AbstractSet[str]]:
+     */
+    private function makeFirstGraph(array $rules): array {
+        // There's an edge from A to B if A may invoke B at its initial position.
+        // Note that this requires the nullable flags to have been computed.
+        $initialNameVisitor = new InitialNameVisitor($rules);
+        $graph = [];
+        $vertices = []; // Set[str] = set()
+        foreach ($rules as $name => $rhs) {
+            $graph[$name] = $names = $initialNameVisitor->visit($rhs);
+            $vertices = array_unique(array_merge($vertices, $names));
+        }
+        foreach ($vertices as $vertex) {
+            //$graph->setDefault($vertex, set())
+            $graph->setDefault($vertex, []);
+        }
+        return $graph;
     }
     /*
         def keyword_type(self) -> int:
@@ -233,77 +261,5 @@ abstract class ParserGenerator {
                 name = f"{origname}_{counter}"
             self.local_variable_names.append(name)
             return name
-     */
-    /*
-    class RuleCheckingVisitor(GrammarVisitor):
-        def __init__(self, rules: Dict[str, Rule], tokens: Set[str]):
-            self.rules = rules
-            self.tokens = tokens
-
-        def visit_NameLeaf(self, node: NameLeaf) -> None:
-            if node.value not in self.rules and node.value not in self.tokens:
-                raise GrammarError(f"Dangling reference to rule {node.value!r}")
-
-        def visit_NamedItem(self, node: NamedItem) -> None:
-            if node.name and node.name.startswith("_"):
-                raise GrammarError(f"Variable names cannot start with underscore: '{node.name}'")
-            self.visit(node.item)
-
-    class InitialNamesVisitor(GrammarVisitor):
-        def __init__(self, rules: Dict[str, Rule]) -> None:
-            self.rules = rules
-            self.nullables = compute_nullables(rules)
-
-        def generic_visit(self, node: Iterable[Any], *args: Any, **kwargs: Any) -> Set[Any]:
-            names: Set[str] = set()
-            for value in node:
-                if isinstance(value, list):
-                    for item in value:
-                        names |= self.visit(item, *args, **kwargs)
-                else:
-                    names |= self.visit(value, *args, **kwargs)
-            return names
-
-        def visit_Alt(self, alt: Alt) -> Set[Any]:
-            names: Set[str] = set()
-            for item in alt.items:
-                names |= self.visit(item)
-                if item not in self.nullables:
-                    break
-            return names
-
-        def visit_Forced(self, force: Forced) -> Set[Any]:
-            return set()
-
-        def visit_LookAhead(self, lookahead: Lookahead) -> Set[Any]:
-            return set()
-
-        def visit_Cut(self, cut: Cut) -> Set[Any]:
-            return set()
-
-        def visit_NameLeaf(self, node: NameLeaf) -> Set[Any]:
-            return {node.value}
-
-        def visit_StringLeaf(self, node: StringLeaf) -> Set[Any]:
-            return set()
-
-    def make_first_graph(rules: Dict[str, Rule]) -> Dict[str, AbstractSet[str]]:
-        """Compute the graph of left-invocations.
-
-        There's an edge from A to B if A may invoke B at its initial
-        position.
-
-        Note that this requires the nullable flags to have been computed.
-        """
-        initial_name_visitor = InitialNamesVisitor(rules)
-        graph = {}
-        vertices: Set[str] = set()
-        for rulename, rhs in rules.items():
-            graph[rulename] = names = initial_name_visitor.visit(rhs)
-            vertices |= names
-        for vertex in vertices:
-            graph.setdefault(vertex, set())
-        return graph
-
      */
 }

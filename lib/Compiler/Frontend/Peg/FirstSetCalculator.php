@@ -52,20 +52,6 @@ class FirstSetCalculator extends GrammarVisitor {
     }
 
     /**
-     * https://github.com/python/cpython/blob/ab71acd67b5b09926498b8c7f855bdb28ac0ec2f/Tools/peg_generator/pegen/parser_generator.py#L287
-     * Compute which rules in a grammar are nullable.
-     * @param array $rules Dict[str, Rule]
-     * @return array Set[Any]
-     */
-    private function computeNullables(array $rules): array {
-        $nullableVisitor = new NullableVisitor($rules);
-        foreach ($rules as $rule) {
-            $nullableVisitor->visit($rule);
-        }
-        return $nullableVisitor->nullables;
-    }
-
-    /**
      * @param \Morpho\Compiler\Frontend\Peg\Alt $item
      * @return array Set[str]
      */
