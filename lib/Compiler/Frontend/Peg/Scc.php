@@ -6,62 +6,61 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
+use Generator;
+use Morpho\Base\NotImplementedException;
+
 /**
  * https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/sccutils.py
  */
 class Scc {
-    // sccutils.strongly_connected_components(graph.keys(), graph))
-    public static function stronglyConnectedComponents($keys, $graph) {
-        /*
-        def strongly_connected_components(
-            vertices: AbstractSet[str], edges: Dict[str, AbstractSet[str]]
-) -> Iterator[AbstractSet[str]]:
-    """Compute Strongly Connected Components of a directed graph.
+    /**
+     * Compute Strongly Connected Components of a directed graph.
+     * @param array $vertices AbstractSet[str] The labels for the vertices
+     * @param array $edges Dict[str, AbstractSet[str]] For each vertex, gives the target vertices of its outgoing edges
+     * @return \Traversable Iterator[AbstractSet[str]] An iterator yielding strongly connected components, each represented as a set of vertices.  Each input vertex will occur exactly once; vertices not part of a SCC are returned as singleton sets. From http://code.activestate.com/recipes/578507/
+     */
+    public static function stronglyConnectedComponents(array $vertices, array $edges): iterable {
+        // identified: Set[str] = set()
+        $identified = [];
+        // stack: List[str] = []
+        $stack = [];
+        // index: Dict[str, int] = {}
+        $index = [];
+        // boundaries: List[int] = []
+        $boundaries = [];
+        foreach ($vertices as $v) {
+            if (!isset($index[$v])) {
+                [$result, $identified, $stack, $index, $boundaries] = self::dfs($edges, $v, $identified, $stack, $index, $boundaries);
+                yield from $result;
+            }
+        }
+    }
 
-    Args:
-      vertices: the labels for the vertices
-      edges: for each vertex, gives the target vertices of its outgoing edges
-
-    Returns:
-      An iterator yielding strongly connected components, each
-      represented as a set of vertices.  Each input vertex will occur
-      exactly once; vertices not part of a SCC are returned as
-      singleton sets.
-
-    From http://code.activestate.com/recipes/578507/.
-    """
-    identified: Set[str] = set()
-    stack: List[str] = []
-            index: Dict[str, int] = {}
-    boundaries: List[int] = []
-
-            def dfs(v: str) -> Iterator[Set[str]]:
-        index[v] = len(stack)
-        stack.append(v)
-        boundaries.append(index[v])
-
-        for w in edges[v]:
-            if w not in index:
-                yield from dfs(w)
-            elif w not in identified:
-                while index[w] < boundaries[-1]:
-                    boundaries.pop()
-
-        if boundaries[-1] == index[v]:
-            boundaries.pop()
-            scc = set(stack[index[v] :])
-            del stack[index[v] :]
-            identified.update(scc)
-            yield scc
-
-    for v in vertices:
-        if v not in index:
-            yield from dfs(v)
-            */
+    // dfs(v: str) -> Iterator[Set[str]]:
+    private static function dfs(array $edges, string $vertex, array $identified, array $stack, array $index, array $boundaries): Generator {
+        $index[$vertex] = count($stack);
+        $stack[] = $vertex;
+        $boundaries[] = $index[$vertex];
+        foreach ($edges[$vertex] as $w) {
+            if (!isset($index[$w])) {
+                yield from self::dfs($edges, $vertex, $identified, $stack, $index, $boundaries);
+            } elseif (!isset($identified[$w])) {
+                while ($index[$w] < $boundaries[count($boundaries) - 1]) {
+                    array_pop($boundaries);
+                }
+            }
+        }
+        if ($boundaries[count($boundaries) - 1] == $index[$vertex]) {
+            array_pop($boundaries);
+            $scc = array_unique(array_slice($stack, $index[$vertex]));
+            // del stack[index[v] :]
+            $stack = array_slice($stack, 0, $index[$vertex]);
+            //identified.update(scc)
+            $identified = array_unique(array_merge($identified, $scc));
+            yield $scc;
+        }
     }
 /*
-
-
 def topsort(
     data: Dict[AbstractSet[str], Set[AbstractSet[str]]]
 ) -> Iterable[AbstractSet[AbstractSet[str]]]:
@@ -117,6 +116,7 @@ def topsort(
      * (graph: Dict[str, AbstractSet[str]], scc: AbstractSet[str], start: str) -> Iterable[List[str]]
      */
     public static function findCyclesInScc(array $graph, $scc, $start) {
+        throw new NotImplementedException();
 /*
     # Basic input checks.
     assert start in scc, (start, scc)

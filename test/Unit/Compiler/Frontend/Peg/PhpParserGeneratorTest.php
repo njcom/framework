@@ -22,14 +22,12 @@ use Morpho\Testing\TestCase;
 
 class PhpParserGeneratorTest extends TestCase {
     public function testInterface() {
-        $this->markTestIncomplete();
         $parserGen = new PhpParserGenerator(new Grammar(['start' => new Rule('start', null, new Rhs([]))], []), STDOUT);
         $this->assertInstanceOf(ParserGenerator::class, $parserGen);
         $this->assertInstanceOf(IGrammarVisitor::class, $parserGen);
     }
 
     public function testGenerate() {
-        $this->markTestIncomplete();
         $stream = fopen('php://memory', 'r+');
         $grammar = new Grammar([
             'start' => new Rule(

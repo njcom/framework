@@ -151,9 +151,10 @@ abstract class ParserGenerator {
      * def compute_left_recursives(rules: Dict[str, Rule]) -> Tuple[Dict[str, AbstractSet[str]], List[AbstractSet[str]]]:
      */
     private function computeLeftRecursives(array $rules): array {
+        // Dict[str, AbstractSet[str]]
         $graph = $this->makeFirstGraph($rules);
         //sccs = list(sccutils.strongly_connected_components(graph.keys(), graph))
-        $sccs = Scc::stronglyConnectedComponents($graph->keys(), $graph);
+        $sccs = Scc::stronglyConnectedComponents(array_keys($graph), $graph);
         foreach ($sccs as $scc) {
             if (count($scc) > 1) {
                 foreach ($scc as $name) {
@@ -203,8 +204,9 @@ abstract class ParserGenerator {
             $vertices = array_unique(array_merge($vertices, $names));
         }
         foreach ($vertices as $vertex) {
-            //$graph->setDefault($vertex, set())
-            $graph->setDefault($vertex, []);
+            if (!isset($graph[$vertex])) {
+                $graph[$vertex] = [];
+            }
         }
         return $graph;
     }
