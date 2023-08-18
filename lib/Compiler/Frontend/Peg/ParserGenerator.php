@@ -148,7 +148,8 @@ abstract class ParserGenerator {
     }
 
     /**
-     * def compute_left_recursives(rules: Dict[str, Rule]) -> Tuple[Dict[str, AbstractSet[str]], List[AbstractSet[str]]]:
+     * @param array Dict[str, Rule]
+     * @return array Tuple[Dict[str, AbstractSet[str]], List[AbstractSet[str]]]
      */
     private function computeLeftRecursives(array $rules): array {
         // Dict[str, AbstractSet[str]]
@@ -156,6 +157,7 @@ abstract class ParserGenerator {
         //sccs = list(sccutils.strongly_connected_components(graph.keys(), graph))
         $sccs = Scc::stronglyConnectedComponents(array_keys($graph), $graph);
         foreach ($sccs as $scc) {
+            /** @var array $scc */
             if (count($scc) > 1) {
                 foreach ($scc as $name) {
                     $rules[$name]->leftRecursive = true;
@@ -164,26 +166,26 @@ abstract class ParserGenerator {
                 $leaders = array_unique($scc);
                 foreach ($scc as $start) {
                     foreach (Scc::findCyclesInScc($graph, $scc, $start) as $cycle) {
-                        // print("Cycle:", " -> ".join(cycle))
-                        $leaders = array_diff($scc, array_unique($cycle));
+                        $leaders = array_diff(
+                            $leaders,
+                            array_diff(
+                                $scc,
+                                array_unique($cycle)
+                            )
+                        );
                         if (!$leaders) {
                             throw new UnexpectedValueException("SCC {$scc} has no leadership candidate (no element is included in all cycles)");
                         }
-                        // print("Leaders:", leaders)
                     }
                 }
                 $leader = min($leaders); // Pick an arbitrary leader from the candidates.
                 $rules[$leader]->leader = true;
             } else {
-                $name = min($scc); // The only element
-                d($graph->name);
-                //if (isset($this->graph))
-/*
-                 name = min(scc)  # The only element.
-                if name in graph[name]:
-                    rules[name].left_recursive = True
-                    rules[name].leader = True
- */
+                $name = min($scc);
+                if (in_array($name, $graph[$name])) {
+                    $rules[$name]->leftRecursive = true;
+                    $rules[$name]->leader = true;
+                }
             }
         }
         return [$graph, $sccs];

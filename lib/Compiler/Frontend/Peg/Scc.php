@@ -6,7 +6,6 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
-use Generator;
 use Morpho\Base\NotImplementedException;
 
 /**
@@ -20,95 +19,114 @@ class Scc {
      * @return \Traversable Iterator[AbstractSet[str]] An iterator yielding strongly connected components, each represented as a set of vertices.  Each input vertex will occur exactly once; vertices not part of a SCC are returned as singleton sets. From http://code.activestate.com/recipes/578507/
      */
     public static function stronglyConnectedComponents(array $vertices, array $edges): iterable {
-        // identified: Set[str] = set()
-        $identified = [];
-        // stack: List[str] = []
-        $stack = [];
-        // index: Dict[str, int] = {}
-        $index = [];
-        // boundaries: List[int] = []
-        $boundaries = [];
-        foreach ($vertices as $v) {
-            if (!isset($index[$v])) {
-                [$result, $identified, $stack, $index, $boundaries] = self::dfs($edges, $v, $identified, $stack, $index, $boundaries);
-                yield from $result;
-            }
-        }
-    }
+        $dfs = new class ($edges) {
+            /**
+             * @var array Set[str] = set()
+             */
+            private array $identified = [];
+            /**
+             * @var array List[str] = []
+             */
+            private array $stack = [];
+            /**
+             * @var array Dict[str, int] = {}
+             */
+            private array $index = [];
+            /**
+             * @var array List[int] = []
+             */
+            private array $boundaries = [];
+            /**
+             * @var array Dict[str, AbstractSet[str]]
+             */
+            private array $edges;
 
-    // dfs(v: str) -> Iterator[Set[str]]:
-    private static function dfs(array $edges, string $vertex, array $identified, array $stack, array $index, array $boundaries): Generator {
-        $index[$vertex] = count($stack);
-        $stack[] = $vertex;
-        $boundaries[] = $index[$vertex];
-        foreach ($edges[$vertex] as $w) {
-            if (!isset($index[$w])) {
-                yield from self::dfs($edges, $vertex, $identified, $stack, $index, $boundaries);
-            } elseif (!isset($identified[$w])) {
-                while ($index[$w] < $boundaries[count($boundaries) - 1]) {
-                    array_pop($boundaries);
+            public function __construct(array $edges) {
+                $this->edges = $edges;
+            }
+
+            // def dfs(v: str) -> Iterator[Set[str]]:
+            public function __invoke(string $v): iterable {
+                $this->index[$v] = count($this->stack);
+                $this->stack[] = $v;
+                $this->boundaries[] = $this->index[$v];
+                foreach ($this->edges[$v] as $w) {
+                    if (!isset($this->index[$w])) {
+                        yield from $this->__invoke($w);
+                    } elseif (!isset($this->identified[$w])) {
+                        while ($this->index[$w] < $this->boundaries[count($this->boundaries) - 1]) {
+                            array_pop($this->boundaries);
+                        }
+                    }
+                }
+                if ($this->boundaries[count($this->boundaries) - 1] == $this->index[$v]) {
+                    array_pop($this->boundaries);
+                    $scc = array_unique(array_slice($this->stack, $this->index[$v]));
+                    // del stack[index[v] :]
+                    $this->stack = array_slice($this->stack, 0, $this->index[$v]);
+                    //identified.update(scc)
+                    $this->identified = array_unique(array_merge($this->identified, $scc));
+                    yield $scc;
                 }
             }
-        }
-        if ($boundaries[count($boundaries) - 1] == $index[$vertex]) {
-            array_pop($boundaries);
-            $scc = array_unique(array_slice($stack, $index[$vertex]));
-            // del stack[index[v] :]
-            $stack = array_slice($stack, 0, $index[$vertex]);
-            //identified.update(scc)
-            $identified = array_unique(array_merge($identified, $scc));
-            yield $scc;
+        };
+
+        foreach ($vertices as $v) {
+            if (!isset($index[$v])) {
+                yield from $dfs->__invoke($v);
+            }
         }
     }
-/*
-def topsort(
-    data: Dict[AbstractSet[str], Set[AbstractSet[str]]]
-) -> Iterable[AbstractSet[AbstractSet[str]]]:
-    """Topological sort.
 
-    Args:
-      data: A map from SCCs (represented as frozen sets of strings) to
-            sets of SCCs, its dependencies.  NOTE: This data structure
-            is modified in place -- for normalization purposes,
-            self-dependencies are removed and entries representing
-            orphans are added.
+    /*
+    def topsort(
+        data: Dict[AbstractSet[str], Set[AbstractSet[str]]]
+    ) -> Iterable[AbstractSet[AbstractSet[str]]]:
+        """Topological sort.
 
-    Returns:
-      An iterator yielding sets of SCCs that have an equivalent
-      ordering.  NOTE: The algorithm doesn't care about the internal
-      structure of SCCs.
+        Args:
+          data: A map from SCCs (represented as frozen sets of strings) to
+                sets of SCCs, its dependencies.  NOTE: This data structure
+                is modified in place -- for normalization purposes,
+                self-dependencies are removed and entries representing
+                orphans are added.
 
-    Example:
-      Suppose the input has the following structure:
+        Returns:
+          An iterator yielding sets of SCCs that have an equivalent
+          ordering.  NOTE: The algorithm doesn't care about the internal
+          structure of SCCs.
 
-        {A: {B, C}, B: {D}, C: {D}}
+        Example:
+          Suppose the input has the following structure:
 
-      This is normalized to:
+            {A: {B, C}, B: {D}, C: {D}}
 
-        {A: {B, C}, B: {D}, C: {D}, D: {}}
+          This is normalized to:
 
-      The algorithm will yield the following values:
+            {A: {B, C}, B: {D}, C: {D}, D: {}}
 
-        {D}
-        {B, C}
-        {A}
+          The algorithm will yield the following values:
 
-    From http://code.activestate.com/recipes/577413/.
-    """
-    # TODO: Use a faster algorithm?
-    for k, v in data.items():
-        v.discard(k)  # Ignore self dependencies.
-    for item in set.union(*data.values()) - set(data.keys()):
-        data[item] = set()
-    while True:
-        ready = {item for item, dep in data.items() if not dep}
-        if not ready:
-            break
-        yield ready
-        data = {item: (dep - ready) for item, dep in data.items() if item not in ready}
-    assert not data, "A cyclic dependency exists amongst %r" % data
+            {D}
+            {B, C}
+            {A}
 
-*/
+        From http://code.activestate.com/recipes/577413/.
+        """
+        # TODO: Use a faster algorithm?
+        for k, v in data.items():
+            v.discard(k)  # Ignore self dependencies.
+        for item in set.union(*data.values()) - set(data.keys()):
+            data[item] = set()
+        while True:
+            ready = {item for item, dep in data.items() if not dep}
+            if not ready:
+                break
+            yield ready
+            data = {item: (dep - ready) for item, dep in data.items() if item not in ready}
+        assert not data, "A cyclic dependency exists amongst %r" % data
+
+    */
 
     /**
      * Find cycles in SCC emanating from start.
@@ -117,26 +135,26 @@ def topsort(
      */
     public static function findCyclesInScc(array $graph, $scc, $start) {
         throw new NotImplementedException();
-/*
-    # Basic input checks.
-    assert start in scc, (start, scc)
-    assert scc <= graph.keys(), scc - graph.keys()
+        /*
+            # Basic input checks.
+            assert start in scc, (start, scc)
+            assert scc <= graph.keys(), scc - graph.keys()
 
-    # Reduce the graph to nodes in the SCC.
-    graph = {src: {dst for dst in dsts if dst in scc} for src, dsts in graph.items() if src in scc}
-    assert start in graph
+            # Reduce the graph to nodes in the SCC.
+            graph = {src: {dst for dst in dsts if dst in scc} for src, dsts in graph.items() if src in scc}
+            assert start in graph
 
-    # Recursive helper that yields cycles.
-    def dfs(node: str, path: List[str]) -> Iterator[List[str]]:
-        if node in path:
-            yield path + [node]
-            return
-        path = path + [node]  # TODO: Make this not quadratic.
-        for child in graph[node]:
-            yield from dfs(child, path)
+            # Recursive helper that yields cycles.
+            def dfs(node: str, path: List[str]) -> Iterator[List[str]]:
+                if node in path:
+                    yield path + [node]
+                    return
+                path = path + [node]  # TODO: Make this not quadratic.
+                for child in graph[node]:
+                    yield from dfs(child, path)
 
-    yield from dfs(start, [])
+            yield from dfs(start, [])
 
- */
+         */
     }
 }

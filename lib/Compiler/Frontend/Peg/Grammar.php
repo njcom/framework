@@ -265,8 +265,7 @@ class Alt implements IGrammarNode, IRenderingActions {
 
     //def __iter__(self) -> Iterator[List[NamedItem]]:
     public function getIterator(): Traversable {
-        throw new NotImplementedException();
-        //yield self.items
+        yield $this->items;
     }
 
     public function renderActions($flag = null): bool {
