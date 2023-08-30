@@ -322,7 +322,7 @@ function checkExitCode(int $exitCode, string $errMessage = null): int {
     }
 }*/
 
-function ask(string $question, bool $trim = true): string {
+function ask(string $question, bool $trim = true, bool $acceptEmptyAnswer = false): string {
     echo $question;
     $result = fgets(STDIN);
     // \fgets() returns false on Ctrl-D

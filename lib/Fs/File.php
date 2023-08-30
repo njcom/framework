@@ -339,12 +339,7 @@ class File extends Entry {
     /**
      * Copies the source file to target directory of file and returns target.
      */
-    public static function copy(
-        string $sourceFilePath,
-        string $targetFilePath,
-        bool $overwrite = false,
-        bool $skipIfExists = false
-    ): string {
+    public static function copy(string $sourceFilePath, string $targetFilePath, bool $overwrite = false, bool $skipIfExists = false): string {
         if (!is_file($sourceFilePath)) {
             throw new Exception("Unable to copy: the source '$sourceFilePath' is not a file");
         }

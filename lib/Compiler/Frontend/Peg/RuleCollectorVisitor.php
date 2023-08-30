@@ -6,21 +6,28 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
-class RuleCollectorVisitor {
-    public function __construct($rules, \Morpho\Compiler\Frontend\Peg\GrammarVisitor $callMakerVisitor) {
-    }
-/*
-    class RuleCollectorVisitor(GrammarVisitor):
-        """Visitor that invokes a provieded callmaker visitor with just the NamedItem nodes"""
-
-        def __init__(self, rules: Dict[str, Rule], callmakervisitor: GrammarVisitor) -> None:
-            self.rulses = rules
-            self.callmaker = callmakervisitor
-
-        def visit_Rule(self, rule: Rule) -> None:
-            self.visit(rule.flatten())
-
-        def visit_NamedItem(self, item: NamedItem) -> None:
-            self.callmaker.visit(item)
+/**
+ * Visitor that invokes a provided callmaker visitor with just the NamedItem nodes
+ * https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/parser_generator.py#L43
  */
+class RuleCollectorVisitor extends GrammarVisitor {
+    /**
+     * @var array Dict[str, Rule]
+     */
+    private array $rules;
+
+    private GrammarVisitor $callMaker;
+
+    public function __construct(array $rules, GrammarVisitor $callMakerVisitor) {
+        $this->rules = $rules;
+        $this->callMaker = $callMakerVisitor;
+    }
+
+    protected function visitRule(Rule $rule): void {
+        $this->visit($rule->flatten());
+    }
+
+    protected function visitNamedItem(NamedItem $item): void {
+        $this->callMaker->visit($item);
+    }
 }

@@ -32,7 +32,7 @@ class GrammarVisitor implements IGrammarVisitor {
      */
     protected function genericVisit(iterable $node, ...$args): mixed {
         foreach ($node as $value) {
-            if (is_array($value)) { // @todo: replace is_array() with is_iterable()?
+            if (is_array($value) || $value instanceof NamedItemList) { // @todo: replace is_array() with is_iterable()?
                 foreach ($value as $item) {
                     $this->visit($item, ...$args);
                 }

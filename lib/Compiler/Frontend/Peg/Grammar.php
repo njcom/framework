@@ -90,9 +90,6 @@ class Rule implements IGrammarNode, IRenderingActions {
     }
 
     /*
-    def is_loop(self) -> bool:
-        return self.name.startswith("_loop")
-
     def is_gather(self) -> bool:
         return self.name.startswith("_gather")
     */
@@ -119,7 +116,7 @@ class Rule implements IGrammarNode, IRenderingActions {
 
     // def __iter__(self) -> Iterator[Rhs]
     public function getIterator(): Traversable {
-        return $this->rhs;
+        yield $this->rhs;
     }
 
     public function renderActions($flag = null): bool {
@@ -129,19 +126,18 @@ class Rule implements IGrammarNode, IRenderingActions {
         return $this->renderActions;
     }
 
-    /*
-    def flatten(self) -> Rhs:
-        # If it's a single parenthesized group, flatten it.
-        rhs = self.rhs
-        if (
-            not self.is_loop()
-            and len(rhs.alts) == 1
-            and len(rhs.alts[0].items) == 1
-            and isinstance(rhs.alts[0].items[0].item, Group)
-        ):
-            rhs = rhs.alts[0].items[0].item.rhs
-        return rhs
-    */
+    public function flatten(): Rhs {
+        // If it's a single parenthesized group, flatten it.
+        $rhs = $this->rhs;
+        if (!$this->isLoop() && count($rhs->alts) == 1 && count($rhs->alts[0]->items) == 1 && $rhs->alts[0]->items[0]->item instanceof Group) {
+            $rhs = $rhs->alts[0]->items[0]->item->rhs;
+        }
+        return $rhs;
+    }
+
+    protected function isLoop(): bool {
+        return str_starts_with($this->name, '_loop');
+    }
 }
 
 abstract readonly class Leaf implements IGrammarNode {
@@ -302,10 +298,11 @@ class NamedItem implements IGrammarNode, IRenderingActions {
         return 'NamedItem(' . (null === $this->name ? 'None' : q($this->name)) . ', ' . $this->item->repr() . ')';
     }
 
+    /**
+     * @return \Traversable Iterator[Item]
+     */
     public function getIterator(): Traversable {
-        throw new NotImplementedException();
-        /*        def __iter__(self) -> Iterator[Item]:
-                    yield self.item*/
+        yield $this->item;
     }
 
     public function renderActions($flag = null): bool {

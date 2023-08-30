@@ -28,7 +28,7 @@ class RuleCheckingVisitor extends GrammarVisitor {
     }
 
     protected function visitNameLeaf(NameLeaf $node): void {
-        if (!isset($this->rules[$node->val]) && !isset($this->tokens[$node->val])) {
+        if (!isset($this->rules[$node->val]) && !in_array($node->val, $this->tokens, true)) {
             throw new GrammarException('Dangling reference to rule ' . q($node->val));
         }
     }

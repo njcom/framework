@@ -6,6 +6,7 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
+use Morpho\Base\NotImplementedException;
 use UnexpectedValueException;
 
 /**
@@ -58,12 +59,16 @@ abstract class ParserGenerator {
     /**
      * @var mixed Dict[str, Rule]
      */
-    private mixed $allRules;
+    private array $allRules;
 
     /**
      * @var array List[List[str]]
      */
     private array $localVarStack = [];
+
+    private array $firstGraph;
+
+    private iterable $firstSccs;
 
     public function __construct(Grammar $grammar, array $tokens, $stream) {
         $this->grammar = $grammar;
@@ -125,30 +130,33 @@ abstract class ParserGenerator {
                 self.print(line)
     */
     protected function collectRules(): void {
-        $keywordCollector = new KeywordCollectorVisitor($this->keywords, $this->softKeywords);
-        foreach (d($this->allRules) as $rule => $_) {
+        $keywordCollector = new KeywordCollectorVisitor($this, $this->keywords, $this->softKeywords);
+        foreach ($this->allRules as $rule) {
             $keywordCollector->visit($rule);
         }
 
         $ruleCollector = new RuleCollectorVisitor($this->rules, $this->callMakerVisitor);
-        // done: Set[str] = set()
-        $done = [];
+        $done = []; // Set[str] = set()
         while (true) {
-            # computed_rules = list(self.all_rules)
-            $computedRules = (array)$this->allRules;
-            /*
-                        todo = [i for i in computed_rules if i not in done]
-                        if not todo:
-                            break
-                        done = set(self.all_rules)
-                        for rulename in todo:
-                            rule_collector.visit(self.all_rules[rulename])
-             */
+            $computedRules = $this->allRules;
+            $todo = [];
+            foreach ($computedRules as $ruleName => $_) {
+                if (!isset($done[$ruleName])) {
+                    $todo[] = $ruleName;
+                }
+            }
+            if (!$todo) {
+                break;
+            }
+            $done = array_fill_keys(array_keys($this->allRules), true);
+            foreach ($todo as $ruleName) {
+                $ruleCollector->visit($this->allRules[$ruleName]);
+            }
         }
     }
 
     /**
-     * @param array Dict[str, Rule]
+     * @param array $rules Dict[str, Rule]
      * @return array Tuple[Dict[str, AbstractSet[str]], List[AbstractSet[str]]]
      */
     private function computeLeftRecursives(array $rules): array {
