@@ -6,8 +6,6 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
-use Morpho\Base\NotImplementedException;
-
 /**
  * https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/parser_generator.py#L57
  * Visitor that collects all the keywods and soft keywords in the Grammar

@@ -314,7 +314,7 @@ class NamedItem implements IGrammarNode, IRenderingActions {
 }
 
 readonly class Forced implements IGrammarNode {
-    private Leaf|Group $node;
+    public Leaf|Group $node;
 
     public function __construct(Leaf|Group $node) {
         $this->node = $node;
@@ -460,7 +460,7 @@ readonly class Repeat1 extends Repeat {
 }
 
 readonly class Gather extends Repeat {
-    private Leaf|Group $separator;
+    public Leaf|Group $separator;
 
     // def __init__(self, separator: Plain, node: Plain):
     public function __construct(Leaf|Group $separator, Leaf|Group $node) {

@@ -6,7 +6,6 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
-use Morpho\Base\NotImplementedException;
 use UnexpectedValueException;
 
 /**
@@ -14,6 +13,11 @@ use UnexpectedValueException;
  */
 abstract class ParserGenerator {
     protected Grammar $grammar;
+
+    /**
+     * For name_rule()/name_loop()
+     */
+    protected int $counter = 0;
 
     protected GrammarVisitor $callMakerVisitor;
 
@@ -38,12 +42,6 @@ abstract class ParserGenerator {
     private array $softKeywords = [];
 
     private int $level = 0;
-
-    /**
-     * For name_rule()/name_loop()
-     * @var int
-     */
-    private int $counter = 0;
 
     /**
      * For keyword_type()
@@ -88,6 +86,32 @@ abstract class ParserGenerator {
         $this->allRules = $this->rules; # Rules + temporal rules
     }
 
+    abstract public function generate(string $filePath): void;
+
+    public function artificialRuleFromGather(Gather $node): string {
+        $this->counter++;
+        $name = '_gather_' . $this->counter;
+        $this->counter++;
+        //extra_function_name = f"_loop0_{self.counter}"
+        $extraFunctionName = '_loop0_' . $this->counter;
+        $extraFunctionAlt = new Alt(
+            new NamedItemList([
+                new NamedItem(null, $node->separator),
+                new NamedItem('elem', $node->node),
+            ]),
+            action: 'elem',
+        );
+        $this->allRules[$extraFunctionName] = new Rule($extraFunctionName, null, new Rhs([$extraFunctionAlt]));
+        $alt = new Alt(
+            new NamedItemList([
+                new NamedItem('elem', $node->node),
+                new NamedItem('seq', new NameLeaf($extraFunctionName)),
+            ])
+        );
+        $this->allRules[$name] = new Rule($name, null, new Rhs([$alt]));
+        return $name;
+    }
+
     protected function validateRuleNames(): void {
         foreach ($this->rules as $name => $_) {
             if (str_starts_with($name, '_')) {
@@ -107,7 +131,6 @@ abstract class ParserGenerator {
         def local_variable_names(self) -> List[str]:
             return self._local_variable_stack[-1]
     */
-    abstract public function generate(string $filePath): void;
 
     /*
         @contextlib.contextmanager
@@ -240,30 +263,9 @@ abstract class ParserGenerator {
             name = f"{prefix}{self.counter}"
             self.all_rules[name] = Rule(name, None, Rhs([Alt([NamedItem(None, node)])]))
             return name
+        */
 
-        def artifical_rule_from_gather(self, node: Gather) -> str:
-            self.counter += 1
-            name = f"_gather_{self.counter}"
-            self.counter += 1
-            extra_function_name = f"_loop0_{self.counter}"
-            extra_function_alt = Alt(
-                [NamedItem(None, node.separator), NamedItem("elem", node.node)],
-                action="elem",
-            )
-            self.all_rules[extra_function_name] = Rule(
-                extra_function_name,
-                None,
-                Rhs([extra_function_alt]),
-            )
-            alt = Alt(
-                [NamedItem("elem", node.node), NamedItem("seq", NameLeaf(extra_function_name))],
-            )
-            self.all_rules[name] = Rule(
-                name,
-                None,
-                Rhs([alt]),
-            )
-            return name
+    /*
 
         def dedupe(self, name: str) -> str:
             origname = name

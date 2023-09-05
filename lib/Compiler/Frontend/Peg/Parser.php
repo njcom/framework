@@ -184,6 +184,7 @@ abstract class Parser implements IParser {
     }
 
     protected function memoize(string $fnId, Closure $fn, ...$args): mixed {
+        // @todo: Replace with WeakMap
         $index = $this->index();
         $key = md5(serialize([$index, $fnId, $args]));
         if (isset($this->cache[$key])) {
