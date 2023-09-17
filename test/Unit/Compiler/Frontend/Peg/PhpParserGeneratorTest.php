@@ -50,8 +50,10 @@ class PhpParserGeneratorTest extends TestCase {
             ),
         ], []);
         $parserGen = new PhpParserGenerator($grammar, $stream);
-        $parserGen->generate('??');
-        $generatedCode = stream_get_contents($stream);
-        $this->assertStringStartsWith('<?php declare(strict_types=1);' . "\n", $generatedCode);
+
+        $parserGen->generate();
+
+        $php = stream_get_contents($stream, offset: 0);
+        $this->assertStringStartsWith('<?php declare(strict_types=1);' . "\n", $php);
     }
 }

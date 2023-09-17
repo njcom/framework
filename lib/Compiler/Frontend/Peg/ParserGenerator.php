@@ -6,7 +6,9 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
+use Stringable;
 use UnexpectedValueException;
+use const Morpho\Base\INDENT;
 
 /**
  * Based on https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/parser_generator.py
@@ -26,6 +28,13 @@ abstract class ParserGenerator {
      */
     protected $stream;
 
+    protected int $level = 0;
+
+    /**
+     * @var mixed Dict[str, Rule]
+     */
+    protected array $allRules;
+
     /**
      * @var array Set[str]
      */
@@ -41,8 +50,6 @@ abstract class ParserGenerator {
      */
     private array $softKeywords = [];
 
-    private int $level = 0;
-
     /**
      * For keyword_type()
      * @var int
@@ -53,11 +60,6 @@ abstract class ParserGenerator {
      * @var array Dict[str, Rule]
      */
     private array $rules;
-
-    /**
-     * @var mixed Dict[str, Rule]
-     */
-    private array $allRules;
 
     /**
      * @var array List[List[str]]
@@ -86,7 +88,7 @@ abstract class ParserGenerator {
         $this->allRules = $this->rules; # Rules + temporal rules
     }
 
-    abstract public function generate(string $filePath): void;
+    abstract public function generate(array $vars = null): void;
 
     public function artificialRuleFromGather(Gather $node): string {
         $this->counter++;
@@ -141,17 +143,32 @@ abstract class ParserGenerator {
             finally:
                 self.level -= 1
 
-        def print(self, *args: object) -> None:
-            if not args:
-                print(file=self.file)
-            else:
-                print("    " * self.level, end="", file=self.file)
-                print(*args, file=self.file)
+
 
         def printblock(self, lines: str) -> None:
             for line in lines.splitlines():
                 self.print(line)
     */
+    protected function print(Stringable|string $val = null): void {
+        if (null === $val) {
+            fwrite($this->stream, "\n");
+        } else {
+            fwrite($this->stream, str_repeat(INDENT, $this->level));
+            fwrite($this->stream, (string) $val);
+        }
+    }
+
+    protected function dedupe(string $name): string {
+        $origName = $name;
+        $counter = 0;
+        while (in_array($name, $this->localVarStack[count($this->localVarStack) - 1])) {
+            $counter++;
+            $name = $origName . '_' . $counter;
+        }
+        $this->localVarStack[count($this->localVarStack) - 1][] = $name;
+        return $name;
+    }
+
     protected function collectRules(): void {
         $keywordCollector = new KeywordCollectorVisitor($this, $this->keywords, $this->softKeywords);
         foreach ($this->allRules as $rule) {
@@ -264,16 +281,4 @@ abstract class ParserGenerator {
             self.all_rules[name] = Rule(name, None, Rhs([Alt([NamedItem(None, node)])]))
             return name
         */
-
-    /*
-
-        def dedupe(self, name: str) -> str:
-            origname = name
-            counter = 0
-            while name in self.local_variable_names:
-                counter += 1
-                name = f"{origname}_{counter}"
-            self.local_variable_names.append(name)
-            return name
-     */
 }

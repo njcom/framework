@@ -11,6 +11,7 @@ use Morpho\Base\NotImplementedException;
 use function Morpho\Base\camelize;
 use function Morpho\Base\enumVals;
 use function Morpho\Base\last;
+use function Morpho\Base\tpl;
 
 /**
  * [class PythonParserGenerator(ParserGenerator, GrammarVisitor)](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/python_generator.py#L192)
@@ -36,34 +37,34 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         $this->locationFormatting = ($locationFormatting ?? "lineno=start_lineno, col_offset=start_col_offset, ") . "end_lineno=end_lineno, end_col_offset=end_col_offset";
     }
 
-    public function generate(string $filePath): void {
+
+    public function generate(array $vars = null): void {
+        // @todo: Use PhpParser's generator
         $this->collectRules();
-        $header = d($this->grammar->metas);
-/*
-            self.collect_rules()
-            header = self.grammar.metas.get("header", MODULE_PREFIX)
-            if header is not None:
-                basename = os.path.basename(filename)
-                self.print(header.rstrip("\n").format(filename=basename))
-            subheader = self.grammar.metas.get("subheader", "")
-            if subheader:
-                self.print(subheader)
-            cls_name = self.grammar.metas.get("class", "GeneratedParser")
-            self.print("# Keywords and soft keywords are listed at the end of the parser definition.")
-            self.print(f"class {cls_name}(Parser):")
-            for rule in self.all_rules.values():
-                self.print()
-                with self.indent():
-                    self.visit(rule)
-
-            self.print()
-            with self.indent():
-                self.print(f"KEYWORDS = {tuple(self.keywords)}")
-                self.print(f"SOFT_KEYWORDS = {tuple(self.soft_keywords)}")
-
-            trailer = self.grammar.metas.get("trailer", MODULE_SUFFIX.format(class_name=cls_name))
-            if trailer is not None:
-                self.print(trailer.rstrip("\n"))*/
+        $header = $this->grammar->metas['header'] ?? $this->fileHeader($vars);
+        if (null !== $header) {
+            $this->print($header);
+        }
+        $subheader = $this->grammar->metas['subheader'] ?? '';
+        if ($subheader) {
+            $this->print($subheader);
+        }
+        $className = $this->grammar->metas['class'] ?? 'GeneratedParser';
+        $this->print("# Keywords and soft keywords are listed at the end of the parser definition.");
+        $this->print("class {$className} extends Parser {");
+        foreach ($this->allRules as $rule) {
+            $this->print();
+            $this->visit($rule);
+        }
+        $this->print("}");
+        //self.print(f"KEYWORDS = {tuple(self.keywords)}")
+        $this->print('const KEYWORDS = todo;');
+        $this->print('const SOFT_KEYWORDS = todo;');
+        //self.print(f"SOFT_KEYWORDS = {tuple(self.soft_keywords)}")
+        $footer = $this->grammar->metas['trailer'] ?? $this->fileFooter($className);
+        if (null !== $footer) {
+            $this->print(rtrim($footer));
+        }
     }
 
     /**
@@ -110,24 +111,28 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
     */
 
     protected function visitRule(Rule $node): void {
-        throw new NotImplementedException();
+        $isLoop = $node->isLoop();
+        $isGather = $node->isGather();
+        $rhs = $node->flatten();
+        if ($node->leftRecursive) {
+            if ($node->leader) {
+                // @todo: Wrap with memoizeLeftRec();
+                $this->print('todo: @memoize_left_rec');
+            } else {
+                // Non-leader rules in a cycle are not memoized, but they must still be logged.
+                // see `def logger()` in Tools/peg_generator/pegen/parser.py
+                $this->print('@logger');
+            }
+        } else {
+            $this->print('@memoize');
+        }
+        $nodeType = $node->type ?? 'mixed';
+        $this->print('function ' . $node->name . '(): ?' . $nodeType . "{");
+        $this->print('// todo');
+        $this->print('}');
         /*
-    def visit_Rule(self, node: Rule) -> None:
-        is_loop = node.is_loop()
-        is_gather = node.is_gather()
-        rhs = node.flatten()
-        if node.left_recursive:
-            if node.leader:
-                self.print("@memoize_left_rec")
-            else:
-                # Non-leader rules in a cycle are not memoized,
-                # but they must still be logged.
-                self.print("@logger")
-        else:
-            self.print("@memoize")
-        node_type = node.type or "Any"
-        self.print(f"def {node.name}(self) -> Optional[{node_type}]:")
-        with self.indent():
+
+
             self.print(f"# {node.name}: {rhs}")
             self.print("mark = self._mark()")
             if self.alts_uses_locations(node.rhs.alts):
@@ -144,19 +149,19 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
     }
 
     protected function visitNamedItem(NamedItem $node): void {
-        throw new NotImplementedException();
-        /*
-    def visit_NamedItem(self, node: NamedItem) -> None:
-        name, call = self.callmakervisitor.visit(node.item)
-        if node.name:
-            name = node.name
-        if not name:
-            self.print(call)
-        else:
-            if name != "cut":
-                name = self.dedupe(name)
-            self.print(f"({name} := {call})")
-    */
+        [$name, $call] = $this->callMakerVisitor->visit($node->item);
+        if ($node->name) {
+            $name = $node->name;
+        }
+        if (!$node->name) {
+            $this->print($call);
+        } else {
+            if ($name != 'cut') {
+                $name = $this->dedupe($name);
+            }
+            // self.print(f"({name} := {call})")
+            $this->print($name . ' = ' . $call);
+        }
     }
 
     protected function visitRhs(Rhs $node, bool $isLoop = false, bool $isGather = false): void {
@@ -224,5 +229,13 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
             if has_cut:
                 self.print("if cut: return None")
                     */
+    }
+
+    private function fileHeader(mixed $vars): ?string {
+        return "<?php declare(strict_types=1);\n";
+    }
+
+    private function fileFooter(): ?string {
+        return '';
     }
 }

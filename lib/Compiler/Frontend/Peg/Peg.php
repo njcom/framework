@@ -50,27 +50,19 @@ class Peg implements ICompiler {
     /**
      * [generate_parser(grammar: Grammar) -> Type[Parser]](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/testutil.py#L26)
      */
-    public static function generateParser(Grammar $grammar): string {
+    public static function generateParser(Grammar $grammar): callable {
         $stream = mkStream('');
         // out = io.StringIO()
         $gen = new PhpParserGenerator($grammar, $stream);
         $gen->generate('<string>');
 
-        $code = stream_get_contents($stream);
-        d($code);
-        /*
-            # Generate a parser.
-            out = io.StringIO()
-            genr = PythonParserGenerator(grammar, out)
-            genr.generate("<string>")
+        $code = stream_get_contents($stream, offset: 0);
+        if ($code === '') {
+            throw new \UnexpectedValueException();
+        }
 
-            # Load the generated parser class.
-            ns: Dict[str, Any] = {}
-            exec(out.getvalue(), ns)
-            return ns["GeneratedParser"]
-         */
-        // @todo:
-        return '';
+        d(eval('?>' . $code));
+        //return new 
     }
 
     public function frontend(): callable {

@@ -105,7 +105,6 @@ class GrammarParserTest extends TestCase {
     }
 
     public function testGather(): void {
-        $this->markTestIncomplete();
         $grammarSource = <<<OUT
         start: ','.thing+ NEWLINE
         thing: NUMBER

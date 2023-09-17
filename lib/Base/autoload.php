@@ -1205,21 +1205,21 @@ function ucfirst(string|Stringable $list): string {
 /**
  * Opposite to unindent()
  * @param string|Stringable|int|float $text
- * @param int                         $indent Number of spaces
+ * @param int $indentSize Number of spaces
  * @return string
  */
-function indent(string|Stringable|int|float $text, int $indent = INDENT_SIZE): string {
-    return preg_replace('~^~m', str_repeat(' ', $indent), (string)$text);
+function indent(string|Stringable|int|float $text, int $indentSize = INDENT_SIZE): string {
+    return preg_replace('~^~m', str_repeat(' ', $indentSize), (string)$text);
 }
 
 /**
  * Opposite to indent()
  * @param string|Stringable|int|float $text
- * @param int                         $indent Number of spaces
+ * @param int $indentSize Number of spaces
  * @return string
  */
-function unindent(string|Stringable|int|float $text, int $indent = INDENT_SIZE): string {
-    return preg_replace('~^' . str_repeat(' ', $indent) . '~m', '', (string)$text);
+function unindent(string|Stringable|int|float $text, int $indentSize = INDENT_SIZE): string {
+    return preg_replace('~^' . str_repeat(' ', $indentSize) . '~m', '', (string)$text);
 }
 
 /**
@@ -1563,7 +1563,7 @@ function withStream(callable $fn, string $bytes, string $source = null): mixed {
  * @param string|null $fileName
  * @return resource
  */
-function mkStream(string $bytes, string $fileName = null) {
+function mkStream(string $bytes = null, string $fileName = null) {
     if (null === $fileName) {
         $fileName = 'php://memory';
     } else {
@@ -1573,7 +1573,9 @@ function mkStream(string $bytes, string $fileName = null) {
     if (!$stream) {
         throw new Exception('Unable to allocate memory');
     }
-    fwrite($stream, $bytes);
+    if (null !== $bytes) {
+        fwrite($stream, $bytes);
+    }
     rewind($stream);
     return $stream;
 }

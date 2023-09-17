@@ -69,12 +69,12 @@ readonly class Grammar implements IGrammar, IGrammarNode {
 class Rule implements IGrammarNode, IRenderingActions {
     public readonly string $name;
     public readonly Rhs $rhs;
-    private readonly ?string $type;
+    public readonly bool $leftRecursive;
+    public readonly bool $leader;
+    public readonly ?string $type;
     private readonly bool $memo;
     private readonly bool $visited;
     private readonly bool $nullable;
-    private readonly bool $leftRecursive;
-    private readonly bool $leader;
     private bool $renderActions = false;
 
     // def __init__(self, name: str, type: Optional[str], rhs: Rhs, memo: Optional[object] = None):
@@ -89,10 +89,13 @@ class Rule implements IGrammarNode, IRenderingActions {
         $this->leader = false;
     }
 
-    /*
-    def is_gather(self) -> bool:
-        return self.name.startswith("_gather")
-    */
+    public function isGather(): bool {
+        return str_starts_with($this->name, '_gather');
+    }
+
+    public function isLoop(): bool {
+        return str_starts_with($this->name, '_loop');
+    }
 
     public function __toString(): string {
         if (!$this->renderActions || null === $this->type) {
@@ -133,10 +136,6 @@ class Rule implements IGrammarNode, IRenderingActions {
             $rhs = $rhs->alts[0]->items[0]->item->rhs;
         }
         return $rhs;
-    }
-
-    protected function isLoop(): bool {
-        return str_starts_with($this->name, '_loop');
     }
 }
 
