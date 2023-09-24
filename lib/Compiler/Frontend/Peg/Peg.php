@@ -6,28 +6,23 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
-use Morpho\Compiler\ICompiler;
-
 use function Morpho\Base\mkStream;
 
 /**
- * Based on https://peps.python.org/pep-0617/ and other related Python's resources.
+ * PEG/Parsing Expression Grammar: parser generator generating recursive descent parser by a grammar.
+ * Based on https://peps.python.org/pep-0617/ and other related Python's PEG resources.
  */
-class Peg implements ICompiler {
+class Peg {
     /**
      * [build_parser()](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/build.py#L208)
      * [run_parser()](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/testutil.py#L38)
-     * @param string|resource      $grammarSource Stream for the grammar or source of the grammar
-     * @param string|callable|null $parserClass
+     * @param string|resource $grammarSource
      * @return array
-     * @noinspection PhpMissingParamTypeInspection
      */
-    public static function parse($grammarSource, string|callable $parserClass = null): array {
+    public static function parse($grammarSource, $grammarParser = null): array {
         $grammarTokenizer = new GrammarTokenizer(Tokenizer::tokenize($grammarSource));
-        if (null === $parserClass) {
+        if (!$grammarParser) {
             $grammarParser = new GrammarParser($grammarTokenizer);
-        } else {
-            $grammarParser = $parserClass($grammarTokenizer);
         }
         $grammar = $grammarParser->start();
         if (!$grammar) {
@@ -39,54 +34,36 @@ class Peg implements ICompiler {
     /**
      * [make_parser(source: str) -> Type[Parser]](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/testutil.py#L58)
      * @param string|resource $grammarSource Stream for the grammar or source of the grammar
-     * @return string
+     * @return callable
      * @noinspection PhpMissingParamTypeInspection
      */
-    public static function mkParser($grammarSource): string {
+    public static function mkParser($grammarSource): callable {
         $grammar = static::parse($grammarSource)[0];
         return static::generateParser($grammar);
     }
 
     /**
      * [generate_parser(grammar: Grammar) -> Type[Parser]](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/testutil.py#L26)
+     * @return callable Parser factory function calling Parser's constructor.
      */
     public static function generateParser(Grammar $grammar): callable {
         $stream = mkStream('');
         // out = io.StringIO()
         $gen = new PhpParserGenerator($grammar, $stream);
-        $gen->generate('<string>');
+        $className = $gen->generate('<string>');
 
         $code = stream_get_contents($stream, offset: 0);
         if ($code === '') {
             throw new \UnexpectedValueException();
         }
-
-        d(eval('?>' . $code));
-        //return new 
+        d($code);
+        eval('?>' . $code);
+        
+        return $className;
     }
 
-    public function frontend(): callable {
-        return function (mixed $context): array {
-            return static::parse($context['file'] ?? $context);
-        };
-    }
-
-    public function midend(): callable {
-        return function (mixed $context): mixed {
-            return $context;
-        };
-    }
-
-    public function backend(): callable {
-        return function (mixed $context): mixed {
-            d($context);
-            return new Peg($context);
-        };
-    }
-
-    public function __invoke(mixed $context): mixed {
-        $context = $this->frontend()($context);
-        $context = $this->midend()($context);
-        return $this->backend()($context);
+    public function __invoke(mixed $context): Parser {
+        [$grammar, $grammarParser, $grammarTokenizer] = static::parse($context);
+        $parser = static::generateParser($grammar);
     }
 }

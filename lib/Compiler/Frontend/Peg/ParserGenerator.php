@@ -34,7 +34,12 @@ abstract class ParserGenerator {
      * @var mixed Dict[str, Rule]
      */
     protected array $allRules;
-
+    
+    /**
+     * @var array List[List[str]]
+     */
+    protected array $localVarStack = [];
+    
     /**
      * @var array Set[str]
      */
@@ -61,10 +66,6 @@ abstract class ParserGenerator {
      */
     private array $rules;
 
-    /**
-     * @var array List[List[str]]
-     */
-    private array $localVarStack = [];
 
     private array $firstGraph;
 
@@ -88,7 +89,10 @@ abstract class ParserGenerator {
         $this->allRules = $this->rules; # Rules + temporal rules
     }
 
-    abstract public function generate(array $vars = null): void;
+    /**
+     * Differs from the Python's signature: generate(self, filename: str) -> None:
+     */
+    abstract public function generate(string $filePath): string;
 
     public function artificialRuleFromGather(Gather $node): string {
         $this->counter++;
@@ -153,8 +157,7 @@ abstract class ParserGenerator {
         if (null === $val) {
             fwrite($this->stream, "\n");
         } else {
-            fwrite($this->stream, str_repeat(INDENT, $this->level));
-            fwrite($this->stream, (string) $val);
+            fwrite($this->stream, str_repeat(INDENT, $this->level) . (string) $val . "\n");
         }
     }
 

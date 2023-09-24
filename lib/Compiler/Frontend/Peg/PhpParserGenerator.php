@@ -7,11 +7,11 @@
 namespace Morpho\Compiler\Frontend\Peg;
 
 use Morpho\Base\NotImplementedException;
-
+use Morpho\Base\Must;
 use function Morpho\Base\camelize;
 use function Morpho\Base\enumVals;
 use function Morpho\Base\last;
-use function Morpho\Base\tpl;
+use const Morpho\Base\INDENT;
 
 /**
  * [class PythonParserGenerator(ParserGenerator, GrammarVisitor)](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/python_generator.py#L192)
@@ -37,11 +37,10 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         $this->locationFormatting = ($locationFormatting ?? "lineno=start_lineno, col_offset=start_col_offset, ") . "end_lineno=end_lineno, end_col_offset=end_col_offset";
     }
 
-
-    public function generate(array $vars = null): void {
+    public function generate(string $filePath): string {
         // @todo: Use PhpParser's generator
         $this->collectRules();
-        $header = $this->grammar->metas['header'] ?? $this->fileHeader($vars);
+        $header = $this->grammar->metas['header'] ?? $this->fileHeader($filePath);
         if (null !== $header) {
             $this->print($header);
         }
@@ -50,7 +49,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
             $this->print($subheader);
         }
         $className = $this->grammar->metas['class'] ?? 'GeneratedParser';
-        $this->print("# Keywords and soft keywords are listed at the end of the parser definition.");
+        $this->print("// Keywords and soft keywords are listed at the end of the parser definition.");
         $this->print("class {$className} extends Parser {");
         foreach ($this->allRules as $rule) {
             $this->print();
@@ -65,6 +64,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         if (null !== $footer) {
             $this->print(rtrim($footer));
         }
+        return $className;
     }
 
     /**
@@ -98,54 +98,48 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         return null;
     }
 
-    /*
-
-    def alts_uses_locations(self, alts: Sequence[Alt]) -> bool:
-        for alt in alts:
-            if alt.action and "LOCATIONS" in alt.action:
-                return True
-            for n in alt.items:
-                if isinstance(n.item, Group) and self.alts_uses_locations(n.item.rhs.alts):
-                    return True
-        return False
-    */
-
     protected function visitRule(Rule $node): void {
         $isLoop = $node->isLoop();
         $isGather = $node->isGather();
         $rhs = $node->flatten();
+        $nodeType = $node->type ?? 'mixed';
+
+        // @todo: save current offset of stream, collect print(), then restore offset
+
+        $this->print('function ' . $node->name . '(): ?' . $nodeType . '{');
+        $this->print('// ' . $node->name . ': ' . $rhs);
+        $this->print('$mark = $this->mark();');
+        if ($this->altsUseLocations($node->rhs->alts)) {
+            $this->print('$tok = $this->tokenizer->peek();');
+            $this->print('[$startLineNo, $startColOffset] = $tok->start;');
+        }
+        if ($isLoop) {
+            $this->print('$children = [];');
+        }
+        // @todo: test how unpacking works in PHP
+        $this->visit($rhs, isLoop: $isLoop, isGather: $isGather);
+        
+        if ($isLoop) {
+            $this->print('return $children');
+        } else {
+            $this->print('return null');
+        }
+
+        $this->print('}');
+
         if ($node->leftRecursive) {
             if ($node->leader) {
                 // @todo: Wrap with memoizeLeftRec();
-                $this->print('todo: @memoize_left_rec');
+                throw new NotImplementedException('Wrap with @memoize_left_rec');
             } else {
                 // Non-leader rules in a cycle are not memoized, but they must still be logged.
                 // see `def logger()` in Tools/peg_generator/pegen/parser.py
-                $this->print('@logger');
+                throw new NotImplementedException('Wrap with @logger');
             }
         } else {
-            $this->print('@memoize');
+            throw new NotImplementedException('Wrap with @memoize');
         }
-        $nodeType = $node->type ?? 'mixed';
-        $this->print('function ' . $node->name . '(): ?' . $nodeType . "{");
-        $this->print('// todo');
-        $this->print('}');
-        /*
-
-
-            self.print(f"# {node.name}: {rhs}")
-            self.print("mark = self._mark()")
-            if self.alts_uses_locations(node.rhs.alts):
-                self.print("tok = self._tokenizer.peek()")
-                self.print("start_lineno, start_col_offset = tok.start")
-            if is_loop:
-                self.print("children = []")
-            self.visit(rhs, is_loop=is_loop, is_gather=is_gather)
-            if is_loop:
-                self.print("return children")
-            else:
-                self.print("return None")
-        */
+        //str_repeat(INDENT, $this->level) 
     }
 
     protected function visitNamedItem(NamedItem $node): void {
@@ -165,77 +159,106 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
     }
 
     protected function visitRhs(Rhs $node, bool $isLoop = false, bool $isGather = false): void {
-        throw new NotImplementedException();
-/*        if is_loop:
-            assert len(node.alts) == 1
-        for alt in node.alts:
-            self.visit(alt, is_loop=is_loop, is_gather=is_gather)*/
+        if ($isLoop) {
+            Must::beTruthy(count($node->alts) == 1);
+        }
+        foreach ($node->alts as $alt) {
+            $this->visit($alt, isLoop: $isLoop, isGather: $isGather);
+        }
     }
 
-    // def visit_Alt(self, node: Alt, is_loop: bool, is_gather: bool) -> None:
     protected function visitAlt(Alt $node, bool $isLoop, bool $isGather): void {
-        throw new NotImplementedException();
-        /*
-        has_cut = any(isinstance(item.item, Cut) for item in node.items)
-            with self.local_variable_context():
-            if has_cut:
-                self.print("cut = False")
-            if is_loop:
-                self.print("while (")
-            else:
-                self.print("if (")
-            with self.indent():
-                first = True
-                for item in node.items:
-                    if first:
-                        first = False
-                    else:
-                        self.print("and")
-                    self.visit(item)
-                    if is_gather:
-                        self.print("is not None")
-
-            self.print("):")
-            with self.indent():
-                action = node.action
-                if not action:
-                    if is_gather:
-                        assert len(self.local_variable_names) == 2
-                        action = (
-                        f"[{self.local_variable_names[0]}] + {self.local_variable_names[1]}"
-                        )
-                    else:
-                        if self.invalidvisitor.visit(node):
-                            action = "UNREACHABLE"
-                        elif len(self.local_variable_names) == 1:
-                            action = f"{self.local_variable_names[0]}"
-                        else:
-                            action = f"[{', '.join(self.local_variable_names)}]"
-                elif "LOCATIONS" in action:
-                    self.print("tok = self._tokenizer.get_last_non_whitespace_token()")
-                    self.print("end_lineno, end_col_offset = tok.end")
-                    action = action.replace("LOCATIONS", self.location_formatting)
-
-                if is_loop:
-                    self.print(f"children.append({action})")
-                    self.print(f"mark = self._mark()")
-                else:
-                    if "UNREACHABLE" in action:
-                        action = action.replace("UNREACHABLE", self.unreachable_formatting)
-                    self.print(f"return {action}")
-
-            self.print("self._reset(mark)")
-            # Skip remaining alternatives if a cut was reached.
-            if has_cut:
-                self.print("if cut: return None")
-                    */
+        $hasCut = false;
+        foreach ($node->items as $item) {
+            if ($item->item instanceof Cut) {
+                $hasCut = true;
+                break;
+            }
+        }
+        $this->localVarStack[] = [];
+        if ($hasCut) {
+            $this->print('$cut = false;');
+        }
+        if ($isLoop) {
+            $this->print('while (');
+        } else {
+            $this->print('if (');
+        }
+        $first = true;
+        foreach ($node->items as $item) {
+            if ($first) {
+                $first = false;
+            } else {
+                $this->print('&&');
+            }
+            $this->visit($item);
+            if ($isGather) {
+                $this->print('!== null');
+            }
+        }
+        $this->print(') {');
+        $action = $node->action;
+        if (!$action) {
+            if ($isGather) {
+                Must::beTruthy(count(last($this->localVarStack)) == 2);
+                throw new NotImplementedException();
+                //$last = last($this->localVarStack);
+                //$action = '[' . $last[0] . ']' ???
+                //$action = f"[{self.local_variable_names[0]}] + {self.local_variable_names[1]}"
+            } else {
+                if ($this->invalidVisitor->visit($node)) {
+                    $action = 'UNREACHABLE';
+                } elseif (count(last($this->localVarStack)) == 1) {
+                    $action = last($this->localVarStack)[0];
+                } else {
+                    $action = '[' . implode(', ', last($this->localVarStack)) . ']';
+                }
+            }
+        } elseif (str_contains($action, 'LOCATIONS')) {
+            $this->print('$tok = $this->tokenizer->lastNonWhitespaceToken();');
+            $this->print('[$endLineNo, $endColOffset] = $tok->end');
+            $action = str_replace('LOCATIONS', $this->locationFormatting, $action);
+        }
+        if ($isLoop) {
+            $this->print('$children[] = ' . $action . ';');
+            $this->print('$mark = $this->mark();');
+        } else {
+            if (str_contains($action, 'UNREACHABLE')) {
+                $action = str_replace('UNREACHABLE', $this->unreachableFormatting, $action);
+            }
+            $this->print('return ' . $action . ';');
+        }
+        $this->print('}');
+        $this->print('$this->reset($mark);');
+        // Skip remaining alternatives if a cut was reached.
+        if ($hasCut) {
+            $this->print('if ($cut) return null;');
+        }
+        array_pop($this->localVarStack);
     }
 
-    private function fileHeader(mixed $vars): ?string {
+    private function fileHeader(string $filePath): ?string {
         return "<?php declare(strict_types=1);\n";
     }
 
     private function fileFooter(): ?string {
         return '';
+    }
+
+    /**
+     * @param iterable $alts Sequence[Alt]
+     */
+    private function altsUseLocations(iterable $alts): bool {
+        foreach ($alts as $alt) {
+            if ($alt->action && in_array('LOCATIONS', $alt->action)) {
+                return true;
+            }
+            foreach ($alt->items as $item) {
+                if ($item->item instanceof Group && $this->altsUseLocations($item->iteim->rhs->alts)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

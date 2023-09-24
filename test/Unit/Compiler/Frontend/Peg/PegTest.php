@@ -21,13 +21,6 @@ class PegTest extends TestCase {
         $this->parserGen = new Peg();
     }
 
-    public function testInterface(): void {
-        $this->assertInstanceOf(ICompiler::class, $this->parserGen);
-        $this->assertIsCallable($this->parserGen->frontend());
-        $this->assertIsCallable($this->parserGen->midend());
-        $this->assertIsCallable($this->parserGen->backend());
-    }
-
     public function testParse() {
         [$grammar, $parser, $tokenizer] = Peg::parse('foo: bar');
         $this->assertInstanceOf(Grammar::class, $grammar);
@@ -36,6 +29,15 @@ class PegTest extends TestCase {
     }
 
     public function testInvoke() {
-        $this->markTestIncomplete();
+        // @todo: write parser for the TOML (https://toml.io/en/) for testing it as the whole, [ABNF grammar](https://github.com/toml-lang/toml/blob/1.0.0/toml.abnf)
+        // @todo: ABNF grammar parser and converter to PEG https://www.ietf.org/rfc/rfc5234.txt
+        $grammarSource = <<<OUT
+        start[return_type]:
+            | first_alt
+            | second_alt
+        first_alt: '123'
+        second_alt: '456'
+        OUT;
+        d($this->parserGen->__invoke($grammarSource));
     }
 }

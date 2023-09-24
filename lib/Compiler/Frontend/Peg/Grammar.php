@@ -224,8 +224,8 @@ readonly class Rhs implements IGrammarNode {
 
 class Alt implements IGrammarNode, IRenderingActions {
     public readonly NamedItemList $items;
+    public readonly ?string $action;
     private readonly int $icut;
-    private readonly ?string $action;
     private bool $renderActions = false;
 
     // def __init__(self, items: List[NamedItem], *, icut: int = -1, action: Optional[str] = None):
