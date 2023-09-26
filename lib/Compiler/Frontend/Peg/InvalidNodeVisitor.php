@@ -61,9 +61,9 @@ class InvalidNodeVisitor extends GrammarVisitor {
     }
 
     /**
-     * @return array Tuple[str, str]
+     * @return array todo: clarify return type, in Python Tuple[str, str], but it may be bool
      */
-    protected function visitGather(Gather $node): array {
+    protected function visitGather(Gather $node): array|bool {
         return $this->visit($node->node);
     }
 

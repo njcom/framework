@@ -6,11 +6,7 @@
  */
 namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
-use Morpho\Compiler\Frontend\Peg\Grammar;
-use Morpho\Compiler\Frontend\Peg\GrammarParser;
-use Morpho\Compiler\Frontend\Peg\GrammarTokenizer;
 use Morpho\Compiler\Frontend\Peg\Peg;
-use Morpho\Compiler\Frontend\Peg\Tokenizer;
 
 class ParserTestHelper {
     public function sortRecursive(array $val): array {
@@ -25,22 +21,11 @@ class ParserTestHelper {
         return $sorted;
     }
 
-    public function parseString(string $s, string $parserClass = null): Grammar {
-        // @todo
-        return Peg::parse($s, $parserClass)[0];
-        /*
-        $tokenizer = new GrammarTokenizer(Tokenizer::tokenize($s));
-        $parser = new GrammarParser($tokenizer);
-        $grammar = $parser->start();
-        if (!$grammar) {
-            throw $parser->mkSyntaxError('Unable to parse grammar');
-        }
-        return $grammar;
-        */
+    public function parseString(...$args) {
+        return Peg::parse(...$args)[0];
     }
 
-    public function generateParser(Grammar $grammar): string {
-        // @todo
-        return Peg::generateParser($grammar);
+    public function generateParser(...$args): array {
+        return Peg::generateParser(...$args);
     }
 }

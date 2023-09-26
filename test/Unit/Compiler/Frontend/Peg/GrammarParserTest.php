@@ -118,11 +118,11 @@ class GrammarParserTest extends TestCase {
         );
         $this->assertSame("thing: NUMBER", $rules["thing"]->__toString());
 
-        $parserClass = $this->testHelper->generateParser($grammar);
+        $result = $this->testHelper->generateParser($grammar);
         //$node = $this->testHelper->parseString("42\n", $parserClass);
         // @todo: Check $node representation
         $line = "1, 2\n";
-        $node = $this->testHelper->parseString($line, $parserClass);
+        $node = $this->testHelper->parseString($line, $result['factory']);
         $this->assertSame(
             [
                 [

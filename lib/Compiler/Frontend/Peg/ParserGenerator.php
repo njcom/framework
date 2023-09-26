@@ -39,21 +39,21 @@ abstract class ParserGenerator {
      * @var array List[List[str]]
      */
     protected array $localVarStack = [];
+
+    /**
+     * @var array Dict[str, int]
+     */
+    protected array $keywords = [];
+
+    /**
+     * @var array Set[str]
+     */
+    protected array $softKeywords = [];
     
     /**
      * @var array Set[str]
      */
     private array $tokens;
-
-    /**
-     * @var array Dict[str, int]
-     */
-    private array $keywords = [];
-
-    /**
-     * @var array Set[str]
-     */
-    private array $softKeywords = [];
 
     /**
      * For keyword_type()
@@ -91,8 +91,9 @@ abstract class ParserGenerator {
 
     /**
      * Differs from the Python's signature: generate(self, filename: str) -> None:
+     * @return array Modified context
      */
-    abstract public function generate(string $filePath): string;
+    abstract public function generate(array $context): array;
 
     public function artificialRuleFromGather(Gather $node): string {
         $this->counter++;

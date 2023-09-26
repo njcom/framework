@@ -31,6 +31,7 @@ enum Type: string {
         TClassOrInterfaceOrEnum: ClassName | InterfaceName | EnumName (>= 8.1)
             Any class and interface name.
 
+        # @todo: https://wiki.php.net/rfc/null-false-standalone-types
         TProperty: TScalar | array | object | iterable | self | parent | mixed | TClassOrInterfaceOrEnum | TUnion | TNullable
             Can be used in class definition as property type hint.
             object: contains TClassOrInterfaceOrEnum

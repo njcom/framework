@@ -9,7 +9,7 @@ namespace Morpho\Compiler\Frontend\Peg;
 use function Morpho\Base\mkStream;
 
 /**
- * PEG/Parsing Expression Grammar: parser generator generating recursive descent parser by a grammar.
+ * PEG/Parsing Expression Grammar: parser generator, generating recursive descent parser by a grammar.
  * Based on https://peps.python.org/pep-0617/ and other related Python's PEG resources.
  */
 class Peg {
@@ -19,11 +19,9 @@ class Peg {
      * @param string|resource $grammarSource
      * @return array
      */
-    public static function parse($grammarSource, $grammarParser = null): array {
+    public static function parse($grammarSource, callable $mkGrammarParser = null): array {
         $grammarTokenizer = new GrammarTokenizer(Tokenizer::tokenize($grammarSource));
-        if (!$grammarParser) {
-            $grammarParser = new GrammarParser($grammarTokenizer);
-        }
+        $grammarParser = $mkGrammarParser ? $mkGrammarParser($grammarTokenizer) : new GrammarParser($grammarTokenizer);
         $grammar = $grammarParser->start();
         if (!$grammar) {
             throw $grammarParser->mkSyntaxError('Unable to parse grammar');
@@ -34,36 +32,42 @@ class Peg {
     /**
      * [make_parser(source: str) -> Type[Parser]](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/testutil.py#L58)
      * @param string|resource $grammarSource Stream for the grammar or source of the grammar
-     * @return callable
      * @noinspection PhpMissingParamTypeInspection
      */
-    public static function mkParser($grammarSource): callable {
+    public static function mkParser($grammarSource, array $context = null): array {
         $grammar = static::parse($grammarSource)[0];
-        return static::generateParser($grammar);
+        return static::generateParser($grammar, $context);
     }
 
     /**
      * [generate_parser(grammar: Grammar) -> Type[Parser]](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/testutil.py#L26)
-     * @return callable Parser factory function calling Parser's constructor.
      */
-    public static function generateParser(Grammar $grammar): callable {
+    public static function generateParser(Grammar $grammar, array $context = null): array {
         $stream = mkStream('');
-        // out = io.StringIO()
         $gen = new PhpParserGenerator($grammar, $stream);
-        $className = $gen->generate('<string>');
-
+        if ($context) {
+            $context = [];
+        }
+        $context['namespace'] = $namespace = __NAMESPACE__;
+        $newContext = $gen->generate($context);
         $code = stream_get_contents($stream, offset: 0);
         if ($code === '') {
             throw new \UnexpectedValueException();
         }
-        d($code);
         eval('?>' . $code);
-        
-        return $className;
+        $class = $newContext['class'];
+        $newContext['factory'] = function (...$args) use ($namespace, $class) {
+            return new ($namespace . '\\' . $class)(...$args);
+        };
+        return $newContext;
     }
 
-    public function __invoke(mixed $context): Parser {
-        [$grammar, $grammarParser, $grammarTokenizer] = static::parse($context);
-        $parser = static::generateParser($grammar);
-    }
+/*     public function __invoke($grammarSource, $grammarParser = null, array $context = null): Parser {
+        //[$grammar, $grammarParser, $grammarTokenizer] = static::parse($context);
+        $grammar = static::parse($grammarSource, $grammarParser)[0];
+        $parser = static::generateParser($context);
+        d($parser);
+
+        throw new NotImplementedException();
+    } */
 }

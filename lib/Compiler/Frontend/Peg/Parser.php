@@ -16,7 +16,7 @@ use function Morpho\Base\last;
  * Base class for the PEG parsers
  * Based on https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/parser.py
  */
-abstract class Parser implements IParser {
+abstract class Parser {
     private IGrammarTokenizer $tokenizer;
     private int $level;
     private array $cache;
