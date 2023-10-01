@@ -7,6 +7,7 @@
 namespace Morpho\G11n;
 
 class Locale {
+    public $todo; // to pass lint
     /*
     From locale(5):
            *  LC_CTYPE

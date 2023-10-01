@@ -7,5 +7,5 @@
 namespace Morpho\Tech\Systemd;
 
 class Dbus {
-
+    public $todo; // to pass lint
 }

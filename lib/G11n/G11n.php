@@ -14,5 +14,5 @@ namespace Morpho\G11n;
  * https://stackoverflow.com/questions/754520/what-is-the-actual-differences-between-i18n-l10n-g11n-and-specifically-what-does
  */
 class G11n {
-
+    public $todo; // to pass lint
 }

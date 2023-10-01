@@ -21,6 +21,7 @@ show_facts() {
 }
 
 install_composer_packages() {
+    declare major_php_ver
     major_php_ver=$(php -r 'echo PHP_MAJOR_VERSION;')
     declare -r major_php_ver
 
@@ -94,7 +95,6 @@ run_tests() {
         fi
         exit $exit_code
     fi
-    php "$BASE_DIR_PATH"/bin/lint
 }
 
 deploy_results() {
@@ -124,6 +124,9 @@ main() {
 
     show_sep
     run_tests
+
+    show_sep
+    php "$BASE_DIR_PATH"/bin/lint
 
     show_sep
     deploy_results

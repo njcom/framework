@@ -14,6 +14,7 @@ use Morpho\Tech\Php\FileReflection;
 
 use function Morpho\App\Cli\showErrorLine;
 use function Morpho\App\Cli\showLine;
+use function Morpho\App\Cli\showOk;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -64,9 +65,10 @@ function findEmptyClassTypes(): array {
 
 function main(): void {
     $result = findEmptyClassTypes();
-    if ($result) {
-        d($result);
+    if (!empty($result['empty'])) {
+        d($result['empty']);
     }
+    showOk();
 //    //passthru('cd ' . escapeshellarg($baseDirPath) . ' && ' . escapeshellarg($baseDirPath) . '/vendor/bin/psalm', $exitCode);
 }
 
