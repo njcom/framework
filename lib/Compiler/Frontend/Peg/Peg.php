@@ -6,6 +6,8 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
+use UnexpectedValueException;
+
 use function Morpho\Base\mkStream;
 
 /**
@@ -14,29 +16,22 @@ use function Morpho\Base\mkStream;
  */
 class Peg {
     /**
+     * Runs either the GrammarParser or a generated parser.
      * [build_parser()](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/build.py#L208)
      * [run_parser()](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/testutil.py#L38)
-     * @param string|resource $grammarSource
+     * @param string|resource $source
+     * @param callable|null $parserFactory
      * @return array
-     */
-    public static function parse($grammarSource, callable $mkGrammarParser = null): array {
-        $grammarTokenizer = new GrammarTokenizer(Tokenizer::tokenize($grammarSource));
-        $grammarParser = $mkGrammarParser ? $mkGrammarParser($grammarTokenizer) : new GrammarParser($grammarTokenizer);
-        $grammar = $grammarParser->start();
-        if (!$grammar) {
-            throw $grammarParser->mkSyntaxError('Unable to parse grammar');
-        }
-        return [$grammar, $grammarParser, $grammarTokenizer];
-    }
-
-    /**
-     * [make_parser(source: str) -> Type[Parser]](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/testutil.py#L58)
-     * @param string|resource $grammarSource Stream for the grammar or source of the grammar
      * @noinspection PhpMissingParamTypeInspection
      */
-    public static function mkParser($grammarSource, array $context = null): array {
-        $grammar = static::parse($grammarSource)[0];
-        return static::generateParser($grammar, $context);
+    public static function runParser($source, callable $parserFactory = null): array {
+        $tokenizer = new Tokenizer(GeneralTokenizer::tokenize($source));
+        $parser = $parserFactory ? $parserFactory($tokenizer) : new GrammarParser($tokenizer);
+        $ast = $parser->start();
+        if (!$ast) {
+            throw $parser->mkSyntaxError('Unable to parse grammar');
+        }
+        return [$ast, $parser, $tokenizer];
     }
 
     /**
@@ -48,26 +43,27 @@ class Peg {
         if ($context) {
             $context = [];
         }
-        $context['namespace'] = $namespace = __NAMESPACE__;
-        $newContext = $gen->generate($context);
+        $parserClass = $gen->generate($context);
         $code = stream_get_contents($stream, offset: 0);
         if ($code === '') {
-            throw new \UnexpectedValueException();
+            throw new UnexpectedValueException();
         }
-        eval('?>' . $code);
+        return [
+            'program' => $code,
+            'class' => $parserClass,
+        ];
+    }
+
+    /**
+     * @todo: specify $context array shape
+     */
+    public static function generateAndEvalParser(Grammar $grammar, array $context = null): array {
+        $newContext = static::generateParser($grammar, $context);
+        eval('?>' . $newContext['program']);
         $class = $newContext['class'];
-        $newContext['factory'] = function (...$args) use ($namespace, $class) {
-            return new ($namespace . '\\' . $class)(...$args);
+        $newContext['factory'] = function (...$args) use ($class) {
+            return new $class(...$args);
         };
         return $newContext;
     }
-
-/*     public function __invoke($grammarSource, $grammarParser = null, array $context = null): Parser {
-        //[$grammar, $grammarParser, $grammarTokenizer] = static::parse($context);
-        $grammar = static::parse($grammarSource, $grammarParser)[0];
-        $parser = static::generateParser($context);
-        d($parser);
-
-        throw new NotImplementedException();
-    } */
 }

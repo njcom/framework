@@ -6,8 +6,6 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
-use Morpho\Compiler\Frontend\Location;
-
 use Stringable;
 
 use function Morpho\Base\q;
@@ -20,11 +18,11 @@ use function Morpho\Base\qq;
 readonly class Token implements Stringable {
     public TokenType $type;
     public string $val;
-    public Location $start;
-    public Location $end;
+    public array $start;
+    public array $end;
     public string $line;
 
-    public function __construct(TokenType $type, string $val, Location $start, Location $end, string $line) {
+    public function __construct(TokenType $type, string $val, array $start, array $end, string $line) {
         $this->type = $type;
         $this->val = $val;
         $this->start = $start;
@@ -59,6 +57,6 @@ readonly class Token implements Stringable {
             return q($s);
         };
         // @todo: rename `string` to `val`, TokenInfo to Token
-        return 'TokenInfo(type=' . $this->type->value . ' (' . ($this->type->name) . '), string=' . $q($this->val) . ', start=(' . $this->start->lineNo . ', ' . $this->start->columnNo . '), end=(' . $this->end->lineNo . ', ' . $this->end->columnNo . '), line=' . $q($this->line) . ")";
+        return 'TokenInfo(type=' . $this->type->value . ' (' . ($this->type->name) . '), string=' . $q($this->val) . ', start=(' . $this->start[0] . ', ' . $this->start[1] . '), end=(' . $this->end[0] . ', ' . $this->end[1] . '), line=' . $q($this->line) . ")";
     }
 }

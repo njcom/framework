@@ -7,14 +7,67 @@
  */
 namespace Morpho\Infra;
 
+use Morpho\Fs\Dir;
+
+use Morpho\Fs\Path;
+use Morpho\Tech\Php\FileReflection;
+
+use function Morpho\App\Cli\showErrorLine;
+use function Morpho\App\Cli\showLine;
+
 require __DIR__ . '/../vendor/autoload.php';
 
-function main(): void {
-//    //passthru('cd ' . escapeshellarg($baseDirPath) . ' && ' . escapeshellarg($baseDirPath) . '/vendor/bin/psalm', $exitCode);
-//    //$ok = $ok && ($exitCode === 0);
-    $ok = true;
+function findEmptyClassTypes(): array {
+    $result = [];
+    $baseDirPath = realpath(__DIR__ . '/..');
+    $fileIt = function () use ($baseDirPath): iterable {
+        yield from Dir::filePaths($baseDirPath . '/lib', true);
+        yield from Dir::filePaths($baseDirPath . '/test', true);
+    };
+    foreach ($fileIt() as $filePath) {
+        $relPath = Path::rel($baseDirPath, $filePath);
+        if (!str_ends_with($filePath, '.php') || str_contains($relPath, 'test-data') || str_starts_with($relPath, 'test/Manual')) {
+            continue;
+        }
+        $code = file_get_contents($filePath);
+        if (!preg_match('~(class|interface|trait|enum)~', $code) || $relPath == 'lib/Compiler/Frontend/Peg/PythonParserGenerator.php') {
+            showLine('Skipped: ' . $filePath);
+            $result['skipped'][] = $filePath;
+            continue;
+        }
+        $fileR = new FileReflection($filePath);
+        foreach ($fileR->namespaces() as $nsR) {
+            foreach ($nsR->classTypes() as $classTypeR) {
+                if (!$classTypeR->getConstants() && !$classTypeR->getMethods() && !$classTypeR->getProperties()) {
+                    showErrorLine("Empty class type " . $classTypeR->getName() . " in file " . $filePath);
+                    $result['empty'][] = $filePath;
+                }
+            }
+        }
+        /*
+        foreach ($fileR->classes() as $classR) {
+            d($classR);
+        }
+        foreach ($fileR->interfaces() as $ifaceR) {
+            d($ifaceR);
+        }
+        foreach ($fileR->traits() as $traitR) {
+            d($traitR);
+        }
+        foreach ($fileR->enums() as $enumR) {
+            d($enumR);
+        }
+        */
+    }
+    return $result;
+}
 
-    exit($ok ? 0 : 1);
+function main(): void {
+    $result = findEmptyClassTypes();
+    if ($result) {
+        d($result);
+    }
+//    //passthru('cd ' . escapeshellarg($baseDirPath) . ' && ' . escapeshellarg($baseDirPath) . '/vendor/bin/psalm', $exitCode);
 }
 
 main();

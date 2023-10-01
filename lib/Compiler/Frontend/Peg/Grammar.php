@@ -11,13 +11,12 @@ namespace Morpho\Compiler\Frontend\Peg;
 
 use ArrayObject;
 use Morpho\Base\NotImplementedException;
-use Morpho\Compiler\Frontend\IGrammar;
 use Traversable;
 
 use function Morpho\Base\q;
 use function Morpho\Base\qq;
 
-readonly class Grammar implements IGrammar, IGrammarNode {
+readonly class Grammar implements IGrammarNode {
     /**
      * @var array Dict[str, Rule]
      */

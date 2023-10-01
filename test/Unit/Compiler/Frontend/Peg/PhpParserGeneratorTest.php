@@ -54,6 +54,6 @@ class PhpParserGeneratorTest extends TestCase {
         $parserGen->generate();
 
         $php = stream_get_contents($stream, offset: 0);
-        $this->assertStringStartsWith('<?php declare(strict_types=1);' . "\n", $php);
+        $this->assertStringStartsWith("<?php\nnamespace", $php);
     }
 }

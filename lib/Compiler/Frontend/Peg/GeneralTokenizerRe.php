@@ -13,7 +13,7 @@ use function Morpho\Base\permutations;
  * Augment class for the GrammarLexer
  * https://github.com/python/cpython/blob/fc94d55ff453a3101e4c00a394d4e38ae2fece13/Lib/tokenize.py#L65
  */
-class TokenizerRe {
+class GeneralTokenizerRe {
     public const COMMENT_RE = '#[^\r\n]*';
     public const WHITESPACE_RE = '[ \f\t]*';
     public const NAME_RE = '\w+';

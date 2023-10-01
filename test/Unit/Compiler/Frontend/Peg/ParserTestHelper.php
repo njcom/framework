@@ -6,8 +6,6 @@
  */
 namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
-use Morpho\Compiler\Frontend\Peg\Peg;
-
 class ParserTestHelper {
     public function sortRecursive(array $val): array {
         ksort($val);
@@ -19,13 +17,5 @@ class ParserTestHelper {
             $sorted[$key] = is_array($v) ? $this->sortRecursive($v) : $v;
         }
         return $sorted;
-    }
-
-    public function parseString(...$args) {
-        return Peg::parse(...$args)[0];
-    }
-
-    public function generateParser(...$args): array {
-        return Peg::generateParser(...$args);
     }
 }

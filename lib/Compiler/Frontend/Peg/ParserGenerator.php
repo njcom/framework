@@ -91,9 +91,8 @@ abstract class ParserGenerator {
 
     /**
      * Differs from the Python's signature: generate(self, filename: str) -> None:
-     * @return array Modified context
      */
-    abstract public function generate(array $context): array;
+    abstract public function generate(array $context): string;
 
     public function artificialRuleFromGather(Gather $node): string {
         $this->counter++;

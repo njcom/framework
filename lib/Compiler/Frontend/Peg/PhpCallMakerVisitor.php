@@ -9,6 +9,8 @@ namespace Morpho\Compiler\Frontend\Peg;
 use Morpho\Base\NotImplementedException;
 use WeakMap;
 
+use function Morpho\Base\q;
+
 /**
  * [PythonCallMakerVisitor](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/python_generator.py#L93)
  */
@@ -39,7 +41,7 @@ class PhpCallMakerVisitor extends GrammarVisitor {
             case in_array($name, ["NEWLINE", "DEDENT", "INDENT", "ENDMARKER", "ASYNC", "AWAIT"]):
                 // @todo: difference in Python's keywords and PHP keywords
                 // Avoid using names that can be PHP keywords
-                return [strtolower($name), '$this->expect(' . $name . ')'];
+                return [strtolower($name), '$this->expect(\'' . $name . '\')'];
             default:
                 return [$name, '$this->' . $name . '()'];
         }
@@ -47,13 +49,15 @@ class PhpCallMakerVisitor extends GrammarVisitor {
 
     /**
      * @return array Tuple[str, str]
+     * @noinspection PhpUnused
      */
     protected function visitStringLeaf(StringLeaf $node): array {
-        return ['listeral', '$this->expect(' . $node->val . ')'];
+        return ['literal', '$this->expect(' . $node->val . ')'];
     }
 
     /**
      * @return array Tuple[Optional[str], str]
+     * @noinspection PhpUnused
      */
     protected function visitRhs(Rhs $node): array {
         if (isset($this->cache[$node])) {
@@ -72,6 +76,7 @@ class PhpCallMakerVisitor extends GrammarVisitor {
 
     /**
      * @return array Tuple[Optional[str], str]
+     * @noinspection PhpUnused
      */
     protected function visitNamedItem(NamedItem $node): array {
         [$name, $call] = $this->visit($node->item);
@@ -82,6 +87,10 @@ class PhpCallMakerVisitor extends GrammarVisitor {
     }
 
     // def visit_PositiveLookahead(self, node: PositiveLookahead) -> Tuple[None, str]:
+    /**
+     * @noinspection PhpUnused
+     * @noinspection PhpUnusedParameterInspection
+     */
     protected function visitPositiveLookahead(PositiveLookahead $node): array {
         throw new NotImplementedException();
         /*head, tail = self.lookahead_call_helper(node)
@@ -89,6 +98,10 @@ class PhpCallMakerVisitor extends GrammarVisitor {
     }
 
     //def visit_NegativeLookahead(self, node: NegativeLookahead) -> Tuple[None, str]:
+    /**
+     * @noinspection PhpUnused
+     * @noinspection PhpUnusedParameterInspection
+     */
     protected function visitNegativeLookahead(NegativeLookahead $node): array {
         /*  head, tail = self.lookahead_call_helper(node)
           return None, f"self.negative_lookahead({head}, {tail})"*/
@@ -96,6 +109,10 @@ class PhpCallMakerVisitor extends GrammarVisitor {
     }
 
     // def visit_Opt(self, node: Opt) -> Tuple[str, str]:
+    /**
+     * @noinspection PhpUnused
+     * @noinspection PhpUnusedParameterInspection
+     */
     protected function visitOpt(Opt $node): array {
         /*        name, call = self.visit(node.node)
                 # Note trailing comma (the call may already have one comma
@@ -109,6 +126,10 @@ class PhpCallMakerVisitor extends GrammarVisitor {
     }
 
     // def visit_Repeat0(self, node: Repeat0) -> Tuple[str, str]:
+    /**
+     * @noinspection PhpUnused
+     * @noinspection PhpUnusedParameterInspection
+     */
     protected function visitRepeat0(Repeat0 $node): array {
         throw new NotImplementedException();
         /*
@@ -121,6 +142,11 @@ class PhpCallMakerVisitor extends GrammarVisitor {
     }
 
     // def visit_Repeat1(self, node: Repeat1) -> Tuple[str, str]:
+
+    /**
+     * @noinspection PhpUnused
+     * @noinspection PhpUnusedParameterInspection
+     */
     protected function visitRepeat1(Repeat1 $node): array {
         throw new NotImplementedException();
         /*
@@ -134,6 +160,7 @@ class PhpCallMakerVisitor extends GrammarVisitor {
 
     /**
      * @return array Tuple[str, str]
+     * @noinspection PhpUnused
      */
     protected function visitGather(Gather $node): array {
         if (isset($this->cache[$node])) {
@@ -146,19 +173,26 @@ class PhpCallMakerVisitor extends GrammarVisitor {
 
     /**
      * @return array Tuple[Optional[str], str]
+     * @noinspection PhpUnused
      */
     protected function visitGroup(Group $node): array {
-        $this->visit($node->rhs);
+        return $this->visit($node->rhs);
     }
 
     /**
      * @return array Tuple[str, str]
+     * @noinspection PhpUnused
+     * @noinspection PhpUnusedParameterInspection
      */
     protected function visitCut(Cut $node): array {
         return ['cut', 'true'];
     }
 
     // def visit_Forced(self, node: Forced) -> Tuple[str, str]:
+    /**
+     * @noinspection PhpUnused
+     * @noinspection PhpUnusedParameterInspection
+     */
     protected function visitForced(Forced $node): array {
         /*
             if isinstance(node.node, Group):

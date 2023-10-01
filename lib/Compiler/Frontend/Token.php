@@ -16,10 +16,10 @@ class Token {
      * @var string
      */
     public readonly string $val;
-    public readonly Location $location;
+    public readonly mixed $location;
     public array $meta = [];
 
-    public function __construct($type, string $val, Location $location, array $meta = []) {
+    public function __construct($type, string $val, mixed $location, array $meta = []) {
         $this->type = $type;
         $this->val = $val;
         $this->location = $location;

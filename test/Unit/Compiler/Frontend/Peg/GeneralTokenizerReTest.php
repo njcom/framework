@@ -7,27 +7,27 @@
 namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
 use Generator;
-use Morpho\Compiler\Frontend\Peg\TokenizerRe;
+use Morpho\Compiler\Frontend\Peg\GeneralTokenizerRe;
 use Morpho\Testing\TestCase;
 use UnexpectedValueException;
 
-class TokenizerReTest extends TestCase {
+class GeneralTokenizerReTest extends TestCase {
     public function testIsIdentifier() {
-        $this->assertTrue(TokenizerRe::isIdentifier('Grammar'));
-        $this->assertFalse(TokenizerRe::isIdentifier('0'));
-        $this->assertFalse(TokenizerRe::isIdentifier('123test'));
-        $this->assertTrue(TokenizerRe::isIdentifier('test123'));
-        $this->assertTrue(TokenizerRe::isIdentifier('_test123'));
-        $this->assertTrue(TokenizerRe::isIdentifier('_123'));
+        $this->assertTrue(GeneralTokenizerRe::isIdentifier('Grammar'));
+        $this->assertFalse(GeneralTokenizerRe::isIdentifier('0'));
+        $this->assertFalse(GeneralTokenizerRe::isIdentifier('123test'));
+        $this->assertTrue(GeneralTokenizerRe::isIdentifier('test123'));
+        $this->assertTrue(GeneralTokenizerRe::isIdentifier('_test123'));
+        $this->assertTrue(GeneralTokenizerRe::isIdentifier('_123'));
     }
 
     public function testEndPatterns_EndProgRe() {
-        $re = TokenizerRe::endPatterns()['"""'];
+        $re = GeneralTokenizerRe::endPatterns()['"""'];
         $this->assertMatchesRegularExpression('~' . $re . '~', '"""' . "\n");
     }
 
     public function testTailEndOfSingleQuote() {
-        $re = '~' . TokenizerRe::TAIL_END_OF_SINGLE_QUOTE . '~s';
+        $re = '~' . GeneralTokenizerRe::TAIL_END_OF_SINGLE_QUOTE . '~s';
         preg_match($re, "pre1\\.\\.pre2'post", $match);
         $this->assertSame(["pre1\\.\\.pre2'"], $match);
 
@@ -36,25 +36,25 @@ class TokenizerReTest extends TestCase {
     }
 
     public function testTripleQuotedPrefixesAndSingleQuotedPrefixes() {
-        $prefixes = TokenizerRe::allStringPrefixes();
+        $prefixes = GeneralTokenizerRe::allStringPrefixes();
         $this->assertIsArray($prefixes);
         $n = count($prefixes);
         $this->assertTrue($n > 0);
-        $this->assertCount($n * 2, TokenizerRe::tripleQuotedPrefixes());
-        $this->assertCount($n * 2, TokenizerRe::singleQuotedPrefixes());
+        $this->assertCount($n * 2, GeneralTokenizerRe::tripleQuotedPrefixes());
+        $this->assertCount($n * 2, GeneralTokenizerRe::singleQuotedPrefixes());
     }
 
     public function testGroupRe(): void {
-        $this->assertSame('()', TokenizerRe::groupRe());
-        $this->assertSame('(a)', TokenizerRe::groupRe('a'));
-        $this->assertSame('(a|b)', TokenizerRe::groupRe('a', 'b'));
+        $this->assertSame('()', GeneralTokenizerRe::groupRe());
+        $this->assertSame('(a)', GeneralTokenizerRe::groupRe('a'));
+        $this->assertSame('(a|b)', GeneralTokenizerRe::groupRe('a', 'b'));
     }
 
     public function testAnyRe(): void {
-        $this->assertSame('(a)*', TokenizerRe::anyRe('a'));
-        $this->assertSame('(a|b)*', TokenizerRe::anyRe('a', 'b'));
+        $this->assertSame('(a)*', GeneralTokenizerRe::anyRe('a'));
+        $this->assertSame('(a|b)*', GeneralTokenizerRe::anyRe('a', 'b'));
         try {
-            TokenizerRe::anyRe();
+            GeneralTokenizerRe::anyRe();
             $this->fail();
         } catch (UnexpectedValueException $e) {
             $this->assertSame("RE can't be empty", $e->getMessage());
@@ -62,10 +62,10 @@ class TokenizerReTest extends TestCase {
     }
 
     public function testMaybeRe(): void {
-        $this->assertSame('(a)?', TokenizerRe::maybeRe('a'));
-        $this->assertSame('(a|b)?', TokenizerRe::maybeRe('a', 'b'));
+        $this->assertSame('(a)?', GeneralTokenizerRe::maybeRe('a'));
+        $this->assertSame('(a|b)?', GeneralTokenizerRe::maybeRe('a', 'b'));
         try {
-            TokenizerRe::maybeRe();
+            GeneralTokenizerRe::maybeRe();
             $this->fail();
         } catch (UnexpectedValueException $e) {
             $this->assertSame("RE can't be empty", $e->getMessage());
@@ -74,7 +74,7 @@ class TokenizerReTest extends TestCase {
 
     public static function dataSimpleRes(): iterable {
         yield from self::genSamples([
-            TokenizerRe::HEX_NUMBER_RE => [
+            GeneralTokenizerRe::HEX_NUMBER_RE => [
                 [
                     '0x_0f',
                     true,
@@ -116,7 +116,7 @@ class TokenizerReTest extends TestCase {
                     true,
                 ],
             ],
-            TokenizerRe::BIN_NUMBER_RE => [
+            GeneralTokenizerRe::BIN_NUMBER_RE => [
                 [
                     '0b01_10',
                     true,
@@ -150,7 +150,7 @@ class TokenizerReTest extends TestCase {
                     false,
                 ],
             ],
-            TokenizerRe::OCT_NUMBER_RE => [
+            GeneralTokenizerRe::OCT_NUMBER_RE => [
                 [
                     '0o0703331',
                     true,
@@ -176,7 +176,7 @@ class TokenizerReTest extends TestCase {
                     false,
                 ],
             ],
-            TokenizerRe::DEC_NUMBER_RE => [
+            GeneralTokenizerRe::DEC_NUMBER_RE => [
                 [
                     '0',
                     true,
@@ -206,7 +206,7 @@ class TokenizerReTest extends TestCase {
                     false,
                 ],
             ],
-            TokenizerRe::WHITESPACE_RE => [
+            GeneralTokenizerRe::WHITESPACE_RE => [
                 [
                     '',
                     true,
@@ -220,7 +220,7 @@ class TokenizerReTest extends TestCase {
                     false,
                 ],
             ],
-            TokenizerRe::COMMENT_RE    => [
+            GeneralTokenizerRe::COMMENT_RE    => [
                 [
                     '#',
                     true,
@@ -238,7 +238,7 @@ class TokenizerReTest extends TestCase {
                     false,
                 ],
             ],
-            TokenizerRe::NAME_RE       => [
+            GeneralTokenizerRe::NAME_RE       => [
                 [
                     'abc',
                     true,
@@ -399,7 +399,7 @@ class TokenizerReTest extends TestCase {
      * @dataProvider dataIntNumberRe
      */
     public function testIntNumberRe(string $input, bool $mustMatch) {
-        $this->checkRe(TokenizerRe::intNumberRe(), $input, $mustMatch);
+        $this->checkRe(GeneralTokenizerRe::intNumberRe(), $input, $mustMatch);
     }
 
     public static function dataStringPrefixRe(): iterable {
@@ -415,11 +415,11 @@ class TokenizerReTest extends TestCase {
      * @dataProvider dataStringPrefixRe
      */
     public function testStringPrefixRe(string $prefix, bool $mustMatch) {
-        $this->checkRe(TokenizerRe::stringPrefixRe(), $prefix, $mustMatch);
+        $this->checkRe(GeneralTokenizerRe::stringPrefixRe(), $prefix, $mustMatch);
     }
 
     public function testContStrRe() {
-        $re = TokenizerRe::contStr();
+        $re = GeneralTokenizerRe::contStr();
         $this->checkRe($re, '""', true);
         $this->checkRe($re, '"123"', true);
         $this->checkRe($re, '"', false);
@@ -427,19 +427,19 @@ class TokenizerReTest extends TestCase {
 
     public function testFunnyRe() {
         $line = '"""' . "\n";
-        $re = TokenizerRe::funnyRe();
+        $re = GeneralTokenizerRe::funnyRe();
         preg_match($this->toFullRe($re), $line, $match, PREG_OFFSET_CAPTURE, 3);
         $this->assertSame(["\n", 3], $match[0]);
     }
 
     public function testPseudoExtrasRe() {
-        $re = TokenizerRe::pseudoExtrasRe();
+        $re = GeneralTokenizerRe::pseudoExtrasRe();
         preg_match($this->toFullRe($re), '"""' . "\n", $match, PREG_OFFSET_CAPTURE, 3);
         $this->assertSame(["\n", 3], $match[0]);
     }
 
     public function testPseudoTokenRe(): void {
-        $re = TokenizerRe::pseudoTokenRe();
+        $re = GeneralTokenizerRe::pseudoTokenRe();
 
         $this->assertMatchesRegularExpression($this->toLineRe($re), 'abc');
 

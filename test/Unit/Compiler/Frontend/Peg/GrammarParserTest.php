@@ -6,15 +6,14 @@
  */
 namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
-use Morpho\Compiler\Frontend\IParser;
-use Morpho\Compiler\Frontend\Location;
 use Morpho\Compiler\Frontend\Peg\Grammar;
 use Morpho\Compiler\Frontend\Peg\GrammarParser;
-use Morpho\Compiler\Frontend\Peg\GrammarTokenizer;
+use Morpho\Compiler\Frontend\Peg\Tokenizer;
 use Morpho\Compiler\Frontend\Peg\IRenderingActions;
 use Morpho\Compiler\Frontend\Peg\Parser;
+use Morpho\Compiler\Frontend\Peg\Peg;
 use Morpho\Compiler\Frontend\Peg\Token;
-use Morpho\Compiler\Frontend\Peg\Tokenizer;
+use Morpho\Compiler\Frontend\Peg\GeneralTokenizer;
 use Morpho\Compiler\Frontend\Peg\TokenType;
 use Morpho\Testing\TestCase;
 
@@ -24,20 +23,17 @@ use Morpho\Testing\TestCase;
  */
 class GrammarParserTest extends TestCase {
     private GrammarParser $parser;
-    private ParserTestHelper $testHelper;
 
     protected function setUp(): void {
         parent::setUp();
         $this->parser = new GrammarParser(
-            new GrammarTokenizer(
-                Tokenizer::tokenize($this->mkStream('foo: bar'))
+            new Tokenizer(
+                GeneralTokenizer::tokenize($this->mkStream('foo: bar'))
             )
         );
-        $this->testHelper = new ParserTestHelper();
     }
 
     public function testInterface() {
-        $this->assertInstanceOf(IParser::class, $this->parser);
         $this->assertInstanceOf(Parser::class, $this->parser);
     }
 
@@ -64,7 +60,7 @@ class GrammarParserTest extends TestCase {
         sum: term '+' term | term
         term: NUMBER
         OUT;
-        $grammar = $this->testHelper->parseString($grammarSource);
+        $grammar = Peg::runParser($grammarSource)[0];
         $rules = $grammar->rules;
         $this->assertSame($expected, rtrim($grammar->__toString()));
         $this->assertSame('start: sum NEWLINE', $rules['start']->__toString());
@@ -87,7 +83,7 @@ class GrammarParserTest extends TestCase {
             | one one zero
             | one one one
         OUT;
-        $grammar = $this->testHelper->parseString($grammarSource);
+        $grammar = Peg::runParser($grammarSource)[0];
         $this->assertSame($expected, $grammar->rules['start']->__toString());
     }
 
@@ -97,7 +93,7 @@ class GrammarParserTest extends TestCase {
         sum[int]: t1=term '+' t2=term { action } | term
         term[int]: NUMBER
         OUT;
-        $rules = $this->testHelper->parseString($grammarSource)->rules;
+        $rules = Peg::runParser($grammarSource)[0]->rules;
         # Check the str() and repr() of a few rules; AST nodes don't support ==.
         $this->assertSame("start: sum NEWLINE", $rules["start"]->__toString());
         $this->assertSame("sum: term '+' term | term", $rules["sum"]->__toString());
@@ -109,7 +105,7 @@ class GrammarParserTest extends TestCase {
         start: ','.thing+ NEWLINE
         thing: NUMBER
         OUT;
-        $grammar = $this->testHelper->parseString($grammarSource);
+        $grammar = Peg::runParser($grammarSource)[0];
         $rules = $grammar->rules;
         $this->assertSame("start: ','.thing+ NEWLINE", $rules['start']->__toString());
         $this->assertStringStartsWith(
@@ -118,23 +114,23 @@ class GrammarParserTest extends TestCase {
         );
         $this->assertSame("thing: NUMBER", $rules["thing"]->__toString());
 
-        $result = $this->testHelper->generateParser($grammar);
+        $result = Peg::generateAndEvalParser($grammar);
         //$node = $this->testHelper->parseString("42\n", $parserClass);
         // @todo: Check $node representation
         $line = "1, 2\n";
-        $node = $this->testHelper->parseString($line, $result['factory']);
-        $this->assertSame(
+        $node = Peg::runParser($line, $result['factory'])[0];
+        $this->assertEquals(
             [
                 [
                     new Token(
-                        TokenType::NUMBER, val: '1', start: new Location(1, 0), end: new Location(1, 1), line: $line
+                        TokenType::NUMBER, val: '1', start: [1, 0], end: [1, 1], line: $line
                     ),
                     new Token(
-                        TokenType::NUMBER, val: '2', start: new Location(1, 3), end: new Location(1, 4), line: $line
+                        TokenType::NUMBER, val: '2', start: [1, 3], end: [1, 4], line: $line
                     ),
                 ],
                 new Token(
-                    TokenType::NEWLINE, val: "\n", start: new Location(1, 4), end: new Location(1, 5), line: $line
+                    TokenType::NEWLINE, val: "\n", start: [1, 4], end: [1, 5], line: $line
                 ),
             ],
             $node

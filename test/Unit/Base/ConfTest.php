@@ -18,7 +18,7 @@ class ConfTest extends TestCase {
 
     public function testOnlyDefault() {
         $conf = new class extends Conf {
-            protected $default = [
+            protected ?array $default = [
                 'foo' => 'bar',
             ];
         };
@@ -27,7 +27,7 @@ class ConfTest extends TestCase {
 
     public function testDefaultWithValues() {
         $conf = new class (['abc' => 123, 'foo' => 'pear']) extends Conf {
-            protected $default = [
+            protected ?array $default = [
                 'foo' => 'bar',
             ];
         };

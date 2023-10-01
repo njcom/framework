@@ -17,7 +17,7 @@ use function Morpho\Base\last;
  * Based on https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/parser.py
  */
 abstract class Parser {
-    private IGrammarTokenizer $tokenizer;
+    private ITokenizer $tokenizer;
     private int $level;
     private array $cache;
     private const KEYWORDS = [];
@@ -25,7 +25,7 @@ abstract class Parser {
     // @todo: remove after PHP 8.3 (
     private static array $tokenTypes = [];
 
-    public function __construct(IGrammarTokenizer $tokenizer) {
+    public function __construct(ITokenizer $tokenizer) {
         $this->tokenizer = $tokenizer;
         $this->level = 0;
         $this->cache = [];

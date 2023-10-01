@@ -12,15 +12,19 @@ class Compiler extends ConfigurablePipe implements ICompiler {
     /**
      * @var callable
      */
-    private $frontend;
+    public $frontend;
     /**
      * @var callable
      */
-    private $midend;
+    public $midend;
     /**
      * @var callable
      */
-    private $backend;
+    public $backend;
+
+    public function __construct(array $conf = null) {
+        parent::__construct($conf);
+    }
 
     public function current(): callable {
         return match ($this->index) {
@@ -61,20 +65,5 @@ class Compiler extends ConfigurablePipe implements ICompiler {
     public function count(): int {
         // Valid pipe steps are `[$this->frontend(), $this->midend(), $this->backend()]`, so the count is 3.
         return 3;
-    }
-
-    public function setFrontend(callable $frontend): static {
-        $this->frontend = $frontend;
-        return $this;
-    }
-
-    public function setMidend(callable $midend): static {
-        $this->midend = $midend;
-        return $this;
-    }
-
-    public function setBackend(callable $backend): static {
-        $this->backend = $backend;
-        return $this;
     }
 }

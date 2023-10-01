@@ -86,7 +86,7 @@ class CompilerTest extends ConfigurablePipeTest {
         $oldStep = $compiler->$method();
         $this->assertIsCallable($oldStep);
         $newStep = fn() => null;
-        $this->assertSame($compiler, $compiler->{'set' . $method}($newStep));
+        $compiler->{$method} = $newStep;
         $this->assertSame($newStep, $compiler->$method());
         $this->assertNotSame($newStep, $oldStep);
     }

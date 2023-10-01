@@ -8,8 +8,8 @@ namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
 use Morpho\Compiler\Frontend\Peg\FirstSetCalculator;
 use Morpho\Compiler\Frontend\Peg\GrammarVisitor;
+use Morpho\Compiler\Frontend\Peg\Peg;
 use Morpho\Testing\TestCase;
-use SebastianBergmann\Diff\ParserTest;
 
 /**
  * Based on https://github.com/python/cpython/blob/main/Lib/test/test_peg_generator/test_first_sets.py
@@ -337,7 +337,7 @@ class FirstSetCalculatorTest extends TestCase {
      * @return array<string, string>
      */
     private function calculateFirstSets(string $sourceGrammar): array {
-        $grammar = $this->testHelper->parseString($sourceGrammar);
+        $grammar = Peg::runParser($sourceGrammar)[0];
         return (new FirstSetCalculator($grammar->rules))->calculate();
     }
 

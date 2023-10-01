@@ -6,7 +6,6 @@
  */
 namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
-use Morpho\Compiler\Frontend\IGrammar;
 use Morpho\Compiler\Frontend\Peg\Alt;
 use Morpho\Compiler\Frontend\Peg\Cut;
 use Morpho\Compiler\Frontend\Peg\Forced;
@@ -21,6 +20,7 @@ use Morpho\Compiler\Frontend\Peg\NamedItemList;
 use Morpho\Compiler\Frontend\Peg\NameLeaf;
 use Morpho\Compiler\Frontend\Peg\NegativeLookahead;
 use Morpho\Compiler\Frontend\Peg\Opt;
+use Morpho\Compiler\Frontend\Peg\Peg;
 use Morpho\Compiler\Frontend\Peg\PositiveLookahead;
 use Morpho\Compiler\Frontend\Peg\Repeat0;
 use Morpho\Compiler\Frontend\Peg\Repeat1;
@@ -34,7 +34,6 @@ use Morpho\Testing\TestCase;
 class GrammarTest extends TestCase {
     public function testInterface() {
         $grammar = $this->mkEmptyGrammar();
-        $this->assertInstanceOf(IGrammar::class, $grammar);
         $this->assertInstanceOf(IGrammarNode::class, $grammar);
         // @todo: use items as a part of the grammar
         $this->assertInstanceOf(IGrammarNode::class, new Rhs([]));
@@ -79,7 +78,12 @@ OUT,
     }
 
     public function testToString() {
-        $this->markTestIncomplete('IGrammarItem::__toString()');
+        $grammarSource = <<<OUT
+        start: ','.thing+ NEWLINE
+        thing: NUMBER
+        OUT;
+        $grammar = Peg::runParser($grammarSource)[0];
+        $this->assertSame($grammarSource, rtrim($grammar->__toString()));
     }
 
     public function testIterator() {

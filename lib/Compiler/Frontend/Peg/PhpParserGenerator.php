@@ -6,12 +6,16 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
+use Closure;
 use Morpho\Base\Must;
+use UnexpectedValueException;
+
 use function Morpho\Base\camelize;
-use function Morpho\Base\enumVals;
 use function Morpho\Base\mkStream;
+use function Morpho\Base\enumVals;
 use function Morpho\Base\last;
-use const Morpho\Base\INDENT;
+use function Morpho\Base\init;
+use function Morpho\Base\prepend;
 
 /**
  * [class PythonParserGenerator(ParserGenerator, GrammarVisitor)](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/python_generator.py#L192)
@@ -37,8 +41,12 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         $this->locationFormatting = ($locationFormatting ?? "lineno=start_lineno, col_offset=start_col_offset, ") . "end_lineno=end_lineno, end_col_offset=end_col_offset";
     }
 
-    public function generate(array $context): array {
-        // @todo: Use PhpParser's generator
+    public function generate(array $context = null): string {
+        $context = (array) $context;
+        if (!isset($context['namespace'])) {
+            $context['namespace'] = __NAMESPACE__ . '\\Generated' . str_replace([' ', '.'], '', microtime());
+        }
+        // @todo: Use PhpParser's generator?
         $this->collectRules();
         $header = $this->grammar->metas['header'] ?? $this->fileHeader($context);
         if (null !== $header) {
@@ -51,7 +59,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         $className = $this->grammar->metas['class'] ?? 'GeneratedParser';
         $context['class'] = $className;
         $this->print("// Keywords and soft keywords are listed at the end of the parser definition.");
-        $this->print("class {$className} extends Parser {");
+        $this->print("class $className extends Parser {");
         foreach ($this->allRules as $rule) {
             $this->print();
             $this->visit($rule);
@@ -65,7 +73,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         if (null !== $footer) {
             $this->print(rtrim($footer));
         }
-        return $context;
+        return $context['namespace'] . '\\' . $context['class'];
     }
 
     /**
@@ -99,19 +107,20 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         return null;
     }
 
+    /** @noinspection PhpUnused */
     protected function visitRule(Rule $node): void {
         $codeGen = function () use ($node) {
             $isLoop = $node->isLoop();
             $isGather = $node->isGather();
             $rhs = $node->flatten();
             $returnType = $node->type ?? 'mixed';
-            if ($returnType !== 'mixed') { // `mixed` already contains null.
+            if ($returnType !== 'mixed') { // `mixed` already contains `null` type.
                 $returnType = $returnType . ' | null';
             }
 
             $this->print('function ' . $node->name . '(): ' . $returnType . ' {');
             $this->print('// ' . $node->name . ': ' . $rhs);
-            $this->print('$mark = $this->mark();');
+            $this->print('$index = $this->index();');
             if ($this->altsUseLocations($node->rhs->alts)) {
                 $this->print('$tok = $this->tokenizer->peek();');
                 $this->print('[$startLineNo, $startColOffset] = $tok->start;');
@@ -119,7 +128,6 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
             if ($isLoop) {
                 $this->print('$children = [];');
             }
-            // @todo: test how unpacking works in PHP
             $this->visit($rhs, isLoop: $isLoop, isGather: $isGather);
             
             if ($isLoop) {
@@ -140,26 +148,28 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
                 $this->wrap($codeGen, 'return $this->logger(', ');');
             }
         } else {
-            $this->wrap($codeGen, 'return $this->memoize(', ');');
+            $this->wrap($codeGen, 'return $this->memoize(__METHOD__, ', ');');
         }
     }
 
+    /** @noinspection PhpUnused */
     protected function visitNamedItem(NamedItem $node): void {
         [$name, $call] = $this->callMakerVisitor->visit($node->item);
         if ($node->name) {
             $name = $node->name;
         }
-        if (!$node->name) {
+        if (!$name) {
             $this->print($call);
         } else {
             if ($name != 'cut') {
                 $name = $this->dedupe($name);
             }
             // self.print(f"({name} := {call})")
-            $this->print('$' . $name . ' = ' . $call);
+            $this->print('($' . $name . ' = ' . $call . ')');
         }
     }
 
+    /** @noinspection PhpUnused */
     protected function visitRhs(Rhs $node, bool $isLoop = false, bool $isGather = false): void {
         if ($isLoop) {
             Must::beTruthy(count($node->alts) == 1);
@@ -169,6 +179,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         }
     }
 
+    /** @noinspection PhpUnused */
     protected function visitAlt(Alt $node, bool $isLoop, bool $isGather): void {
         $hasCut = false;
         foreach ($node->items as $item) {
@@ -204,15 +215,15 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
             if ($isGather) {
                 Must::beTruthy(count(last($this->localVarStack)) == 2);
                 $last = last($this->localVarStack);
-                $action = 'array_merge([' . $last[0] . '], ' . $last[1] .');';
+                $action = 'array_merge([$' . $last[0] . '], ' . '$' . $last[1] .');';
                 //$action = f"[{self.local_variable_names[0]}] + {self.local_variable_names[1]}"
             } else {
                 if ($this->invalidVisitor->visit($node)) {
                     $action = 'UNREACHABLE';
                 } elseif (count(last($this->localVarStack)) == 1) {
-                    $action = last($this->localVarStack)[0];
+                    $action = '$' . last($this->localVarStack)[0];
                 } else {
-                    $action = '[' . implode(', ', last($this->localVarStack)) . ']';
+                    $action = '[' . implode(', ', prepend(last($this->localVarStack), '$')) . ']';
                 }
             }
         } elseif (str_contains($action, 'LOCATIONS')) {
@@ -222,7 +233,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         }
         if ($isLoop) {
             $this->print('$children[] = $' . $action . ';');
-            $this->print('$mark = $this->mark();');
+            $this->print('$index = $this->index();');
         } else {
             if (str_contains($action, 'UNREACHABLE')) {
                 $action = str_replace('UNREACHABLE', $this->unreachableFormatting, $action);
@@ -230,7 +241,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
             $this->print('return ' . $action . ';');
         }
         $this->print('}');
-        $this->print('$this->reset($mark);');
+        $this->print('$this->reset($index);');
         // Skip remaining alternatives if a cut was reached.
         if ($hasCut) {
             $this->print('if ($cut) return null;');
@@ -239,9 +250,12 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
     }
 
     private function fileHeader(array $context): ?string {
-        return "<?php\nnamespace {$context['namespace']};\nuse {$context['namespace']}\\Parser;";
+        return "<?php\nnamespace {$context['namespace']};\nuse " . init(get_class($this), '\\') . "\\Parser;";
     }
 
+    /**
+     * @noinspection PhpUnusedParameterInspection
+     */
     private function fileFooter(array $context): ?string {
         return '';
     }
@@ -263,7 +277,8 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         return false;
     }
 
-    private function wrap(\Closure $wrappedCodeGen, string $wrapperPreCode, string $wrapperPostCode): void {
+    /** @noinspection PhpSameParameterValueInspection */
+    private function wrap(Closure $wrappedCodeGen, string $wrapperPreCode, string $wrapperPostCode): void {
         $stream = $this->stream;
         $this->stream = mkStream();
 
@@ -296,7 +311,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
             $j--;
         }
         if ($leftOffset < 0 || $rightOffset < 0) {
-            throw new \UnexpectedValueException();
+            throw new UnexpectedValueException();
         }
         $this->print(
             $lines[$leftOffset] . "\n" // function start like 'public function foo() {'

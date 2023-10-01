@@ -7,7 +7,7 @@
 namespace Morpho\Compiler\Frontend;
 
 // https://en.wikipedia.org/wiki/Earley_parser
-class EarleyParser implements ITopDownParser {
+class EarleyParser {
     public function __invoke($context): IProgramNode {
         //$tokens = [];
         $program = new ProgramNode();
