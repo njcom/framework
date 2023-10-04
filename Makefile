@@ -77,7 +77,7 @@ update-peg:
 	curl -fLo $(CURDIR)/lib/Tech/Python/python.token 'https://raw.githubusercontent.com/python/cpython/main/Grammar/Tokens'
 	curl -fLo $(CURDIR)/lib/Tech/Python/python.gram 'https://raw.githubusercontent.com/python/cpython/main/Grammar/python.gram'
 	curl -fLo $(CURDIR)/lib/Compiler/Frontend/Peg/meta.gram 'https://raw.githubusercontent.com/python/cpython/main/Tools/peg_generator/pegen/metagrammar.gram'
-	target_file_path=$(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data/TokenizerTest/meta-token \
+	target_file_path=$(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data/GeneralTokenizerTest/meta-token \
 		&& cat $(CURDIR)/lib/Compiler/Frontend/Peg/meta.gram | $(CURDIR)/bin/gen-py-tokens > "$$target_file_path" \
 		&& echo "Written '$$target_file_path'"
 
