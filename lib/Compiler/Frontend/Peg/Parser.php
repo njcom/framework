@@ -8,7 +8,6 @@ namespace Morpho\Compiler\Frontend\Peg;
 
 use Closure;
 use Morpho\Base\NotImplementedException;
-use Morpho\Compiler\Frontend\IParser;
 use Morpho\Compiler\Frontend\SyntaxError;
 use function Morpho\Base\last;
 
@@ -36,7 +35,7 @@ abstract class Parser {
      */
     public function mkSyntaxError(string $msg, string $filePath = null): SyntaxError {
         $tok = $this->tokenizer->diagnose();
-        return new SyntaxError($msg, $filePath ?? '<unknown>', $tok->start, $tok->end, $tok->line);
+        return new SyntaxError($msg, $filePath, $tok->start, $tok->end, $tok->line);
     }
 
     abstract public function start(): mixed;

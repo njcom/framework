@@ -15,21 +15,27 @@ use function Morpho\Base\mkStream;
  * Based on https://peps.python.org/pep-0617/ and other related Python's PEG resources.
  */
 class Peg {
+    public static function parse(string $grammarSource, string $text, array $context = null) {
+        $grammar = static::runParser($grammarSource)[0];
+        $parserFactory = static::generateAndEvalParser($grammar, $context)['factory'];
+        return static::runParser($text, parserFactory: $parserFactory)[0];
+    }
+
     /**
-     * Runs either the GrammarParser or a generated parser.
+     * Runs either the GrammarParser or the provided generated parser.
      * [build_parser()](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/build.py#L208)
      * [run_parser()](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/testutil.py#L38)
      * @param string|resource $source
-     * @param callable|null $parserFactory
+     * @param callable|null   $tokenizerFactory
+     * @param callable|null   $parserFactory
      * @return array
-     * @noinspection PhpMissingParamTypeInspection
      */
-    public static function runParser($source, callable $parserFactory = null): array {
-        $tokenizer = new Tokenizer(GeneralTokenizer::tokenize($source));
+    public static function runParser($source, callable $tokenizerFactory = null, callable $parserFactory = null): array {
+        $tokenizer = $tokenizerFactory ? $tokenizerFactory($source) : new Tokenizer(GeneralTokenizer::tokenize($source));
         $parser = $parserFactory ? $parserFactory($tokenizer) : new GrammarParser($tokenizer);
         $ast = $parser->start();
         if (!$ast) {
-            throw $parser->mkSyntaxError('Unable to parse grammar');
+            throw $parser->mkSyntaxError('Invalid syntax');
         }
         return [$ast, $parser, $tokenizer];
     }
@@ -65,5 +71,12 @@ class Peg {
             return new $class(...$args);
         };
         return $newContext;
+    }
+
+    /**
+     * ast.literal_eval() in Python
+     */
+    public static function _literalEval(string $literal): string {
+        return eval('return ' . $literal . ';');
     }
 }

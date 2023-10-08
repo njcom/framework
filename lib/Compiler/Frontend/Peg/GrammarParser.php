@@ -94,7 +94,7 @@ class GrammarParser extends Parser {
                 }
                 $this->reset($index);
                 if ($this->expect('@') && ($name = $this->name()) && ($string = $this->string()) && $this->expect('NEWLINE')) {
-                    return new MetaTuple($name->val, Ast::literalEval($string->val));
+                    return new MetaTuple($name->val, Peg::_literalEval($string->val));
                 }
                 $this->reset($index);
                 return null;

@@ -31,7 +31,7 @@ class KeywordCollectorVisitor extends GrammarVisitor {
     }
 
     protected function visitStringLeaf(StringLeaf $node): void {
-        $val = Ast::literalEval($node->val);
+        $val = Peg::_literalEval($node->val);
         if (preg_match('~[a-zA-Z_]\\w*\\Z~s', $val)) { # This is a keyword
             if (str_ends_with($node->val, "'") && !in_array($node->val, $this->keywords)) {
                 $this->keywords[$val] = $this->generator->keywordType();

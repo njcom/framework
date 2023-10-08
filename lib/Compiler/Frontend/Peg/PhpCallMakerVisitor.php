@@ -9,8 +9,6 @@ namespace Morpho\Compiler\Frontend\Peg;
 use Morpho\Base\NotImplementedException;
 use WeakMap;
 
-use function Morpho\Base\q;
-
 /**
  * [PythonCallMakerVisitor](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/python_generator.py#L93)
  */
@@ -28,7 +26,8 @@ class PhpCallMakerVisitor extends GrammarVisitor {
     }
 
     /**
-     * visit_NameLeaf(self, node: NameLeaf) -> Tuple[Optional[str], str]:
+     * @return array Tuple[Optional[str], str]
+     * @noinspection PhpUnused
      */
     protected function visitNameLeaf(NameLeaf $node): array {
         $name = $node->val;
@@ -86,19 +85,19 @@ class PhpCallMakerVisitor extends GrammarVisitor {
         return [$name, $call];
     }
 
-    // def visit_PositiveLookahead(self, node: PositiveLookahead) -> Tuple[None, str]:
     /**
+     * @return array Tuple[None, str]
      * @noinspection PhpUnused
      * @noinspection PhpUnusedParameterInspection
      */
     protected function visitPositiveLookahead(PositiveLookahead $node): array {
+        [$head, $tail] = $this->lookaheadCallHelper($node);
         throw new NotImplementedException();
-        /*head, tail = self.lookahead_call_helper(node)
-        return None, f"self.positive_lookahead({head}, {tail})"*/
+        //return None, f"self.positive_lookahead({head}, {tail})"
     }
 
-    //def visit_NegativeLookahead(self, node: NegativeLookahead) -> Tuple[None, str]:
     /**
+     * @return array Tuple[None, str]
      * @noinspection PhpUnused
      * @noinspection PhpUnusedParameterInspection
      */
@@ -108,8 +107,8 @@ class PhpCallMakerVisitor extends GrammarVisitor {
         throw new NotImplementedException();
     }
 
-    // def visit_Opt(self, node: Opt) -> Tuple[str, str]:
     /**
+     * @return array Tuple[str, str]
      * @noinspection PhpUnused
      * @noinspection PhpUnusedParameterInspection
      */
@@ -125,8 +124,8 @@ class PhpCallMakerVisitor extends GrammarVisitor {
         throw new NotImplementedException();
     }
 
-    // def visit_Repeat0(self, node: Repeat0) -> Tuple[str, str]:
     /**
+     * @return array Tuple[str, str]
      * @noinspection PhpUnused
      * @noinspection PhpUnusedParameterInspection
      */
@@ -141,9 +140,8 @@ class PhpCallMakerVisitor extends GrammarVisitor {
     */
     }
 
-    // def visit_Repeat1(self, node: Repeat1) -> Tuple[str, str]:
-
     /**
+     * @return array Tuple[str, str]
      * @noinspection PhpUnused
      * @noinspection PhpUnusedParameterInspection
      */
@@ -188,8 +186,8 @@ class PhpCallMakerVisitor extends GrammarVisitor {
         return ['cut', 'true'];
     }
 
-    // def visit_Forced(self, node: Forced) -> Tuple[str, str]:
     /**
+     * @return array Tuple[str, str]
      * @noinspection PhpUnused
      * @noinspection PhpUnusedParameterInspection
      */
@@ -207,7 +205,9 @@ class PhpCallMakerVisitor extends GrammarVisitor {
         throw new NotImplementedException();
     }
 
-    // def lookahead_call_helper(self, node: Lookahead) -> Tuple[str, str]:
+    /**
+     * @return array Tuple[str, str]
+     */
     private function lookaheadCallHelper(Lookahead $node): array {
         /*
         name, call = self . visit(node . node)
@@ -216,6 +216,10 @@ class PhpCallMakerVisitor extends GrammarVisitor {
         tail = tail[:-1]
         return head, tail
        */
+        throw new NotImplementedException();
+    }
+
+    private function softKeyword(): string {
         throw new NotImplementedException();
     }
 }

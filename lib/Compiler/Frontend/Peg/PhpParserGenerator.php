@@ -73,7 +73,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         if (null !== $footer) {
             $this->print(rtrim($footer));
         }
-        return $context['namespace'] . '\\' . $context['class'];
+        return $context['namespace'] . '\\' . $className;
     }
 
     /**
@@ -107,7 +107,9 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         return null;
     }
 
-    /** @noinspection PhpUnused */
+    /**
+     * @noinspection PhpUnused
+     */
     protected function visitRule(Rule $node): void {
         $codeGen = function () use ($node) {
             $isLoop = $node->isLoop();
@@ -152,7 +154,9 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         }
     }
 
-    /** @noinspection PhpUnused */
+    /**
+     * @noinspection PhpUnused
+     */
     protected function visitNamedItem(NamedItem $node): void {
         [$name, $call] = $this->callMakerVisitor->visit($node->item);
         if ($node->name) {
@@ -169,7 +173,9 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         }
     }
 
-    /** @noinspection PhpUnused */
+    /**
+     * @noinspection PhpUnused
+     */
     protected function visitRhs(Rhs $node, bool $isLoop = false, bool $isGather = false): void {
         if ($isLoop) {
             Must::beTruthy(count($node->alts) == 1);
@@ -179,7 +185,9 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         }
     }
 
-    /** @noinspection PhpUnused */
+    /**
+     * @noinspection PhpUnused
+     */
     protected function visitAlt(Alt $node, bool $isLoop, bool $isGather): void {
         $hasCut = false;
         foreach ($node->items as $item) {
@@ -277,7 +285,9 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         return false;
     }
 
-    /** @noinspection PhpSameParameterValueInspection */
+    /**
+     * @noinspection PhpSameParameterValueInspection
+     */
     private function wrap(Closure $wrappedCodeGen, string $wrapperPreCode, string $wrapperPostCode): void {
         $stream = $this->stream;
         $this->stream = mkStream();
