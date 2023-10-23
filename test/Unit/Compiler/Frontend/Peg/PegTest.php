@@ -121,15 +121,6 @@ class PegTest extends TestCase {
             $node
         );
     }
-
-    /*public function testPythonParser(): void {
-        d(Peg::parse("start: '<?'", '<?'));
-
-        //fopen(BASE_DIR_PATH . '/lib/Tech/Python/python.token', 'r')
-        $stream = fopen(BASE_DIR_PATH . '/lib/Tech/Python/python.gram', 'r');
-        $grammar = Peg::runParser($stream)[0];
-        d($grammar);
-    }*/
     /*
         def test_expr_grammar(self) -> None:
             grammar = """
