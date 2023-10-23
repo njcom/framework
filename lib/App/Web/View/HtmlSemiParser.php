@@ -11,10 +11,8 @@ use RuntimeException;
 
 use function array_key_exists;
 use function array_keys;
-use function array_push;
 use function array_unshift;
 use function array_values;
-use function call_user_func;
 use function count;
 use function get_class_methods;
 use function getmypid;
@@ -31,7 +29,6 @@ use function preg_split;
 use function rtrim;
 use function str_replace;
 use function strlen;
-use function strpos;
 use function strtolower;
 use function substr;
 
@@ -73,15 +70,21 @@ class HtmlSemiParser extends EventManager {
         $this->replaceHash = md5(microtime() . ' ' . ++$num . ' ' . getmypid());
     }
 
+    /**
+     * @param object $obj
+     * @param bool   $atFront
+     * @return object
+     * @noinspection PhpUnused
+     */
     public function attachHandlersFrom(object $obj, bool $atFront = false): object {
         foreach (get_class_methods($obj) as $method) {
-            if (0 === strpos($method, $this->tagHandlerPrefix)) {
+            if (str_starts_with($method, $this->tagHandlerPrefix)) {
                 $this->attachTagHandler(
                     substr($method, strlen($this->tagHandlerPrefix)),
                     [$obj, $method],
                     $atFront
                 );
-            } elseif (0 === strpos($method, $this->containerHandlerPrefix)) {
+            } elseif (str_starts_with($method, $this->containerHandlerPrefix)) {
                 $this->attachContainerHandler(
                     substr($method, strlen($this->containerHandlerPrefix)),
                     [$obj, $method],
@@ -90,7 +93,7 @@ class HtmlSemiParser extends EventManager {
                 // Check the selfAdd to avoid infinite call of the preprocessTags, as it is already defined here.
             } elseif (!$this->selfAdd && $method === 'preprocessTags') {
                 if (!$atFront) {
-                    array_push($this->tagsPreprocessors, [$obj, $method]);
+                    $this->tagsPreprocessors[] = [$obj, $method];
                 } else {
                     array_unshift($this->tagsPreprocessors, [$obj, $method]);
                 }
@@ -118,6 +121,7 @@ class HtmlSemiParser extends EventManager {
      *                               (for containers only, see below).
      *                               String representation of tag will be
      *                               reconstructed automatically by that array.
+     * @noinspection PhpUnused
      */
     public function attachTagHandler(string $tagName, callable $handler, bool $atFront = false): void {
         $tagName = strtolower($tagName);
@@ -125,7 +129,7 @@ class HtmlSemiParser extends EventManager {
             $this->tagHandlers[$tagName] = [];
         }
         if (!$atFront) {
-            array_push($this->tagHandlers[$tagName], $handler);
+            $this->tagHandlers[$tagName][] = $handler;
         } else {
             array_unshift($this->tagHandlers[$tagName], $handler);
         }
@@ -136,6 +140,7 @@ class HtmlSemiParser extends EventManager {
      *
      * Containers are processed just like simple tags (see addTag()), but they also have
      * bodies saved in "_text" attribute.
+     * @noinspection PhpUnused
      */
     public function attachContainerHandler(string $tagName, callable $handler, bool $atFront = false): void {
         $tagName = strtolower($tagName);
@@ -143,7 +148,7 @@ class HtmlSemiParser extends EventManager {
             $this->containerHandlers[$tagName] = [];
         }
         if (!$atFront) {
-            array_push($this->containerHandlers[$tagName], $handler);
+            $this->containerHandlers[$tagName][] = $handler;
         } else {
             array_unshift($this->containerHandlers[$tagName], $handler);
         }
@@ -157,6 +162,10 @@ class HtmlSemiParser extends EventManager {
             $html['program'] = $this->__invoke($html['program']);
             return $html;
         }
+        if (trim($html) == '') {
+            return $html;
+        }
+
         $reTagIn = $this->tagRe;
 
         // Remove ignored container bodies from the string.
@@ -169,14 +178,10 @@ class HtmlSemiParser extends EventManager {
             // (see preg_last_error() in PHP5).
             $oldLimit = ini_get('pcre.backtrack_limit');
             ini_set('pcre.backtrack_limit', strval(1024 * 1024 * 10));
-            $html = preg_replace_callback(
-                $reIgnored,
-                [$this, "ignoredTagsToHash"],
-                $html
-            );
+            $html = preg_replace_callback($reIgnored, $this->ignoredTagsToHash(...), $html);
             ini_set('pcre.backtrack_limit', $oldLimit);
         }
-        $sp_ignored = [
+        $spIgnored = [
             $this->spIgnored,
             array_keys($this->spIgnored),
             array_values($this->spIgnored),
@@ -184,7 +189,7 @@ class HtmlSemiParser extends EventManager {
         unset($this->spIgnored);
 
         // Replace tags and containers.
-        $hashlen = strlen($this->replaceHash) + 10;
+        $hashLen = strlen($this->replaceHash) + 10;
         $reTagNames = join("|", array_keys($this->tagHandlers));
         $reConNames = join("|", array_keys($this->containerHandlers));
         $infos = [];
@@ -209,21 +214,20 @@ class HtmlSemiParser extends EventManager {
                 $tFollow = $chunks[$i + 4]; // - following unparsed text block
 
                 // Add tag to array for pre-processing.
-                $tag = $this->parseAttributes($attribsString);
+                $tag = $this->parseAttribs($attribsString);
                 $tag['_orig'] = $originalTagText;
                 $tag['_tagName'] = $tagName;
                 if ($src == "containerHandlers") {
-                    if (strlen($containerBody) < $hashlen && isset($sp_ignored[0][$containerBody])) {
+                    if (strlen($containerBody) < $hashLen && isset($spIgnored[0][$containerBody])) {
                         // Maybe it is temporarily removed content - place back!
-                        // Fast solution working in most cases (key-based hash lookup
-                        // is much faster than str_replace() below).
-                        $containerBody = $sp_ignored[0][$containerBody];
+                        // Fast solution working in most cases (key-based hash lookup is much faster than str_replace() below).
+                        $containerBody = $spIgnored[0][$containerBody];
                     } else {
                         // We must pass unmangled content to container processors!
-                        $containerBody = str_replace($sp_ignored[1], $sp_ignored[2], $containerBody);
+                        $containerBody = str_replace($spIgnored[1], $spIgnored[2], $containerBody);
                     }
                     $tag['_text'] = $containerBody;
-                } elseif (substr($attribsString, -1) == '/') {
+                } elseif (str_ends_with($attribsString, '/')) {
                     $tag['_text'] = null;
                 }
                 $foundTags[] = $tag;
@@ -248,9 +252,9 @@ class HtmlSemiParser extends EventManager {
                     // String representation.
                     $html .= $tag;
                 } else {
-                    $prefix = isset($tag['_prefix']) ? $tag['_prefix'] : "";
+                    $prefix = $tag['_prefix'] ?? "";
                     unset($tag['_prefix']);
-                    $suffix = isset($tag['_suffix']) ? $tag['_suffix'] : "";
+                    $suffix = $tag['_suffix'] ?? "";
                     unset($tag['_suffix']);
                     if (!isset($tag['_orig']) || $tag !== $origTags[$i]) {
                         // Build the tag back if it is changed.
@@ -268,18 +272,16 @@ class HtmlSemiParser extends EventManager {
                 $html .= $textParts[$i + 1];
             }
         }
-
         // Return temporarily removed containers back.
-        $html = str_replace($sp_ignored[1], $sp_ignored[2], $html);
-
-        return $html;
+        return str_replace($spIgnored[1], $spIgnored[2], $html);
     }
 
     /**
      * Parse the attribute string: "a1=v1 a2=v2 ..." of the tag.
+     * @noinspection PhpUnused
      */
-    protected function parseAttributes(string $attribs): array {
-        $preg = '/([-\w:]+) \s* ( = \s* (?> ("[^"]*" | \'[^\']*\' | \S*) ) )?/sx';
+    protected function parseAttribs(string $attribs): array {
+        $preg = '/([-\w:]+) \s* ( = \s* (?> ("[^"]*" | \'[^\']*\' | \S*) ) )?/x';
         $regs = null;
         preg_match_all($preg, $attribs, $regs);
         $names = $regs[1];
@@ -304,6 +306,7 @@ class HtmlSemiParser extends EventManager {
     /**
      * This function is called after all tags and containers are
      * found in HTML text, but BEFORE any replaces.
+     * @noinspection PhpUnused
      */
     protected function preprocessTags(array $foundTags): array {
         foreach ($this->tagsPreprocessors as $tagPreprocessor) {
@@ -315,15 +318,13 @@ class HtmlSemiParser extends EventManager {
     /**
      * @param array $tag
      * @return array|false|string|null Handled tag.
+     * @noinspection PhpUnused
      */
     protected function runHandlersForTag(array $tag): array|false|null|string {
         $tagName = strtolower($tag['_tagName']);
-        // Processing tag or container?
-        $handlers = $this->handlersOfTag($tagName, isset($tag['_text']));
-        // Use all handlers from right to left.
+        $handlers = isset($tag['_text']) ? $this->containerHandlers[$tagName] : $this->tagHandlers[$tagName];
         for ($i = count($handlers) - 1; $i >= 0; $i--) {
-            $handler = $handlers[$i];
-            $result = call_user_func($handler, $tag, $tagName);
+            $result = $handlers[$i]($tag, $tagName);
             if (null !== $result) {
                 if (!is_array($result)) {
                     return $result;
@@ -332,10 +333,6 @@ class HtmlSemiParser extends EventManager {
             }
         }
         return $tag;
-    }
-
-    protected function handlersOfTag(string $tagName, bool $isContainerTag): array {
-        return $isContainerTag ? $this->containerHandlers[$tagName] : $this->tagHandlers[$tagName];
     }
 
     /**
@@ -352,6 +349,7 @@ class HtmlSemiParser extends EventManager {
      *                      '_orig':    ignored (internal usage).
      *
      * @return string HTML representation of tag or container.
+     * @noinspection PhpUnused
      */
     protected function renderTag(array $tag): string {
         $attrStr = '';
@@ -368,36 +366,41 @@ class HtmlSemiParser extends EventManager {
             throw new RuntimeException('Tag name is empty');
         }
         if (!array_key_exists('_text', $tag)) { // do not use isset()!
-            $tagHtmlStr = "<{$tag['_tagName']}{$attrStr}>";
+            $tagHtmlStr = "<{$tag['_tagName']}$attrStr>";
         } elseif ($tag['_text'] === null) {
-            $tagHtmlStr = "<{$tag['_tagName']}{$attrStr}" . ($this->isHtml5 ? '>' : ' />');
+            $tagHtmlStr = "<{$tag['_tagName']}$attrStr" . ($this->isHtml5 ? '>' : ' />');
         } else {
-            $tagHtmlStr = "<{$tag['_tagName']}{$attrStr}>{$tag['_text']}</{$tag['_tagName']}>";
+            // NB: $tag['_text'] is not escaped with htmlspecialchars() as it may contain HTML
+            $tagHtmlStr = "<{$tag['_tagName']}$attrStr>{$tag['_text']}</{$tag['_tagName']}>";
         }
         return $tagHtmlStr;
     }
 
+    /**
+     * @param string $attrValue
+     * @return string
+     * @noinspection PhpUnused
+     */
     protected function encodeAttrValue(string $attrValue): string {
-        if (false !== strpos($attrValue, '<?')) {
+        if (str_contains($attrValue, '<?')) {
             // Modified RE from https://github.com/nikic/PHP-Parser/blob/master/grammar/rebuildParsers.php#L34
             $groups = preg_split(
-                '~(?P<php> (?: <\?php|<\?= ) [^?]*+(?:\?(?!>)[^?]*+)*+ \?> )~six',
+                '~(?P<php> (?: <\?php|<\?= ) [^?]*+(?:\?(?!>)[^?]*+)*+ \?> )~ix',
                 $attrValue,
                 -1,
                 PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
             );
             $value = '';
             foreach ($groups as $group) {
-                if (preg_match('~^(?: <\?php|<\?= ) [^?]*+(?:\?(?!>)[^?]*+)*+ \?>$~six', $group)) { // ignore PHP code
+                if (preg_match('~^(?: <\?php|<\?= ) [^?]*+(?:\?(?!>)[^?]*+)*+ \?>$~ix', $group)) { // ignore PHP code
                     $value .= $group;
                 } else {
                     $value .= PhpTemplateEngine::e($group);
                 }
             }
             return $value;
-        } else {
-            return PhpTemplateEngine::e($attrValue);
         }
+        return PhpTemplateEngine::e($attrValue);
     }
 
     /**
@@ -405,6 +408,7 @@ class HtmlSemiParser extends EventManager {
      *
      * Container's open and close tags are NOT modified!
      * Later hash value will be replaced back to original text.
+     * @noinspection PhpUnused
      */
     protected function ignoredTagsToHash(array $m): string {
         static $counter = 0;

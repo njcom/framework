@@ -7,6 +7,10 @@
 namespace Morpho\App\Web\View;
 
 class UriProcessor extends HtmlProcessor {
+    protected function tagIMg(array $tag): array {
+        return $this->prependAttrWithBasePath($tag, 'src');
+    }
+
     protected function tagLink(array $tag): array {
         return $this->prependAttrWithBasePath($tag, 'href');
     }
@@ -24,7 +28,7 @@ class UriProcessor extends HtmlProcessor {
     }
 
     private function prependAttrWithBasePath(array $tag, string $attrName): array {
-        if (isset($tag[self::SKIP_ATTR])) {
+        if (isset($tag[$this->skipAttr])) {
             return $tag;
         }
         if (isset($tag[$attrName])) {

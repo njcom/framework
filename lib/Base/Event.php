@@ -10,12 +10,10 @@ use ArrayObject;
 
 class Event extends ArrayObject {
     public string $name;
-
-    public array $args;
+    //public array $args;
 
     public function __construct(string $name, array $args = []) {
-        parent::__construct();
+        parent::__construct($args);
         $this->name = $name;
-        $this->args = $args;
     }
 }

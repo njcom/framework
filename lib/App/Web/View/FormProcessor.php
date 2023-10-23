@@ -8,8 +8,7 @@ namespace Morpho\App\Web\View;
 
 /**
  * This class is changed version of HTML_FormPersister class originally written by Dmitry Koterov:
- * http://forum.dklab.ru/users/DmitryKoterov/, original code was found at:
- * https://github.com/DmitryKoterov/html_formpersister
+ * http://forum.dklab.ru/users/DmitryKoterov/, original code was found at: https://github.com/DmitryKoterov/html_formpersister
  */
 class FormProcessor extends HtmlProcessor {
     const DEFAULT_METHOD = 'post';

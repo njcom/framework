@@ -51,8 +51,7 @@ class App extends EventManager {
             $exitCode = $response ? Env::SUCCESS_CODE : Env::FAILURE_CODE;
             $event = new Event('exit', ['exitCode' => $exitCode, 'response' => $response]);
             $this->trigger($event);
-
-            return $event->args['exitCode'];
+            return $event['exitCode'];
         } catch (Throwable $e) {
             $this->handleException($e);
         }

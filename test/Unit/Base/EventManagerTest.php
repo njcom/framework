@@ -6,11 +6,21 @@
  */
 namespace Morpho\Test\Unit\Base;
 
+use ArrayObject;
 use Morpho\Base\Event;
 use Morpho\Base\EventManager;
 use Morpho\Testing\TestCase;
 
 class EventManagerTest extends TestCase {
+    public function testEventArgs() {
+        $event = new Event('foo', ['bar' => 'pizza']);
+        $this->assertInstanceOf(ArrayObject::class, $event);
+        $this->assertSame('foo', $event->name);
+        $this->assertSame(['bar' => 'pizza'], $event->getArrayCopy());
+        $event->exchangeArray(['some' => 123]);
+        $this->assertSame(['some' => 123], $event->getArrayCopy());
+    }
+
     public function testApi() {
         $eventName = 'my-event';
         $eventManager = new EventManager();
@@ -68,10 +78,10 @@ class EventManagerTest extends TestCase {
     public function testCanChangeFieldsOfEvent() {
         $event = new Event('change', ['foo' => 'bar']);
         $eventManager = new EventManager();
-        $eventManager->on('change', fn ($event) => $event->args['foo'] = 'abc');
-        $this->assertSame('bar', $event->args['foo']);
+        $eventManager->on('change', fn ($event) => $event['foo'] = 'abc');
+        $this->assertSame('bar', $event['foo']);
         $eventManager->trigger($event);
-        $this->assertSame('abc', $event->args['foo']);
+        $this->assertSame('abc', $event['foo']);
     }
 
     public function testOff_NonExistingHandlerDoesNotThrowError() {

@@ -65,7 +65,7 @@ class PhpTemplateEngine extends ArrPipe {
         $conf = (array)$conf;
         $this->forceCompile = $conf['forceCompile'] ?? false;
         $this->pluginFactory = $conf['pluginFactory'] ?? function () {
-            };
+        };
         $this->request = $conf['request'];
         parent::__construct($conf['steps']);
     }
@@ -123,15 +123,16 @@ class PhpTemplateEngine extends ArrPipe {
     public function vars(): array {
         return $this->vars;
     }
-/*
-    public function isUserLoggedIn(): bool {
-        return $this->serviceManager['userManager']->isUserLoggedIn();
-    }
 
-    public function loggedInUser() {
-        return $this->serviceManager['userManager']->loggedInUser();
-    }
-*/
+    /*
+        public function isUserLoggedIn(): bool {
+            return $this->serviceManager['userManager']->isUserLoggedIn();
+        }
+
+        public function loggedInUser() {
+            return $this->serviceManager['userManager']->loggedInUser();
+        }
+    */
 
     public function instance(): mixed {
         return $this->request->handler()['instance'];
@@ -498,9 +499,11 @@ class PhpTemplateEngine extends ArrPipe {
         // if null append actions scripts
         $this->step('rcProcessor')
             ->on('beforeRenderScripts', function ($event) {
-                $event->args = array_merge(
-                    $event->args,
-                    $event->sender->actionScripts($this->request['view'])
+                $event->exchangeArray(
+                    array_merge(
+                        $event->getArrayCopy(),
+                        $event->sender->actionScripts($this->request['view'])
+                    ),
                 );
             });
     }

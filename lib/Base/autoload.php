@@ -294,6 +294,28 @@ function appendFn(string $suffix): Closure {
     };
 }
 
+/**
+ * Opposite to unindent()
+ * @param string|Stringable|int|float $text
+ * @param int                         $indentSize Number of spaces
+ * @param string                      $indent
+ * @return string
+ */
+function indent(string|Stringable|int|float $text, int $indentSize = INDENT_SIZE, string $indent = ' '): string {
+    return preg_replace('~^~m', str_repeat($indent, $indentSize), (string)$text);
+}
+
+/**
+ * Opposite to indent()
+ * @param string|Stringable|int|float $text
+ * @param int                         $indentSize Number of spaces
+ * @param string                      $indent
+ * @return string
+ */
+function unindent(string|Stringable|int|float $text, int $indentSize = INDENT_SIZE, string $indent = ' '): string {
+    return preg_replace('~^' . str_repeat($indent, $indentSize) . '~m', '', (string)$text);
+}
+
 function q(string|iterable|int|float|object $list): string|array {
     return wrap($list, "'");
 }
@@ -877,7 +899,6 @@ function pipe($iter, mixed $val): mixed {
  * Example:
  *     chain(range(0, 5), range(6, 10), range(11, 15))
  *     => iterable(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
- */
 function chain(...$iterables): iterable {
     // @TODO: Handle strings
     //_assertAllIterable($iterables);
@@ -887,6 +908,7 @@ function chain(...$iterables): iterable {
         }
     }
 }
+*/
 
 function contains(iterable|string $haystack, mixed $needle): bool {
     if (is_string($haystack)) {
@@ -1200,26 +1222,6 @@ function ucfirst(string|Stringable $list): string {
     $list = (string)$list;
     $fc = mb_strtoupper(mb_substr($list, 0, 1));
     return $fc . mb_substr($list, 1);
-}
-
-/**
- * Opposite to unindent()
- * @param string|Stringable|int|float $text
- * @param int $indentSize Number of spaces
- * @return string
- */
-function indent(string|Stringable|int|float $text, int $indentSize = INDENT_SIZE): string {
-    return preg_replace('~^~m', str_repeat(' ', $indentSize), (string)$text);
-}
-
-/**
- * Opposite to indent()
- * @param string|Stringable|int|float $text
- * @param int $indentSize Number of spaces
- * @return string
- */
-function unindent(string|Stringable|int|float $text, int $indentSize = INDENT_SIZE): string {
-    return preg_replace('~^' . str_repeat(' ', $indentSize) . '~m', '', (string)$text);
 }
 
 /**

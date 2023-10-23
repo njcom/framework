@@ -19,13 +19,13 @@ class EventManager extends BaseEventManager {
     }
 
     protected function attachHandlers(): void {
-        $this->on('afterDispatch', [$this, 'handleActionResult']);
-        $this->on('dispatchError', [$this, 'handleDispatchError']);
+        $this->on('afterDispatch', $this->handleActionResult(...));
+        $this->on('dispatchError', $this->handleDispatchError(...));
     }
 
     protected function handleActionResult(Event $event): void {
         /** @var Request $request */
-        $request = $event->args['request'];
+        $request = $event['request'];
         $this->serviceManager['actionResultRenderer']->__invoke($request);
     }
 
@@ -33,7 +33,7 @@ class EventManager extends BaseEventManager {
         /** @var DispatchErrorHandler $dispatchErrorHandler */
         $dispatchErrorHandler = $this->serviceManager['dispatchErrorHandler'];
         /** @var Request $request */
-        $request = $event->args['request'];
-        $dispatchErrorHandler->handleException($event->args['exception'], $request);
+        $request = $event['request'];
+        $dispatchErrorHandler->handleException($event['exception'], $request);
     }
 }

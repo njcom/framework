@@ -68,8 +68,8 @@ OUT;
                 '<body>',
                 'This is a',
                 'parent',
-                '<script src="' . $this->baseUriPath . '/bar/parent.js"></script>',
-                '<script src="' . $this->baseUriPath . '/foo/child.js"></script>',
+                '<script src="/bar/parent.js"></script>',
+                '<script src="/foo/child.js"></script>',
                 '</body>',
             ]
         );
@@ -91,7 +91,7 @@ OUT;
         // processor should save child scripts
         $this->processor->__invoke($childPage);
 
-        $indexAttr = RcProcessor::INDEX_ATTR;
+        $indexAttr = $this->processor->indexAttr;
         $parentPage = <<<OUT
 <body>
 This is a
@@ -131,7 +131,7 @@ OUT;
      */
     public function testSkipAttribute($tag) {
         $processor = new class ($this->mkRequest('foo'), $this->mkSiteStub('abc/efg')) extends RcProcessor {
-            protected function containerBody(array $tag): null|array|bool {
+            protected function containerBody(array $tag): array|string|false|null {
                 $res = parent::containerBody($tag);
                 if (isset($res['_skip'])) {
                     throw new RuntimeException("The _skip attribute must be removed");
@@ -139,7 +139,7 @@ OUT;
                 return $res;
             }
 
-            protected function containerScript(array $tag): null|array|bool {
+            protected function containerScript(array $tag): array|string|false|null {
                 $res = parent::containerScript($tag);
                 if (isset($res['_skip'])) {
                     throw new RuntimeException("The _skip attribute must be removed");
@@ -192,9 +192,9 @@ OUT;
             [
                 '<body>',
                 '<script>before</script>',
-                '<script src="' . $this->baseUriPath . '/parent/script.js"></script>',
+                '<script src="/parent/script.js"></script>',
                 '<script>after</script>',
-                '<script src="' . $this->baseUriPath . '/blog/lib/app/cat/tail.js"></script>',
+                '<script src="/blog/lib/app/cat/tail.js"></script>',
                 '<script>',
                 'define(["require", "exports", "blog/lib/app/cat/tail"], function (require, exports, module) {',
                 'module.main(window.app || {}, ' . json_encode((array) $jsConf, JSON_UNESCAPED_SLASHES) . ');',
@@ -235,9 +235,9 @@ OUT;
             [
                 '<body>',
                 '<script>before</script>',
-                '<script src="' . $this->baseUriPath . '/parent/script.js"></script>',
+                '<script src="/parent/script.js"></script>',
                 '<script>after</script>',
-                '<script src="' . $this->baseUriPath . '/foo/first.js"></script>',
+                '<script src="/foo/first.js"></script>',
                 '<script>',
                 'alert("OK");',
                 '</script>',

@@ -14,6 +14,12 @@ use Morpho\Testing\TestCase;
 class UriProcessorTest extends TestCase {
     public static function dataProcessUrisInTags() {
         foreach (['/base/path', '/'] as $basePath) {
+            // img tag
+            yield [
+                $basePath,
+                '<img src="' . rtrim($basePath, '/') . '/foo/bar">',
+                '<img src="/foo/bar">',
+            ];
             // `form` tag
             yield [
                 $basePath,

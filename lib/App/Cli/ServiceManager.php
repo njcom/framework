@@ -64,12 +64,9 @@ class ServiceManager extends BaseServiceManager {
 
     protected function mkEventManagerService() {
         $eventManager = new EventManager();
-        $eventManager->on(
-            'dispatchError',
-            function ($event) {
-                throw $event->args['exception'];
-            }
-        );
+        $eventManager->on('dispatchError', function ($event) {
+            throw $event['exception'];
+        });
         return $eventManager;
     }
 }

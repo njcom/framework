@@ -18,7 +18,7 @@ class AppInitializer extends BaseAppInitializer {
             'exit',
             function ($event) {
                 $response = $this->serviceManager['request']->response();
-                $event->args['exitCode'] = $response->statusCode();
+                $event['exitCode'] = $response->statusCode();
             }
         );
     }

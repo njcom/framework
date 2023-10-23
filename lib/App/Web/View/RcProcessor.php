@@ -18,9 +18,10 @@ use function usort;
 use const Morpho\App\LIB_DIR_NAME;
 
 class RcProcessor extends HtmlProcessor {
-    public const INDEX_ATTR = '_index';
+    public string $indexAttr = '_index';
 
-    protected array $scripts = [];
+    protected array $scriptTags = [];
+    protected array $cssLinkTags = [];
 
     private ISite $site;
 
@@ -29,30 +30,55 @@ class RcProcessor extends HtmlProcessor {
         $this->site = $site;
     }
 
-    protected function containerBody(array $tag): null|array|bool|string {
-        if (isset($tag[self::SKIP_ATTR])) {
-            unset($tag[self::SKIP_ATTR]);
+    protected function containerHead(array $tag): array|false|null|string {
+        if (isset($tag[$this->skipAttr])) {
+            unset($tag[$this->skipAttr]);
             return $tag;
         }
-        $childScripts = $this->scripts;
-        $this->scripts = [];
-        $html = $this->__invoke(
-            $tag['_text']
-        ); // render the parent page, extract and collect all scripts from it into $this->scripts.
-
-        if ($childScripts) {
-            // Don't add action scripts if there are any child scripts
-            $scripts = array_merge($this->scripts, $childScripts);
-        } else {
-            $actionScripts = $this->actionScripts($this->request['view']);
-            $scripts = array_merge($this->scripts, $actionScripts);
+        if ($this->cssLinkTags) {
+            $tag['_text'] .= implode("\n", array_map($this->renderTag(...), $this->sortTags($this->cssLinkTags)));
         }
-
-        $scripts = $this->changeBodyScripts($scripts);
-
-        $html .= $this->renderScripts($scripts);
-        $tag['_text'] = $html;
         return $tag;
+    }
+
+    protected function containerBody(array $tag): array|false|null|string {
+        if (isset($tag[$this->skipAttr])) {
+            unset($tag[$this->skipAttr]);
+            return $tag;
+        }
+        $existingTags = $this->scriptTags;
+        $this->scriptTags = [];
+        $html = $this->__invoke($tag['_text']); // Render the parent page, extract and collect all scripts from it into $this->scriptTags
+        $tags = $existingTags
+            ? array_merge($this->scriptTags, $existingTags) // Don't add action scripts if there are any child scripts
+            : array_merge($this->scriptTags, $this->actionScripts($this->request['view']));
+        $tags = $this->changeBodyScripts($tags);
+        $tag['_text'] = $html . $this->renderScripts($tags);
+        return $tag;
+    }
+
+    protected function containerScript(array $tag): array|false|null|string {
+        if (isset($tag[$this->skipAttr])) {
+            unset($tag[$this->skipAttr]);
+            return $tag; // change tag
+        }
+        if (!isset($tag['type']) || $tag['type'] == 'text/javascript') {
+            $this->scriptTags[] = $tag;
+            return false;  // remove the original tag, we will add it later.
+        }
+        return null; // do nothing
+    }
+
+    protected function tagLink(array $tag): array|false|null|string {
+        if (isset($tag[$this->skipAttr])) {
+            unset($tag[$this->skipAttr]);
+            return $tag; // change tag
+        }
+        if (isset($tag['rel']) && $tag['rel'] == 'stylesheet') {
+            $this->cssLinkTags[] = $tag;
+            return false;
+        }
+        return null;
     }
 
     /**
@@ -68,9 +94,9 @@ class RcProcessor extends HtmlProcessor {
         if (file_exists($jsFilePath)) {
             $jsConf = $this->jsConf();
             $scripts[] = [
-                'src'      => '/' . $relFilePath, // Prepend with '/' to prepend base URI path later
+                'src' => '/' . $relFilePath, // Prepend with '/' to prepend base URI path later
                 '_tagName' => 'script',
-                '_text'    => '',
+                '_text' => '',
             ];
             $scripts[] = [
                 '_tagName' => 'script',
@@ -86,28 +112,28 @@ class RcProcessor extends HtmlProcessor {
     protected function jsConf(): array {
         $request = $this->request;
         if (isset($request['jsConf'])) {
-            return (array) $request['jsConf'];
+            return (array)$request['jsConf'];
         }
         return [];
     }
 
-    protected function sortScripts(array $scripts): array {
+    protected function sortTags(array $tags): array {
         // Add indexes for scripts
         $index = 0;
-        foreach ($scripts as $key => $script) {
-            if (!isset($script[self::INDEX_ATTR])) {
-                $script[self::INDEX_ATTR] = $index;
+        foreach ($tags as $key => $script) {
+            if (!isset($script[$this->indexAttr])) {
+                $script[$this->indexAttr] = $index;
                 $index++;
             }
-            $script[self::INDEX_ATTR] = floatval($script[self::INDEX_ATTR]);
-            $scripts[$key] = $script;
+            $script[$this->indexAttr] = floatval($script[$this->indexAttr]);
+            $tags[$key] = $script;
         }
         // Then sort them by index
         usort(
-            $scripts,
+            $tags,
             function ($prev, $next) {
-                $a = $prev[self::INDEX_ATTR];
-                $b = $next[self::INDEX_ATTR];
+                $a = $prev[$this->indexAttr];
+                $b = $next[$this->indexAttr];
                 $diff = $a - $b;
                 if (abs($diff) <= PHP_FLOAT_EPSILON && isset($prev['src']) && isset($next['src'])) {
                     // Without this sort an exact order can be unknown when indexes are equal.
@@ -122,41 +148,29 @@ class RcProcessor extends HtmlProcessor {
                 return -1; // $diff < -PHP_FLOAT_EPSILON
             }
         );
-        return $scripts;
+        return $tags;
     }
 
     protected function renderScripts(array $scripts): string {
         $html = [];
         foreach ($scripts as $tag) {
-            if (isset($tag['src'])) {
+/* @todo: Already done in UriProcessor?
+if (isset($tag['src'])) {
                 $tag['src'] = $this->request->prependWithBasePath($tag['src'])->toStr(null, false);
-            }
-            unset($tag[self::INDEX_ATTR]);
+            }*/
+            unset($tag[$this->indexAttr]);
             $html[] = $this->renderTag($tag);
         }
         return implode("\n", $html);
     }
 
-    protected function containerScript(array $tag): null|array|bool {
-        if (isset($tag[self::SKIP_ATTR])) {
-            unset($tag[self::SKIP_ATTR]);
-            return $tag;
-        }
-        if (!isset($tag['type']) || $tag['type'] == 'text/javascript') {
-            $this->scripts[] = $tag;
-            return false;  // remove the original tag, we will add it later.
-        }
-        return null;
-    }
-
     private function changeBodyScripts(array $scripts): array {
-        $scripts = $this->sortScripts($scripts);
-
+        $scripts = $this->sortTags($scripts);
         $event = new Event('beforeRenderScripts', $scripts);
-        $event->args['sender'] = $this;
+        $event['caller'] = $this;
+        //$event->caller = $this;
         $this->trigger($event);
-        unset($event->args['sender']);
-
-        return $event->args;
+        unset($event['caller']);
+        return $event->getArrayCopy();
     }
 }
