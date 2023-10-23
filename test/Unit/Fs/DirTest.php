@@ -85,10 +85,8 @@ class DirTest extends TestCase {
             switch ($path) {
                 case $tmpDirPath:
                     return false; // keep
-                case $tmpDirPath . '/foo':
-                    $this->assertTrue($isDir);
-                    return false; // keep
                 case $tmpDirPath . '/fox':
+                case $tmpDirPath . '/foo':
                     $this->assertTrue($isDir);
                     return false; // keep
                 case $tmpDirPath . '/foo/test.txt':
@@ -102,7 +100,6 @@ class DirTest extends TestCase {
                     break;
                 case $tmpDirPath . '/foo/bar/bird.txt':
                     $this->fail('must not be called as the parent directory will be deleted');
-                    break;
                 default:
                     $this->fail('Unknown path: ' . $path);
             }
@@ -557,6 +554,7 @@ class DirTest extends TestCase {
     public function testDirNames_NotRecursive() {
         $testDirPath = $this->getTestDirPath();
         $dirNames = iterator_to_array(Dir::dirNames($testDirPath), false);
+        sort($dirNames);
         $this->assertEquals(['2', '4'], $dirNames);
     }
 
