@@ -281,9 +281,8 @@ class HtmlSemiParser extends EventManager {
      * @noinspection PhpUnused
      */
     protected function parseAttribs(string $attribs): array {
-        $preg = '/([-\w:]+) \s* ( = \s* (?> ("[^"]*" | \'[^\']*\' | \S*) ) )?/x';
         $regs = null;
-        preg_match_all($preg, $attribs, $regs);
+        preg_match_all('/([-\w:]+) \s* ( = \s* (?> ("[^"]*" | \'[^\']*\' | \S*) ) )?/xs', $attribs, $regs);
         $names = $regs[1];
         $checks = $regs[2];
         $values = $regs[3];
@@ -385,14 +384,14 @@ class HtmlSemiParser extends EventManager {
         if (str_contains($attrValue, '<?')) {
             // Modified RE from https://github.com/nikic/PHP-Parser/blob/master/grammar/rebuildParsers.php#L34
             $groups = preg_split(
-                '~(?P<php> (?: <\?php|<\?= ) [^?]*+(?:\?(?!>)[^?]*+)*+ \?> )~ix',
+                '~(?P<php> (?: <\?php|<\?= ) [^?]*+(?:\?(?!>)[^?]*+)*+ \?> )~six',
                 $attrValue,
                 -1,
                 PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
             );
             $value = '';
             foreach ($groups as $group) {
-                if (preg_match('~^(?: <\?php|<\?= ) [^?]*+(?:\?(?!>)[^?]*+)*+ \?>$~ix', $group)) { // ignore PHP code
+                if (preg_match('~^(?: <\?php|<\?= ) [^?]*+(?:\?(?!>)[^?]*+)*+ \?>$~six', $group)) { // ignore PHP code
                     $value .= $group;
                 } else {
                     $value .= PhpTemplateEngine::e($group);

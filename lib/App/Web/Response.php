@@ -114,7 +114,7 @@ class Response extends BaseResponse implements IResponse {
         return Env::httpProto() . ' ' . intval($statusCode) . ' ' . $this->statusCodeToReason($statusCode);
     }
 
-    public function statusCodeToReason(int $statusCode): string {
+    public static function statusCodeToReason(int $statusCode): string {
         // http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
         $codeToReason = [
             self::OK_STATUS_CODE                    => 'OK',

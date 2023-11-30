@@ -37,5 +37,5 @@ interface IResponse extends IBaseResponse {
 
     public function statusCodeToStatusLine(int $statusCode): string;
 
-    public function statusCodeToReason(int $statusCode): string;
+    public static function statusCodeToReason(int $statusCode): string;
 }
