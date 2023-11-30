@@ -27,13 +27,17 @@ readonly class Grammar implements IGrammarNode {
     public array $metas;
 
     // def __init__(self, rules: Iterable[Rule], metas: Iterable[Tuple[str, Optional[str]]]):
-    public function __construct(iterable $rules, iterable $metas) {
+    public function __construct(iterable $rules, array $metas) {
         $rulesMap = [];
         foreach ($rules as $rule) {
             $rulesMap[$rule->name] = $rule;
         }
         $this->rules = $rulesMap;
-        $this->metas = iterator_to_array($metas);
+        $metas1 = [];
+        foreach ($metas as $meta) {
+            $metas1[$meta[0]] = $meta[1];
+        }
+        $this->metas = $metas1;
     }
 
     public function __toString(): string {
@@ -383,14 +387,12 @@ readonly class Opt implements IGrammarNode {
     }
 
     public function __toString(): string {
-        /*def __str__(self) -> str:
-            s = str(self.node)
-            # TODO: Decide whether to use [X] or X? based on type of X
-            if " " in s:
-                return f"[{s}]"
-            else:
-                return f"{s}?"*/
-        throw new NotImplementedException();
+        $s = (string) $this->node;
+        // TODO: Decide whether to use [X] or X? based on type of X
+        if (str_contains($s, ' ')) {
+            return '[' . $s . ']';
+        }
+        return $s . '?';
     }
 
     public function repr(): string {
@@ -547,8 +549,9 @@ class RuleName extends ArrayObject implements IGrammarNode {
 }
 
 // MetaTuple = Tuple[str, Optional[str]]
-class MetaTuple extends ArrayObject implements IGrammarNode {
+/*class MetaTuple extends ArrayObject implements IGrammarNode {
     public function __construct(string $name, ?string $val) {
+        $this->foo = [$name, $val];
     }
 
     public function __toString(): string {
@@ -558,10 +561,10 @@ class MetaTuple extends ArrayObject implements IGrammarNode {
     public function repr(): string {
         throw new NotImplementedException();
     }
-}
+}*/
 
 // MetaList = List[MetaTuple]
-class MetaList extends ArrayObject implements IGrammarNode {
+/*class MetaList extends ArrayObject implements IGrammarNode {
     public function __toString(): string {
         throw new NotImplementedException();
     }
@@ -569,7 +572,7 @@ class MetaList extends ArrayObject implements IGrammarNode {
     public function repr(): string {
         throw new NotImplementedException();
     }
-}
+}*/
 
 // RuleList = List[Rule]
 class RuleList extends ArrayObject implements IGrammarNode {

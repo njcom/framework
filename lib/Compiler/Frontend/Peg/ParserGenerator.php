@@ -6,6 +6,7 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
+use Morpho\Base\NotImplementedException;
 use Stringable;
 use UnexpectedValueException;
 use const Morpho\Base\INDENT;
@@ -66,7 +67,6 @@ abstract class ParserGenerator {
      */
     private array $rules;
 
-
     private array $firstGraph;
 
     private iterable $firstSccs;
@@ -93,6 +93,14 @@ abstract class ParserGenerator {
      * Differs from the Python's signature: generate(self, filename: str) -> None:
      */
     abstract public function generate(array $context): string;
+
+    public function artificialRuleFromRhs(Rhs $rhs): string {
+        throw new NotImplementedException();
+            /*self.counter += 1
+            name = f"_tmp_{self.counter}"  # TODO: Pick a nicer name.
+            self.all_rules[name] = Rule(name, None, rhs)
+            return name*/
+    }
 
     public function artificialRuleFromGather(Gather $node): string {
         $this->counter++;
@@ -269,10 +277,6 @@ abstract class ParserGenerator {
             return self.keyword_counter
 
         def artifical_rule_from_rhs(self, rhs: Rhs) -> str:
-            self.counter += 1
-            name = f"_tmp_{self.counter}"  # TODO: Pick a nicer name.
-            self.all_rules[name] = Rule(name, None, rhs)
-            return name
 
         def artificial_rule_from_repeat(self, node: Plain, is_repeat1: bool) -> str:
             self.counter += 1

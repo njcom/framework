@@ -9,12 +9,10 @@ namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 use Morpho\Compiler\Frontend\Peg\Grammar;
 use Morpho\Compiler\Frontend\Peg\GrammarParser;
 use Morpho\Compiler\Frontend\Peg\Token;
-use Morpho\Compiler\Frontend\Peg\Tokenizer;
+use Morpho\Compiler\Frontend\Peg\GrammarTokenizer;
 use Morpho\Compiler\Frontend\Peg\Peg;
 use Morpho\Compiler\Frontend\Peg\TokenType;
 use Morpho\Testing\TestCase;
-
-use const Morpho\Test\BASE_DIR_PATH;
 
 /**
  * https://github.com/python/cpython/blob/3.12/Lib/test/test_peg_generator/test_pegen.py
@@ -27,11 +25,8 @@ class PegTest extends TestCase {
         $this->parserGen = new Peg();
     }
 
-    public function testParse() {
-        [$grammar, $parser, $tokenizer] = Peg::runParser('foo: bar');
-        $this->assertInstanceOf(Grammar::class, $grammar);
-        $this->assertInstanceOf(GrammarParser::class, $parser);
-        $this->assertInstanceOf(Tokenizer::class, $tokenizer);
+    public function testMkGrammarParser() {
+        $this->assertInstanceOf(GrammarParser::class, Peg::mkGrammarParser(Peg::mkGrammarTokenizer('')));
     }
 
     public function testParseGrammar(): void {
@@ -45,7 +40,7 @@ class PegTest extends TestCase {
         sum: term '+' term | term
         term: NUMBER
         OUT;
-        $grammar = Peg::runParser($grammarSource)[0];
+        $grammar = Peg::parseGrammar($grammarSource);
         $rules = $grammar->rules;
         $this->assertSame($expected, rtrim($grammar->__toString()));
         $this->assertSame('start: sum NEWLINE', $rules['start']->__toString());
@@ -68,7 +63,7 @@ class PegTest extends TestCase {
             | one one zero
             | one one one
         OUT;
-        $grammar = Peg::runParser($grammarSource)[0];
+        $grammar = Peg::parseGrammar($grammarSource);
         $this->assertSame($expected, $grammar->rules['start']->__toString());
     }
 
@@ -78,7 +73,7 @@ class PegTest extends TestCase {
         sum[int]: t1=term '+' t2=term { action } | term
         term[int]: NUMBER
         OUT;
-        $rules = Peg::runParser($grammarSource)[0]->rules;
+        $rules = Peg::parseGrammar($grammarSource)->rules;
         # Check the str() and repr() of a few rules; AST nodes don't support ==.
         $this->assertSame("start: sum NEWLINE", $rules["start"]->__toString());
         $this->assertSame("sum: term '+' term | term", $rules["sum"]->__toString());
@@ -90,7 +85,7 @@ class PegTest extends TestCase {
         start: ','.thing+ NEWLINE
         thing: NUMBER
         OUT;
-        $grammar = Peg::runParser($grammarSource)[0];
+        $grammar = Peg::parseGrammar($grammarSource);
         $rules = $grammar->rules;
         $this->assertSame("start: ','.thing+ NEWLINE", $rules['start']->__toString());
         $this->assertStringStartsWith(
@@ -101,9 +96,10 @@ class PegTest extends TestCase {
 
         $result = Peg::generateAndEvalParser($grammar);
         //$node = $this->testHelper->parseString("42\n", $parserClass);
-        // @todo: Check $node representation
         $line = "1, 2\n";
-        $node = Peg::runParser($line, parserFactory: $result['factory'])[0];
+        $parser = $result['factory'](Peg::mkGrammarTokenizer($line));
+        $node = Peg::runParser($parser);
+        // @todo: Check $node representation
         $this->assertEquals(
             [
                 [
@@ -120,6 +116,18 @@ class PegTest extends TestCase {
             ],
             $node
         );
+    }
+
+    public function testParseGrammar_ShouldParseTrailer() {
+        $trailer = '// Something at bottom';
+        $grammarSource = <<<EOF
+        @trailer '''
+        $trailer
+        '''
+        start: '123'
+        EOF;
+        $grammar = Peg::parseGrammar($grammarSource);
+        $this->assertSame($trailer, trim($grammar->metas['trailer']));
     }
     /*
         def test_expr_grammar(self) -> None:

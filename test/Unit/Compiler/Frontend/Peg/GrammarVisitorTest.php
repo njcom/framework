@@ -6,93 +6,76 @@
  */
 namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
+use Morpho\Compiler\Frontend\Peg\Peg;
 use Morpho\Testing\TestCase;
 
 /**
- * Based on
- * https://github.com/python/cpython/blob/3.12/Lib/test/test_peg_generator/test_pegen.py
+ * Based on https://github.com/python/cpython/blob/3.12/Lib/test/test_peg_generator/test_pegen.py
  */
 class GrammarVisitorTest extends TestCase {
-    public function testFoo() {
-        $this->markTestIncomplete();
+    protected function setUp(): void {
+        parent::setUp();
+        $this->visitor = new GrammarVisitorTest\Visitor();
     }
-/*
-class TestGrammarVisitor:
-    class Visitor(GrammarVisitor):
-        def __init__(self) -> None:
-            self.n_nodes = 0
 
-        def visit(self, node: Any, *args: Any, **kwargs: Any) -> None:
-            self.n_nodes += 1
-            super().visit(node, *args, **kwargs)
+    public function testParseTrivialGrammar(): void {
+        $this->checkNumOfVisitedNodes(6, "start: 'a'");
+    }
 
-    def test_parse_trivial_grammar(self) -> None:
-        grammar = """
-        start: 'a'
-        """
-        rules = parse_string(grammar, GrammarParser)
-        visitor = self.Visitor()
-
-        visitor.visit(rules)
-
-        self.assertEqual(visitor.n_nodes, 6)
-
-    def test_parse_or_grammar(self) -> None:
-        grammar = """
-        start: rule
-        rule: 'a' | 'b'
-        """
-        rules = parse_string(grammar, GrammarParser)
-        visitor = self.Visitor()
-
-        visitor.visit(rules)
-
+    public function testParseOrGrammar(): void {
         # Grammar/Rule/Rhs/Alt/NamedItem/NameLeaf   -> 6
         #         Rule/Rhs/                         -> 2
         #                  Alt/NamedItem/StringLeaf -> 3
         #                  Alt/NamedItem/StringLeaf -> 3
+        $this->checkNumOfVisitedNodes(
+            14,
+            <<<EOF
+        start: rule
+        rule: 'a' | 'b'
+        EOF
+        );
+    }
 
-        self.assertEqual(visitor.n_nodes, 14)
-
-    def test_parse_repeat1_grammar(self) -> None:
-        grammar = """
-        start: 'a'+
-        """
-        rules = parse_string(grammar, GrammarParser)
-        visitor = self.Visitor()
-
-        visitor.visit(rules)
-
+    public function testParseRepeat1Grammar(): void {
         # Grammar/Rule/Rhs/Alt/NamedItem/Repeat1/StringLeaf -> 6
-        self.assertEqual(visitor.n_nodes, 7)
+        $this->checkNumOfVisitedNodes(7, "start: 'a'+");
+    }
 
-    def test_parse_repeat0_grammar(self) -> None:
-        grammar = """
-        start: 'a'*
-        """
-        rules = parse_string(grammar, GrammarParser)
-        visitor = self.Visitor()
+    public function testParseRepeat0Grammar(): void {
+        $grammarSource = "start: 'a'*";
+        $grammar = Peg::parseGrammar($grammarSource);
 
-        visitor.visit(rules)
+        $this->visitor->visit($grammar);
 
         # Grammar/Rule/Rhs/Alt/NamedItem/Repeat0/StringLeaf -> 6
+        $this->assertSame(7, $this->visitor->numOfVisitedNodes);
+    }
 
-        self.assertEqual(visitor.n_nodes, 7)
-
-    def test_parse_optional_grammar(self) -> None:
-        grammar = """
-        start: 'a' ['b']
-        """
-        rules = parse_string(grammar, GrammarParser)
-        visitor = self.Visitor()
-
-        visitor.visit(rules)
-
+    public function testParseOptionalGrammar(): void {
         # Grammar/Rule/Rhs/Alt/NamedItem/StringLeaf                       -> 6
         #                      NamedItem/Opt/Rhs/Alt/NamedItem/Stringleaf -> 6
+        $this->checkNumOfVisitedNodes(12, "start: 'a' ['b']");
+    }
 
-        self.assertEqual(visitor.n_nodes, 12)
+    private function checkNumOfVisitedNodes(int $expectedNumOfVisitedNodes, string $grammarSource): void {
+        $grammar = Peg::parseGrammar($grammarSource);
 
+        $this->visitor->visit($grammar);
 
- */
+        $this->assertSame($expectedNumOfVisitedNodes, $this->visitor->numOfVisitedNodes);
+    }
+}
+
+namespace Morpho\Test\Unit\Compiler\Frontend\Peg\GrammarVisitorTest;
+
+use Morpho\Compiler\Frontend\Peg\GrammarVisitor;
+
+class Visitor extends GrammarVisitor {
+    public int $numOfVisitedNodes = 0;
+
+    public function visit(mixed $node, ...$args): mixed {
+        $this->numOfVisitedNodes++;
+        parent::visit($node, ...$args);
+        return null;
+    }
 }

@@ -337,7 +337,7 @@ class FirstSetCalculatorTest extends TestCase {
      * @return array<string, string>
      */
     private function calculateFirstSets(string $sourceGrammar): array {
-        $grammar = Peg::runParser($sourceGrammar)[0];
+        $grammar = Peg::parseGrammar($sourceGrammar);
         return (new FirstSetCalculator($grammar->rules))->calculate();
     }
 

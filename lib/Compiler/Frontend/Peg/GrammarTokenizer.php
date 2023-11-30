@@ -12,7 +12,7 @@ use Morpho\Base\NotImplementedException;
 /**
  * Based on https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/tokenizer.py
  */
-class Tokenizer implements ITokenizer {
+class GrammarTokenizer implements IGrammarTokenizer {
     private int $index = 0;
 
     /**

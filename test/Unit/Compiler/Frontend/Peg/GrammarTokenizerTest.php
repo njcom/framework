@@ -7,24 +7,24 @@
 namespace Morpho\test\Unit\Compiler\Frontend\Peg;
 
 use ArrayIterator;
-use Morpho\Compiler\Frontend\Peg\ITokenizer;
-use Morpho\Compiler\Frontend\Peg\Tokenizer;
+use Morpho\Compiler\Frontend\Peg\IGrammarTokenizer;
+use Morpho\Compiler\Frontend\Peg\GrammarTokenizer;
 use Morpho\Compiler\Frontend\Peg\Token;
 use Morpho\Compiler\Frontend\Peg\TokenType;
 use Morpho\Testing\TestCase;
 
-class TokenizerTest extends TestCase {
-    private Tokenizer $tokenizer;
+class GrammarTokenizerTest extends TestCase {
+    private GrammarTokenizer $tokenizer;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->tokenizer = new Tokenizer(new ArrayIterator([
+        $this->tokenizer = new GrammarTokenizer(new ArrayIterator([
             new Token(TokenType::NAME, 'foo', [1, 0], [1, 3], "line\n"),
         ]));
     }
 
     public function testInterface() {
-        $this->assertInstanceOf(ITokenizer::class, $this->tokenizer);
+        $this->assertInstanceOf(IGrammarTokenizer::class, $this->tokenizer);
     }
 
     public function testPeekToken() {
@@ -35,7 +35,7 @@ class TokenizerTest extends TestCase {
         $tokenGen = function () use ($expectedTokens, &$i) {
             yield $expectedTokens[$i++];
         };
-        $tokenizer = new Tokenizer($tokenGen());
+        $tokenizer = new GrammarTokenizer($tokenGen());
         $this->assertSame(0, $tokenizer->index());
         $this->assertSame($expectedTokens[0], $tokenizer->peekToken());
         $this->assertSame(0, $tokenizer->index());

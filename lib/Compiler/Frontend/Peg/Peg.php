@@ -15,29 +15,13 @@ use function Morpho\Base\mkStream;
  * Based on https://peps.python.org/pep-0617/ and other related Python's PEG resources.
  */
 class Peg {
-    public static function parse(string $grammarSource, string $text, array $context = null) {
-        $grammar = static::runParser($grammarSource)[0];
+    public static function parse(string $grammarSource, string $text, array $context = null): array {
+        $grammar = static::parseGrammar($grammarSource);
         $parserFactory = static::generateAndEvalParser($grammar, $context)['factory'];
-        return static::runParser($text, parserFactory: $parserFactory)[0];
-    }
-
-    /**
-     * Runs either the GrammarParser or the provided generated parser.
-     * [build_parser()](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/build.py#L208)
-     * [run_parser()](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/testutil.py#L38)
-     * @param string|resource $source
-     * @param callable|null   $tokenizerFactory
-     * @param callable|null   $parserFactory
-     * @return array
-     */
-    public static function runParser($source, callable $tokenizerFactory = null, callable $parserFactory = null): array {
-        $tokenizer = $tokenizerFactory ? $tokenizerFactory($source) : new Tokenizer(GeneralTokenizer::tokenize($source));
-        $parser = $parserFactory ? $parserFactory($tokenizer) : new GrammarParser($tokenizer);
-        $ast = $parser->start();
-        if (!$ast) {
-            throw $parser->mkSyntaxError('Invalid syntax');
-        }
-        return [$ast, $parser, $tokenizer];
+        $tokenizer = self::mkGrammarTokenizer($text);
+        $parser = $parserFactory($tokenizer);
+        $grammar = static::runParser($parser);
+        return [$grammar, $parser, $tokenizer];
     }
 
     /**
@@ -65,6 +49,11 @@ class Peg {
      */
     public static function generateAndEvalParser(Grammar $grammar, array $context = null): array {
         $newContext = static::generateParser($grammar, $context);
+        /*        try {
+                    eval('?>' . $newContext['program']);
+                } catch (\ParseError $e) {
+                    d($newContext['program']);
+                }*/
         eval('?>' . $newContext['program']);
         $class = $newContext['class'];
         $newContext['factory'] = function (...$args) use ($class) {
@@ -73,10 +62,52 @@ class Peg {
         return $newContext;
     }
 
+    public static function mkGrammarParser(IGrammarTokenizer $tokenizer): GrammarParser {
+        return new GrammarParser($tokenizer);
+    }
+
+    /**
+     * @param string|resource $source
+     * @return \Morpho\Compiler\Frontend\Peg\IGrammarTokenizer
+     */
+    public static function mkGrammarTokenizer($source): IGrammarTokenizer {
+        return new GrammarTokenizer(GeneralTokenizer::tokenize($source));
+    }
+
+    public static function runParser(Parser $parser): Grammar|array {
+        $ast = $parser->start();
+        if (!$ast) {
+            throw $parser->mkSyntaxError('Invalid syntax');
+        }
+        return $ast;
+    }
+
+    /**
+     * @param string|resource $grammarSource
+     * @return Grammar|array
+     */
+    public static function parseGrammar($grammarSource): Grammar|array {
+        $tokenizer = static::mkGrammarTokenizer($grammarSource);
+        $parser = static::mkGrammarParser($tokenizer);
+        return static::runParser($parser);
+    }
+
     /**
      * ast.literal_eval() in Python
      */
     public static function _literalEval(string $literal): string {
+        // Handle ''' and """ Python strings
+        if (preg_match('~^(\'\'\'|""")(?P<val>.*)(\\1)$~s', $literal, $match)) {
+            $literal = '"' . $match['val'] . '"';
+        }
+        if ($literal === "''" || $literal === '""') {
+            return '';
+        }
+/*        try {
+            return eval('return ' . $literal . ';');
+        } catch (\ParseError $e) {
+            d($literal);
+        }*/
         return eval('return ' . $literal . ';');
     }
 }

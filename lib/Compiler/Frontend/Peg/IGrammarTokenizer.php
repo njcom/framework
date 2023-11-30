@@ -6,7 +6,7 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
-interface ITokenizer {
+interface IGrammarTokenizer {
     /**
      * Returns the next token and updates the index.
      * getnext() in Python

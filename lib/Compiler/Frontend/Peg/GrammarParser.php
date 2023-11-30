@@ -6,12 +6,10 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
-use Morpho\Base\NotImplementedException;
-
 require_once __DIR__ . '/Grammar.php';
 
 /**
- * https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/grammar_parser.py
+ * https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/grammar_parser.py
  */
 class GrammarParser extends Parser {
 /*     public function __invoke(mixed $context): ?Grammar {
@@ -59,17 +57,17 @@ class GrammarParser extends Parser {
     /**
      * metas: meta metas | meta
      */
-    private function metas(): ?MetaList {
+    private function metas(): ?array {
         return $this->memoize(
             __METHOD__,
-            function (): ?MetaList {
+            function (): ?array {
                 $index = $this->index();
                 if (($meta = $this->meta()) && ($metas = $this->metas())) {
-                    return new MetaList(array_merge([$meta], $metas->getArrayCopy()));
+                    return array_merge([$meta], $metas);
                 }
                 $this->reset($index);
                 if ($meta = $this->meta()) {
-                    return new MetaList([$meta]);
+                    return [$meta];
                 }
                 $this->reset($index);
                 return null;
@@ -80,21 +78,21 @@ class GrammarParser extends Parser {
     /**
      * meta: "@" NAME NEWLINE | "@" NAME NAME NEWLINE | "@" NAME STRING NEWLINE
      */
-    private function meta(): ?MetaTuple {
+    private function meta(): ?array {
         return $this->memoize(
             __METHOD__,
-            function (): ?MetaTuple {
+            function (): ?array {
                 $index = $this->index();
                 if ($this->expect('@') && ($name = $this->name()) && $this->expect('NEWLINE')) {
-                    return new MetaTuple($name->val, null);
+                    return [$name->val, null];
                 }
                 $this->reset($index);
                 if ($this->expect('@') && ($a = $this->name()) && ($b = $this->name()) && $this->expect('NEWLINE')) {
-                    return new MetaTuple($a->val, $b->val);
+                    return [$a->val, $b->val];
                 }
                 $this->reset($index);
                 if ($this->expect('@') && ($name = $this->name()) && ($string = $this->string()) && $this->expect('NEWLINE')) {
-                    return new MetaTuple($name->val, Peg::_literalEval($string->val));
+                    return [$name->val, Peg::_literalEval($string->val)];
                 }
                 $this->reset($index);
                 return null;
@@ -581,6 +579,7 @@ class GrammarParser extends Parser {
                     && ($cut = true)
                     && ($atoms = ($this->targetAtoms() || true))
                     && $this->expect("}")) {
+                    /** @noinspection PhpConditionAlreadyCheckedInspection */
                     return "{" . ($atoms === true ? '' : $atoms) . "}";
                 }
                 $this->reset($index);
@@ -590,6 +589,7 @@ class GrammarParser extends Parser {
                 //$cut = false;
                 /** @noinspection PhpBooleanCanBeSimplifiedInspection */
                 if ($this->expect('[') && ($cut = true) && ($atoms = ($this->targetAtoms() || true)) && $this->expect(']')) {
+                    /** @noinspection PhpConditionAlreadyCheckedInspection */
                     return '[' . ($atoms === true ? '' : $atoms) . ']';
                 }
                 $this->reset($index);
