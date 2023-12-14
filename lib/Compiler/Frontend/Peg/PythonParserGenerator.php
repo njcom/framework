@@ -45,30 +45,30 @@ class PythonParserGenerator extends ParserGenerator implements IGrammarVisitor {
         $this->collectRules();
         $header = $this->grammar->metas['header'] ?? $this->fileHeader($context);
         if (null !== $header) {
-            $this->print($header);
+            $this->write($header);
         }
         $subheader = $this->grammar->metas['subheader'] ?? '';
         if ($subheader) {
-            $this->print($subheader);
+            $this->write($subheader);
         }
         $className = $this->grammar->metas['class'] ?? 'GeneratedParser';
-        $this->print("# Keywords and soft keywords are listed at the end of the parser definition.");
-        $this->print("class $className (Parser):");
+        $this->write("# Keywords and soft keywords are listed at the end of the parser definition.");
+        $this->write("class $className (Parser):");
         $context['class'] = $className;
         foreach ($this->allRules as $rule) {
-            $this->print();
+            $this->write();
             $this->indent(function () use ($rule) {
                 $this->visit($rule);
             });
         }
-        $this->print();
+        $this->write();
         $this->indent(function () {
-            $this->print("KEYWORDS = (" . implode(', ', array_keys($this->keywords)) . ')');
-            $this->print("SOFT_KEYWORDS = (" . implode(', ', array_keys($this->softKeywords)) . ')');
+            $this->write("KEYWORDS = (" . implode(', ', array_keys($this->keywords)) . ')');
+            $this->write("SOFT_KEYWORDS = (" . implode(', ', array_keys($this->softKeywords)) . ')');
         });
         $footer = $this->grammar->metas['trailer'] ?? $this->fileFooter($context);
         if (null !== $footer) {
-            $this->print(rtrim($footer));
+            $this->write(rtrim($footer));
         }
         return $className;
     }
@@ -110,35 +110,35 @@ class PythonParserGenerator extends ParserGenerator implements IGrammarVisitor {
     protected function visitRule(Rule $node): void {
         if ($node->leftRecursive) {
             if ($node->leader) {
-                $this->print("@memoize_left_rec");
+                $this->write("@memoize_left_rec");
             } else {
                 // Non-leader rules in a cycle are not memoized, but they must still be logged.
-                $this->print("@logger");
+                $this->write("@logger");
             }
         } else {
-            $this->print('@memoize');
+            $this->write('@memoize');
         }
         $returnType = $node->type ?? 'Any';
-        $this->print('def ' . $node->name . '(self): Optional[' . $returnType . ']:');
+        $this->write('def ' . $node->name . '(self): Optional[' . $returnType . ']:');
         $this->indent(function () use ($node) {
             $rhs = $node->flatten();
             $isLoop = $node->isLoop();
             $isGather = $node->isGather();
-            $this->print('# ' . $node->name . ': ' . $rhs);
-            $this->print('mark = self._mark()');
+            $this->write('# ' . $node->name . ': ' . $rhs);
+            $this->write('mark = self._mark()');
             if ($this->altsUseLocations($node->rhs->alts)) {
-                $this->print('tok = self._tokenizer.peek()');
-                $this->print('start_lineno, start_col_offset = tok.start');
+                $this->write('tok = self._tokenizer.peek()');
+                $this->write('start_lineno, start_col_offset = tok.start');
            }
             if ($isLoop) {
-                $this->print("children = []");
+                $this->write("children = []");
             }
             $this->visit($rhs, isLoop: $isLoop, isGather: $isGather);
 
             if ($isLoop) {
-                $this->print("return children");
+                $this->write("return children");
             } else {
-                $this->print("return None");
+                $this->write("return None");
             }
         });
     }
@@ -152,12 +152,12 @@ class PythonParserGenerator extends ParserGenerator implements IGrammarVisitor {
             $name = $node->name;
         }
         if (!$name) {
-            $this->print($call);
+            $this->write($call);
         } else {
             if ($name != 'cut') {
                 $name = $this->dedupe($name);
             }
-            $this->print('(' . $name . ' := ' . $call . ')');
+            $this->write('(' . $name . ' := ' . $call . ')');
         }
     }
 
@@ -185,12 +185,12 @@ class PythonParserGenerator extends ParserGenerator implements IGrammarVisitor {
         $this->localVarStack[] = [];
 
         if ($hasCut) {
-            $this->print('cut = False');
+            $this->write('cut = False');
         }
         if ($isLoop) {
-            $this->print('while (');
+            $this->write('while (');
         } else {
-            $this->print('if (');
+            $this->write('if (');
         }
         $this->indent(function () use ($isGather, $node) {
             $first = true;
@@ -198,15 +198,15 @@ class PythonParserGenerator extends ParserGenerator implements IGrammarVisitor {
                 if ($first) {
                     $first = false;
                 } else {
-                    $this->print('and');
+                    $this->write('and');
                 }
                 $this->visit($item);
                 if ($isGather) {
-                    $this->print('is not None');
+                    $this->write('is not None');
                 }
             }
         });
-        $this->print('):');
+        $this->write('):');
         $this->indent(function () use ($isLoop, $node, $isGather) {
             $action = $node->action;
             if (!$action) {
@@ -228,24 +228,24 @@ class PythonParserGenerator extends ParserGenerator implements IGrammarVisitor {
                     }
                 }
             } elseif (str_contains($action, 'LOCATIONS')) {
-                $this->print('tok = self._tokenizer.get_last_non_whitespace_token()');
-                $this->print('"end_lineno, end_col_offset = tok.end');
+                $this->write('tok = self._tokenizer.get_last_non_whitespace_token()');
+                $this->write('"end_lineno, end_col_offset = tok.end');
                 $action = str_replace('LOCATIONS', $this->locationFormatting, $action);
             }
             if ($isLoop) {
-                $this->print('children.append(' . $action . ')');
-                $this->print('mark = self._mark()');
+                $this->write('children.append(' . $action . ')');
+                $this->write('mark = self._mark()');
             } else {
                 if (str_contains($action, 'UNREACHABLE')) {
                     $action = str_replace('UNREACHABLE', $this->unreachableFormatting, $action);
                 }
-                $this->print('return ' . $action);
+                $this->write('return ' . $action);
             }
         });
-        $this->print('self.reset(mark)');
+        $this->write('self.reset(mark)');
         // Skip remaining alternatives if a cut was reached.
         if ($hasCut) {
-            $this->print('if (cut) return None');
+            $this->write('if (cut) return None');
         }
         array_pop($this->localVarStack);
     }

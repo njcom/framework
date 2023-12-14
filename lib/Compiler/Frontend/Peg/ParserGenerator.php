@@ -9,6 +9,7 @@ namespace Morpho\Compiler\Frontend\Peg;
 use Morpho\Base\NotImplementedException;
 use Stringable;
 use UnexpectedValueException;
+
 use const Morpho\Base\INDENT;
 
 /**
@@ -35,7 +36,7 @@ abstract class ParserGenerator {
      * @var mixed Dict[str, Rule]
      */
     protected array $allRules;
-    
+
     /**
      * @var array List[List[str]]
      */
@@ -50,16 +51,12 @@ abstract class ParserGenerator {
      * @var array Set[str]
      */
     protected array $softKeywords = [];
-    
+
     /**
      * @var array Set[str]
      */
     private array $tokens;
 
-    /**
-     * For keyword_type()
-     * @var int
-     */
     private int $keywordCounter = 499;
 
     /**
@@ -96,10 +93,10 @@ abstract class ParserGenerator {
 
     public function artificialRuleFromRhs(Rhs $rhs): string {
         throw new NotImplementedException();
-            /*self.counter += 1
-            name = f"_tmp_{self.counter}"  # TODO: Pick a nicer name.
-            self.all_rules[name] = Rule(name, None, rhs)
-            return name*/
+        /*self.counter += 1
+        name = f"_tmp_{self.counter}"  # TODO: Pick a nicer name.
+        self.all_rules[name] = Rule(name, None, rhs)
+        return name*/
     }
 
     public function artificialRuleFromGather(Gather $node): string {
@@ -124,6 +121,11 @@ abstract class ParserGenerator {
         );
         $this->allRules[$name] = new Rule($name, null, new Rhs([$alt]));
         return $name;
+    }
+
+    public function keywordType(): int {
+        $this->keywordCounter++;
+        return $this->keywordCounter;
     }
 
     protected function validateRuleNames(): void {
@@ -161,11 +163,11 @@ abstract class ParserGenerator {
             for line in lines.splitlines():
                 self.print(line)
     */
-    protected function print(Stringable|string $val = null): void {
+    protected function write(Stringable|string $val = null): void {
         if (null === $val) {
             fwrite($this->stream, "\n");
         } else {
-            fwrite($this->stream, str_repeat(INDENT, $this->level) . (string) $val . "\n");
+            fwrite($this->stream, str_repeat(INDENT, $this->level) . (string)$val . "\n");
         }
     }
 
@@ -272,9 +274,6 @@ abstract class ParserGenerator {
         return $graph;
     }
     /*
-        def keyword_type(self) -> int:
-            self.keyword_counter += 1
-            return self.keyword_counter
 
         def artifical_rule_from_rhs(self, rhs: Rhs) -> str:
 

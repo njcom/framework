@@ -74,7 +74,7 @@ class Peg {
         return new GrammarTokenizer(GeneralTokenizer::tokenize($source));
     }
 
-    public static function runParser(Parser $parser): Grammar|array {
+    public static function runParser(Parser $parser): mixed {
         $ast = $parser->start();
         if (!$ast) {
             throw $parser->mkSyntaxError('Invalid syntax');
@@ -84,9 +84,8 @@ class Peg {
 
     /**
      * @param string|resource $grammarSource
-     * @return Grammar|array
      */
-    public static function parseGrammar($grammarSource): Grammar|array {
+    public static function parseGrammar($grammarSource): mixed {
         $tokenizer = static::mkGrammarTokenizer($grammarSource);
         $parser = static::mkGrammarParser($tokenizer);
         return static::runParser($parser);

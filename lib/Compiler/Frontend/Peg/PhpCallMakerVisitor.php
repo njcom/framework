@@ -113,10 +113,13 @@ class PhpCallMakerVisitor extends GrammarVisitor {
     protected function visitOpt(Opt $node): array {
         $call = $this->visit($node->node)[1];
         // Note trailing comma (the call may already have one comma at the end, for example when rules have both repeat0 and optional markers, e.g: [rule*])
+        /*
         if (str_ends_with($call, ',')) {
             return ['opt', $call];
         }
         return ['opt', "$call,"];
+        */
+        return ['opt', $call . ' or true'];
     }
 
     /**
