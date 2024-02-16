@@ -8,8 +8,8 @@ namespace Morpho\App;
 
 use Morpho\Base\Env;
 use Morpho\Base\Event;
+use Morpho\Base\ServiceManager;
 use Morpho\Base\EventManager;
-use Morpho\Base\IServiceManager;
 use Morpho\Tech\Php\ErrorHandler;
 use Throwable;
 
@@ -18,22 +18,14 @@ use function error_log;
 use function umask;
 
 class App extends EventManager {
-    protected array $conf;
-    private ?IServiceManager $serviceManager = null;
+    public readonly array $conf;
+    private ?ServiceManager $serviceManager = null;
 
     public function __construct(array $conf = null) {
-        $this->setConf($conf ?: []);
+        $this->conf = $conf ?? [];
     }
 
-    public function setConf(array $conf): void {
-        $this->conf = $conf;
-    }
-
-    public function conf(): array {
-        return $this->conf;
-    }
-
-    public function init(): IServiceManager {
+    public function init(): ServiceManager {
         if ($this->serviceManager) {
             // Already initialized.
             return $this->serviceManager;
@@ -70,7 +62,7 @@ class App extends EventManager {
         }
     }
 
-    protected function _init(): IServiceManager {
+    protected function _init(): ServiceManager {
         /** @var SiteFactory $siteFactory */
         $siteFactory = $this->conf['siteFactory']($this);
         $site = $siteFactory->__invoke();
@@ -80,7 +72,7 @@ class App extends EventManager {
         $serviceManager = $siteConf['serviceManager'];
         $serviceManager['app'] = $this;
         $serviceManager['site'] = $site;
-        $serviceManager->setConf($siteConf['services']);
+        $serviceManager->conf = $siteConf['services'];
 
         if (isset($siteConf['umask'])) {
             umask($siteConf['umask']);

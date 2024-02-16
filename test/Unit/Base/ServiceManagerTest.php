@@ -7,9 +7,8 @@
 namespace Morpho\Test\Unit\Base;
 
 use ArrayObject;
+use ArrayAccess;
 use Closure;
-use Morpho\Base\IHasServiceManager;
-use Morpho\Base\IServiceManager;
 use Morpho\Base\ServiceManager;
 use Morpho\Base\ServiceNotFoundException;
 use Morpho\Testing\TestCase;
@@ -17,7 +16,7 @@ use RuntimeException;
 use stdClass;
 
 class ServiceManagerTest extends TestCase {
-    private IServiceManager $serviceManager;
+    private ArrayAccess $serviceManager;
 
     protected function setUp(): void {
         parent::setUp();

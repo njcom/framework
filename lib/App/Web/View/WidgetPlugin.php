@@ -7,13 +7,13 @@
 namespace Morpho\App\Web\View;
 
 use Morpho\Base\IHasServiceManager;
-use Morpho\Base\IServiceManager;
+use Morpho\Base\ServiceManager;
 use Stringable;
 
 abstract class WidgetPlugin extends Plugin implements IHasServiceManager, Stringable {
-    protected IServiceManager $serviceManager;
+    protected ServiceManager $serviceManager;
 
-    public function setServiceManager(IServiceManager $serviceManager): static {
+    public function setServiceManager(ServiceManager $serviceManager): static {
         $this->serviceManager = $serviceManager;
         return $this;
     }

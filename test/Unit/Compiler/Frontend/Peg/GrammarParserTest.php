@@ -8,10 +8,10 @@ namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 
 use Morpho\Compiler\Frontend\Peg\Grammar;
 use Morpho\Compiler\Frontend\Peg\GrammarParser;
-use Morpho\Compiler\Frontend\Peg\GrammarTokenizer;
+use Morpho\Compiler\Frontend\Peg\Tokenizer;
 use Morpho\Compiler\Frontend\Peg\IRenderingActions;
 use Morpho\Compiler\Frontend\Peg\Parser;
-use Morpho\Compiler\Frontend\Peg\GeneralTokenizer;
+use Morpho\Compiler\Frontend\Peg\PythonTokenizer;
 use Morpho\Testing\TestCase;
 
 /**
@@ -23,8 +23,8 @@ class GrammarParserTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->parser = new GrammarParser(
-            new GrammarTokenizer(
-                GeneralTokenizer::tokenize($this->mkStream('foo: bar'))
+            new Tokenizer(
+                PythonTokenizer::tokenize($this->mkStream('foo: bar'))
             )
         );
     }

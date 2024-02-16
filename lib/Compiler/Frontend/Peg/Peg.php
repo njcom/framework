@@ -17,14 +17,16 @@ use function Morpho\Base\mkStream;
 class Peg {
     public static function parse(string $grammarSource, string $text, array $context = null): array {
         $grammar = static::parseGrammar($grammarSource);
-        $parserFactory = static::generateAndEvalParser($grammar, $context)['factory'];
-        $tokenizer = self::mkGrammarTokenizer($text);
+        $parserFactory = static::generateAndEvalParser($grammar, $context)['parserFactory'];
+        $tokenizerFactory = $context['tokenizerFactory'] ?? self::mkTokenizer(...);
+        $tokenizer = $tokenizerFactory($text);
         $parser = $parserFactory($tokenizer);
         $grammar = static::runParser($parser);
         return [$grammar, $parser, $tokenizer];
     }
 
     /**
+     * Generate parser by the grammar
      * [generate_parser(grammar: Grammar) -> Type[Parser]](https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/testutil.py#L26)
      */
     public static function generateParser(Grammar $grammar, array $context = null): array {
@@ -40,7 +42,7 @@ class Peg {
         }
         return [
             'program' => $code,
-            'class' => $parserClass,
+            'parserClass' => $parserClass,
         ];
     }
 
@@ -55,23 +57,23 @@ class Peg {
                     d($newContext['program']);
                 }*/
         eval('?>' . $newContext['program']);
-        $class = $newContext['class'];
-        $newContext['factory'] = function (...$args) use ($class) {
+        $class = $newContext['parserClass'];
+        $newContext['parserFactory'] = function (...$args) use ($class) {
             return new $class(...$args);
         };
         return $newContext;
     }
 
-    public static function mkGrammarParser(IGrammarTokenizer $tokenizer): GrammarParser {
+    public static function mkGrammarParser(ITokenizer $tokenizer): GrammarParser {
         return new GrammarParser($tokenizer);
     }
 
     /**
      * @param string|resource $source
-     * @return \Morpho\Compiler\Frontend\Peg\IGrammarTokenizer
+     * @return \Morpho\Compiler\Frontend\Peg\ITokenizer
      */
-    public static function mkGrammarTokenizer($source): IGrammarTokenizer {
-        return new GrammarTokenizer(GeneralTokenizer::tokenize($source));
+    public static function mkTokenizer($source): ITokenizer {
+        return new Tokenizer(PythonTokenizer::tokenize($source));
     }
 
     public static function runParser(Parser $parser): mixed {
@@ -86,7 +88,7 @@ class Peg {
      * @param string|resource $grammarSource
      */
     public static function parseGrammar($grammarSource): mixed {
-        $tokenizer = static::mkGrammarTokenizer($grammarSource);
+        $tokenizer = static::mkTokenizer($grammarSource);
         $parser = static::mkGrammarParser($tokenizer);
         return static::runParser($parser);
     }

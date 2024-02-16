@@ -30,7 +30,6 @@ use Morpho\Tech\Php\NoDupsListener;
 use UnexpectedValueException;
 
 use function Morpho\Base\classify;
-use function Morpho\Base\init;
 
 class ServiceManager extends BaseServiceManager {
     protected function mkRouterService() {
@@ -121,7 +120,7 @@ class ServiceManager extends BaseServiceManager {
                     return new HtmlResponseRenderer(
                         $this['templateEngine'],
                         $this['backendModuleIndex'],
-                        $this->conf()['view']['pageRenderingModule'],
+                        $this->conf['view']['pageRenderingModule'],
                     );
                 } elseif ($format === ContentFormat::JSON) {
                     return new JsonResponseRenderer();
@@ -180,7 +179,7 @@ class ServiceManager extends BaseServiceManager {
 
     protected function mkDispatchErrorHandlerService() {
         $dispatchErrorHandler = new DispatchErrorHandler();
-        $conf = $this->conf()['dispatchErrorHandler'];
+        $conf = $this->conf['dispatchErrorHandler'];
         $dispatchErrorHandler->throwErrors($conf['throwErrors']);
         $dispatchErrorHandler->setExceptionHandler($conf['exceptionHandler']);
         return $dispatchErrorHandler;

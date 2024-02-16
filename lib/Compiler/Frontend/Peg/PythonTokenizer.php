@@ -20,7 +20,7 @@ use function Morpho\Base\mkStream;
 /**
  * Based on https://github.com/python/cpython/blob/fc94d55ff453a3101e4c00a394d4e38ae2fece13/Lib/tokenize.py
  */
-class GeneralTokenizer {
+class PythonTokenizer {
     /**
      * @param resource|string $stream
      * @return Iterator
@@ -44,10 +44,10 @@ class GeneralTokenizer {
             rewind($stream);
         }
 
-        $pseudoTokenRe = GeneralTokenizerRe::pseudoTokenRe();
-        $tripleQuoted = GeneralTokenizerRe::tripleQuotedPrefixes();
-        $singleQuoted = GeneralTokenizerRe::singleQuotedPrefixes();
-        $endPatterns = GeneralTokenizerRe::endPatterns();
+        $pseudoTokenRe = PythonTokenizerRe::pseudoTokenRe();
+        $tripleQuoted = PythonTokenizerRe::tripleQuotedPrefixes();
+        $singleQuoted = PythonTokenizerRe::singleQuotedPrefixes();
+        $endPatterns = PythonTokenizerRe::endPatterns();
 
         while (true) { // loop over lines in stream
             $lastLine = $line;
@@ -201,7 +201,7 @@ class GeneralTokenizer {
                         } else {
                             yield new Token(TokenType::STRING, $token, $spos, $epos, $line); # ordinary string
                         }
-                    } elseif (GeneralTokenizerRe::isIdentifier($initial)) { # ordinary name
+                    } elseif (PythonTokenizerRe::isIdentifier($initial)) { # ordinary name
                         yield new Token(TokenType::NAME, $token, $spos, $epos, $line);
                     } elseif ($initial == '\\') { # continued stmt
                         $continued = 1;

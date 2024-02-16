@@ -7,6 +7,7 @@
 namespace Morpho\Tech\Php;
 
 use Morpho\Base\Err;
+use Morpho\Base\NotImplementedException;
 use Morpho\Base\Ok;
 use Morpho\Base\Result;
 
@@ -18,6 +19,7 @@ use function Morpho\Base\q;
 
 class CliPhpFileHeaderFixer {
     public function __invoke(mixed $conf): mixed {
+        throw new NotImplementedException();
         $result = null;
         foreach ($conf['files'] as [$filePaths, $context]) {
             $context['dryRun'] = $conf['dryRun'];

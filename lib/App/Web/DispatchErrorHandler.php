@@ -18,7 +18,7 @@ class DispatchErrorHandler implements IHasServiceManager {
 
     private $thrownExceptions = [];
 
-    private $throwErrors = false;
+    private bool $throwErrors = false;
 
     private $exceptionHandler;
 

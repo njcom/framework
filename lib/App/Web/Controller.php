@@ -9,16 +9,16 @@ namespace Morpho\App\Web;
 use ArrayObject;
 use Morpho\App\Controller as BaseController;
 use Morpho\Base\IHasServiceManager;
-use Morpho\Base\IServiceManager;
+use Morpho\Base\ServiceManager;
 use Morpho\Base\Result;
 use Morpho\Uri\Uri;
 
 abstract class Controller extends BaseController implements IHasServiceManager {
     private IRequest $request;
 
-    protected IServiceManager $serviceManager;
+    protected ServiceManager $serviceManager;
 
-    public function setServiceManager(IServiceManager $serviceManager): static {
+    public function setServiceManager(ServiceManager $serviceManager): static {
         $this->serviceManager = $serviceManager;
         return $this;
     }

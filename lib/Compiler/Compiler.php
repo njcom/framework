@@ -6,9 +6,10 @@
  */
 namespace Morpho\Compiler;
 
+use Morpho\Base\Pipe;
 use UnexpectedValueException;
 
-class Compiler extends ConfigurablePipe implements ICompiler {
+class Compiler extends Pipe implements ICompiler {
     /**
      * @var callable
      */
@@ -22,8 +23,10 @@ class Compiler extends ConfigurablePipe implements ICompiler {
      */
     public $backend;
 
+    public array $conf;
+
     public function __construct(array $conf = null) {
-        parent::__construct($conf);
+        $this->conf = $conf;
     }
 
     public function current(): callable {

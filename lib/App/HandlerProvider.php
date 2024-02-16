@@ -7,16 +7,16 @@
 namespace Morpho\App;
 
 use Morpho\Base\IHasServiceManager;
-use Morpho\Base\IServiceManager;
+use Morpho\Base\ServiceManager;
 
 class HandlerProvider {
     protected ModuleIndex $moduleIndex;
 
     private array $registeredModules = [];
 
-    private IServiceManager $serviceManager;
+    private ServiceManager $serviceManager;
 
-    public function __construct(IServiceManager $serviceManager) {
+    public function __construct(ServiceManager $serviceManager) {
         $this->moduleIndex = $serviceManager['backendModuleIndex'];
         $this->serviceManager = $serviceManager;
     }

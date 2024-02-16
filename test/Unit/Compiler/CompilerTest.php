@@ -10,8 +10,9 @@ use ArrayObject;
 use Morpho\Base\Pipe;
 use Morpho\Compiler\Compiler;
 use Morpho\Compiler\ICompiler;
+use Morpho\Testing\TestCase;
 
-class CompilerTest extends ConfigurablePipeTest {
+class CompilerTest extends TestCase {
     public function testCompilerInterface() {
         $compiler = new Compiler($this->mkCompilerConf());
         $this->assertIsCallable($compiler);

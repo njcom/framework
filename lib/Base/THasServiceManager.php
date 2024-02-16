@@ -7,12 +7,12 @@
 namespace Morpho\Base;
 
 trait THasServiceManager {
-    protected IServiceManager $serviceManager;
+    protected ServiceManager $serviceManager;
 
     /**
      * @notCommand
      */
-    public function setServiceManager(IServiceManager $serviceManager): static {
+    public function setServiceManager(ServiceManager $serviceManager): static {
         $this->serviceManager = $serviceManager;
         return $this;
     }

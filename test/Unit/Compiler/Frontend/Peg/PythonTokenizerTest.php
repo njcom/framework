@@ -9,18 +9,18 @@ namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 use Iterator;
 use Morpho\Compiler\Frontend\Peg\Token;
 use Morpho\Compiler\Frontend\Peg\TokenException;
-use Morpho\Compiler\Frontend\Peg\GeneralTokenizer;
+use Morpho\Compiler\Frontend\Peg\PythonTokenizer;
 use Morpho\Testing\TestCase;
 
 use const Morpho\App\LIB_DIR_NAME;
 use const Morpho\Test\BASE_DIR_PATH;
 
-class GeneralTokenizerTest extends TestCase {
-    private GeneralTokenizer $tokenizer;
+class PythonTokenizerTest extends TestCase {
+    private PythonTokenizer $tokenizer;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->tokenizer = new GeneralTokenizer();
+        $this->tokenizer = new PythonTokenizer();
     }
 
     public function testTokenize_EmptyString() {

@@ -10,12 +10,12 @@ use Morpho\App\BackendModule;
 use Morpho\App\HandlerProvider;
 use Morpho\App\ModuleIndex;
 use Morpho\App\Web\Request;
-use Morpho\Base\IServiceManager;
+use Morpho\Base\ServiceManager;
 use Morpho\Testing\TestCase;
 
 class HandlerProviderTest extends TestCase {
     public function testInvoke() {
-        $serviceManager = $this->createMock(IServiceManager::class);
+        $serviceManager = $this->createMock(ServiceManager::class);
 
         $moduleName = 'foo/bar';
         $module = $this->createConfiguredMock(

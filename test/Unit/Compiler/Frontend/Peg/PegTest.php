@@ -9,7 +9,7 @@ namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 use Morpho\Compiler\Frontend\Peg\Grammar;
 use Morpho\Compiler\Frontend\Peg\GrammarParser;
 use Morpho\Compiler\Frontend\Peg\Token;
-use Morpho\Compiler\Frontend\Peg\GrammarTokenizer;
+use Morpho\Compiler\Frontend\Peg\Tokenizer;
 use Morpho\Compiler\Frontend\Peg\Peg;
 use Morpho\Compiler\Frontend\Peg\TokenType;
 use Morpho\Testing\TestCase;
@@ -26,7 +26,7 @@ class PegTest extends TestCase {
     }
 
     public function testMkGrammarParser() {
-        $this->assertInstanceOf(GrammarParser::class, Peg::mkGrammarParser(Peg::mkGrammarTokenizer('')));
+        $this->assertInstanceOf(GrammarParser::class, Peg::mkGrammarParser(Peg::mkTokenizer('')));
     }
 
     public function testParseGrammar(): void {
@@ -97,7 +97,7 @@ class PegTest extends TestCase {
         $result = Peg::generateAndEvalParser($grammar);
         //$node = $this->testHelper->parseString("42\n", $parserClass);
         $line = "1, 2\n";
-        $parser = $result['factory'](Peg::mkGrammarTokenizer($line));
+        $parser = $result['parserFactory'](Peg::mkTokenizer($line));
         $node = Peg::runParser($parser);
         // @todo: Check $node representation
         $this->assertEquals(

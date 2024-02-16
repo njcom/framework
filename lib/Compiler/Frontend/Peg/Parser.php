@@ -16,7 +16,7 @@ use function Morpho\Base\last;
  * Based on https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/parser.py
  */
 abstract class Parser {
-    private IGrammarTokenizer $tokenizer;
+    protected ITokenizer $tokenizer;
     private int $level;
     private array $cache;
     private const KEYWORDS = [];
@@ -24,7 +24,7 @@ abstract class Parser {
     // @todo: remove after PHP 8.3 (
     private static array $tokenTypes = [];
 
-    public function __construct(IGrammarTokenizer $tokenizer) {
+    public function __construct(ITokenizer $tokenizer) {
         $this->tokenizer = $tokenizer;
         $this->level = 0;
         $this->cache = [];
@@ -34,19 +34,19 @@ abstract class Parser {
      * make_syntax_error() in Python.
      */
     public function mkSyntaxError(string $msg, string $filePath = null): SyntaxError {
-        $tok = $this->tokenizer->diagnose();
+        $tok = $this->tokenizer->lastReadToken();
         return new SyntaxError($msg, $filePath, $tok->start, $tok->end, $tok->line);
     }
 
     abstract public function start(): mixed;
 
-    protected function reset(int $index): void {
+/*    protected function reset(int $index): void {
         $this->tokenizer->reset($index);
     }
 
     protected function index(): int {
         return $this->tokenizer->index();
-    }
+    }*/
 
     protected function name(): ?Token {
         return $this->memoize(
@@ -169,32 +169,32 @@ abstract class Parser {
     }
 
     protected function positiveLookahead(callable $fn, ...$args): mixed {
-        $index = $this->index();
+        $index = $this->tokenizer->index();
         $ok = $fn(...$args);
-        $this->reset($index);
+        $this->tokenizer->reset($index);
         return $ok;
     }
 
     protected function negativeLookahead(callable $fn, ...$args): bool {
-        $index = $this->index();
+        $index = $this->tokenizer->index();
         $ok = $fn(...$args);
-        $this->reset($index);
+        $this->tokenizer->reset($index);
         return !$ok;
     }
 
     protected function memoize(string $fnId, Closure $fn, ...$args): mixed {
         // @todo: Replace with WeakMap
-        $index = $this->index();
+        $index = $this->tokenizer->index();
         $key = md5(serialize([$index, $fnId, $args]));
         if (isset($this->cache[$key])) {
             [$tree, $endIndex] = $this->cache[$key];
-            $this->reset($endIndex);
+            $this->tokenizer->reset($endIndex);
             return $tree;
         }
         $this->level++;
         $tree = $fn(...$args);
         $this->level--;
-        $endIndex = $this->index();
+        $endIndex = $this->tokenizer->index();
         $this->cache[$key] = [$tree, $endIndex];
         return $tree;
     }

@@ -7,9 +7,9 @@
 namespace Morpho\Test\Unit\Compiler\Frontend;
 
 use Morpho\Compiler\Frontend\Frontend;
-use Morpho\Test\Unit\Compiler\ConfigurablePipeTest;
+use Morpho\Testing\TestCase;
 
-class FrontendTest extends ConfigurablePipeTest {
+class FrontendTest extends TestCase {
     public function testInterface() {
         $frontend = new Frontend();
         $this->assertIsCallable($frontend);

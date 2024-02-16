@@ -6,15 +6,15 @@
  */
 namespace Morpho\App;
 
-use Morpho\Base\IServiceManager;
+use Morpho\Base\ServiceManager;
 
 use function ini_set;
 use function is_array;
 
 abstract class AppInitializer {
-    protected IServiceManager $serviceManager;
+    protected ServiceManager $serviceManager;
 
-    public function __construct(IServiceManager $serviceManager) {
+    public function __construct(ServiceManager $serviceManager) {
         $this->serviceManager = $serviceManager;
     }
 

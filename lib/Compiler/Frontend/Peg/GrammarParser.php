@@ -23,11 +23,11 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?Grammar {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 if (($grammar = $this->grammar()) && $this->expect('ENDMARKER')) {
                     return $grammar;
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -40,15 +40,15 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?Grammar {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 if (($metas = $this->metas()) && ($rules = $this->rules())) {
                     return new Grammar($rules, $metas);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($rules = $this->rules()) {
                     return new Grammar($rules, []);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -61,15 +61,15 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?array {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 if (($meta = $this->meta()) && ($metas = $this->metas())) {
                     return array_merge([$meta], $metas);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($meta = $this->meta()) {
                     return [$meta];
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -82,19 +82,19 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?array {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 if ($this->expect('@') && ($name = $this->name()) && $this->expect('NEWLINE')) {
                     return [$name->val, null];
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($this->expect('@') && ($a = $this->name()) && ($b = $this->name()) && $this->expect('NEWLINE')) {
                     return [$a->val, $b->val];
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($this->expect('@') && ($name = $this->name()) && ($string = $this->string()) && $this->expect('NEWLINE')) {
                     return [$name->val, Peg::_literalEval($string->val)];
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -107,15 +107,15 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?RuleList {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 if (($rule = $this->rule()) && ($rules = $this->rules())) {
                     return new RuleList(array_merge([$rule], $rules->getArrayCopy()));
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($rule = $this->rule()) {
                     return new RuleList([$rule]);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -128,7 +128,7 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?Rule {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 /** @noinspection PhpBooleanCanBeSimplifiedInspection */
                 if (
                     ($ruleName = $this->ruleName())
@@ -142,7 +142,7 @@ class GrammarParser extends Parser {
                 ) {
                     return new Rule($ruleName[0], $ruleName[1], new Rhs(array_merge($alts->alts, $moreAlts->alts)), memo: $opt === true ? null : $opt);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 /** @noinspection PhpBooleanCanBeSimplifiedInspection */
                 if (
                     ($ruleName = $this->ruleName())
@@ -155,7 +155,7 @@ class GrammarParser extends Parser {
                 ) {
                     return new Rule($ruleName[0], $ruleName[1], $moreAlts, memo: $opt === true ? null : $opt);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 /** @noinspection PhpBooleanCanBeSimplifiedInspection */
                 if (
                     ($ruleName = $this->ruleName())
@@ -166,7 +166,7 @@ class GrammarParser extends Parser {
                 ) {
                     return new Rule($ruleName[0], $ruleName[1], $alts, memo: $opt === true ? null : $opt);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -179,15 +179,15 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?RuleName {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 if (($name = $this->name()) && ($annotation = $this->annotation())) {
                     return new RuleName($name->val, $annotation);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($name = $this->name()) {
                     return new RuleName($name->val, null);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -200,11 +200,11 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?string {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 if ($this->expect('(') && $this->expect('memo') && $this->expect(')')) {
                     return "memo";
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -217,15 +217,15 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?Rhs {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 if (($alt = $this->alt()) && $this->expect("|") && ($alts = $this->alts())) {
                     return new Rhs(array_merge([$alt], $alts->alts));
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($alt = $this->alt()) {
                     return new Rhs([$alt]);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -238,7 +238,7 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?Rhs {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 if (
                     ($this->expect("|"))
                     && ($alts = $this->alts())
@@ -247,11 +247,11 @@ class GrammarParser extends Parser {
                 ) {
                     return new Rhs(array_merge($alts->alts, $moreAlts->alts));
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($this->expect("|") && ($alts = $this->alts()) && ($this->expect('NEWLINE'))) {
                     return new Rhs($alts->alts);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -264,7 +264,7 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?Alt {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 if (($items = $this->items()) && ($this->expect('$')) && ($action = $this->action())) {
                     return new Alt(
                         new NamedItemList(
@@ -275,7 +275,7 @@ class GrammarParser extends Parser {
                         ), action: $action
                     );
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if (($items = $this->items()) && ($this->expect('$'))) {
                     return new Alt(
                         new NamedItemList(
@@ -286,15 +286,15 @@ class GrammarParser extends Parser {
                         ), action: null
                     );
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if (($items = $this->items()) && ($action = $this->action())) {
                     return new Alt($items, action: $action);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($items = $this->items()) {
                     return new Alt($items, action: null);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -307,15 +307,15 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?NamedItemList {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 if (($namedItem = $this->namedItem()) && ($items = $this->items())) {
                     return new NamedItemList(array_merge([$namedItem], $items->getArrayCopy()));
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($namedItem = $this->namedItem()) {
                     return new NamedItemList([$namedItem]);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -328,7 +328,7 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?NamedItem {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 $cut = false;
                 if (
                     ($name = $this->name())
@@ -339,7 +339,7 @@ class GrammarParser extends Parser {
                 ) {
                     return new NamedItem($name->val, $item, $annotation);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($cut) {
                     return null;
                 }
@@ -350,22 +350,22 @@ class GrammarParser extends Parser {
                     && ($item = $this->item())) {
                     return new NamedItem($name->val, $item);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($cut) {
                     return null;
                 }
                 if ($item = $this->item()) {
                     return new NamedItem(null, $item);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($it = $this->forcedAtom()) {
                     return new NamedItem(null, $it);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($it = $this->lookahead()) {
                     return new NamedItem(null, $it);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -378,12 +378,12 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): null|Lookahead|Forced|Cut {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 //$cut = false;
                 if ($this->expect('&') && $this->expect('&') && /*($cut = true) &&*/ ($atom = $this->atom())) {
                     return new Forced($atom);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
 //                if ($cut) {
 //                    return null
 //                }
@@ -401,12 +401,12 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): null|Lookahead|Forced|Cut {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 $cut = false;
                 if ($this->expect('&') && ($cut = true) && ($atom = $this->atom())) {
                     return new PositiveLookahead($atom);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($cut) {
                     return null;
                 }
@@ -414,14 +414,14 @@ class GrammarParser extends Parser {
                 if ($this->expect('!') && ($cut = true) && ($atom = $this->atom())) {
                     return new NegativeLookahead($atom);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($cut) {
                     return null;
                 }
                 if ($this->expect('~')) {
                     return new Cut();
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -437,27 +437,27 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): null|Leaf|Group|Opt|Repeat|Forced|Lookahead|Rhs|Cut {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 $cut = false;
                 if ($this->expect('[') && ($cut = true) && ($alts = $this->alts()) && $this->expect(']')) {
                     return new Opt($alts);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($cut) {
                     return null;
                 }
                 if (($atom = $this->atom()) && $this->expect('?')) {
                     return new Opt($atom);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if (($atom = $this->atom()) && $this->expect('*')) {
                     return new Repeat0($atom);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if (($atom = $this->atom()) && $this->expect('+')) {
                     return new Repeat1($atom);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if (
                     ($sep = $this->atom())
                     && $this->expect('.')
@@ -465,11 +465,11 @@ class GrammarParser extends Parser {
                     && $this->expect('+')) {
                     return new Gather($sep, $node);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($atom = $this->atom()) {
                     return $atom;
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -484,23 +484,23 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): null|Leaf|Group {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 $cut = false;
                 if ($this->expect('(') && ($cut = true) && ($alts = $this->alts()) && $this->expect(')')) {
                     return new Group($alts);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($cut) {
                     return null;
                 }
                 if ($name = $this->name()) {
                     return new NameLeaf($name->val);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($string = $this->string()) {
                     return new StringLeaf($string->val);
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -513,12 +513,12 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?string {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 //$cut = false;
                 if ($this->expect("{") /*&& ($cut = true)*/ && ($targetAtoms = $this->targetAtoms()) && $this->expect("}")) {
                     return $targetAtoms;
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 /*if ($cut) {
                     return null;
                 }*/
@@ -534,11 +534,11 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?string {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 if ($this->expect('[') && ($targetAtoms = $this->targetAtoms()) && $this->expect(']')) {
                     return $targetAtoms;
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -551,15 +551,15 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?string {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 if (($targetAtom = $this->targetAtom()) && ($targetAtoms = $this->targetAtoms())) {
                     return $targetAtom . ' ' . $targetAtoms;
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($targetAtom = $this->targetAtom()) {
                     return $targetAtom;
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );
@@ -572,7 +572,7 @@ class GrammarParser extends Parser {
         return $this->memoize(
             __METHOD__,
             function (): ?string {
-                $index = $this->index();
+                $index = $this->tokenizer->index();
                 $cut = false;
                 /** @noinspection PhpBooleanCanBeSimplifiedInspection */
                 if ($this->expect("{")
@@ -582,7 +582,7 @@ class GrammarParser extends Parser {
                     /** @noinspection PhpConditionAlreadyCheckedInspection */
                     return "{" . ($atoms === true ? '' : $atoms) . "}";
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($cut) {
                     return null;
                 }
@@ -592,38 +592,38 @@ class GrammarParser extends Parser {
                     /** @noinspection PhpConditionAlreadyCheckedInspection */
                     return '[' . ($atoms === true ? '' : $atoms) . ']';
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($cut) {
                     return null;
                 }
                 if (($name = $this->name()) && $this->expect('*')) {
                     return $name->val . '*';
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($name = $this->name()) {
                     return $name->val;
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($number = $this->number()) {
                     return $number->val;
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($string = $this->string()) {
                     return $string->val;
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($this->expect('?"')) {
                     return '?';
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($this->expect(':')) {
                     return ':';
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 if ($this->negativeLookahead($this->expect(...), '}') && $this->negativeLookahead($this->expect(...), ']') && ($op = $this->op())) {
                     return $op->val;
                 }
-                $this->reset($index);
+                $this->tokenizer->reset($index);
                 return null;
             }
         );

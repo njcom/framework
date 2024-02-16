@@ -12,7 +12,7 @@ use FastRoute\Dispatcher\GroupCountBased as GroupCountBasedDispatcher;
 use FastRoute\RouteCollector;
 use FastRoute\RouteParser\Std as StdRouteParser;
 use Morpho\Base\IHasServiceManager;
-use Morpho\Base\IServiceManager;
+use Morpho\Base\ServiceManager;
 use Morpho\Caching\ICache;
 use UnexpectedValueException;
 
@@ -21,7 +21,7 @@ use function Morpho\Base\only;
 use function Morpho\Caching\cacheKey;
 
 class FastRouter implements IHasServiceManager {
-    protected IServiceManager $serviceManager;
+    protected ServiceManager $serviceManager;
 
     protected ICache $cache;
 
@@ -31,7 +31,7 @@ class FastRouter implements IHasServiceManager {
         $this->cacheKey = cacheKey($this, __FUNCTION__);
     }
 
-    public function setServiceManager(IServiceManager $serviceManager): static {
+    public function setServiceManager(ServiceManager $serviceManager): static {
         $this->serviceManager = $serviceManager;
         $this->cache = $serviceManager['routerCache'];
         return $this;
@@ -91,6 +91,6 @@ class FastRouter implements IHasServiceManager {
     }
 
     protected function conf(): array {
-        return $this->serviceManager->conf()['router'];
+        return $this->serviceManager->conf['router'];
     }
 }

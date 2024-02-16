@@ -6,7 +6,7 @@
  */
 namespace Morpho\Compiler\Frontend\Peg;
 
-interface IGrammarTokenizer {
+interface ITokenizer {
     /**
      * Returns the next token and updates the index.
      * getnext() in Python
@@ -24,9 +24,12 @@ interface IGrammarTokenizer {
 
     public function reset(int $index): void;
 
-    public function lines(array $lineNumbers): array;
+    //public function lines(array $lineNumbers): array;
 
-    public function diagnose(): Token;
+    /**
+     * diagnose() in Python
+     */
+    public function lastReadToken(): Token;
 
     /**
      * get_last_non_whitespace_token() in Python

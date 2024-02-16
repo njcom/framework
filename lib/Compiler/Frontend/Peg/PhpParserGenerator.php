@@ -28,7 +28,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
     /**
      * __init__(self, grammar: grammar.Grammar, file: Optional[IO[Text]], tokens: Set[str] = set(token.tok_name.values()), location_formatting: Optional[str] = None,unreachable_formatting: Optional[str] = None)
      */
-    public function __construct(Grammar $grammar, $stream, $tokens = null, string $locationFormatting = null, string $unreachableFormatting = null) {
+    public function __construct(Grammar $grammar, $stream, array $tokens = null, string $locationFormatting = null, string $unreachableFormatting = null) {
         if (null === $tokens) {
             $tokens = array_keys(enumVals(TokenType::class));
             //$tokens[] = TokenType::SOFT_KEYWORD;
@@ -122,7 +122,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
 
             $this->write('function ' . $node->name . '(): ' . $returnType . ' {');
             $this->write('// ' . $node->name . ': ' . $rhs);
-            $this->write('$index = $this->index();');
+            $this->write('$index = $this->tokenizer->index();');
             if ($this->altsUseLocations($node->rhs->alts)) {
                 $this->write('$tok = $this->tokenizer->peek();');
                 $this->write('[$startLineNo, $startColOffset] = $tok->start;');
@@ -241,7 +241,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
         }
         if ($isLoop) {
             $this->write('$children[] = $' . $action . ';');
-            $this->write('$index = $this->index();');
+            $this->write('$index = $this->tokenizer->index();');
         } else {
             if (str_contains($action, 'UNREACHABLE')) {
                 $action = str_replace('UNREACHABLE', $this->unreachableFormatting, $action);
@@ -249,7 +249,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
             $this->write('return ' . $action . ';');
         }
         $this->write('}');
-        $this->write('$this->reset($index);');
+        $this->write('$this->tokenizer->reset($index);');
         // Skip remaining alternatives if a cut was reached.
         if ($hasCut) {
             $this->write('if ($cut) return null;');

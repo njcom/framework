@@ -15,13 +15,9 @@ use Morpho\Testing\TestCase;
 class AppTest extends TestCase {
     public function testConfAccessors() {
         $app = new App();
-        $this->assertEquals([], $app->conf());
+        $this->assertEquals([], $app->conf);
         $newConf = ['foo' => 'bar'];
         $app = new App($newConf);
-        $this->assertSame($newConf, $app->conf());
-        $newConf = ['color' => 'orange'];
-        /** @noinspection PhpVoidFunctionResultUsedInspection */
-        $this->assertNull($app->setConf($newConf));
-        $this->assertSame($newConf, $app->conf());
+        $this->assertSame($newConf, $app->conf);
     }
 }

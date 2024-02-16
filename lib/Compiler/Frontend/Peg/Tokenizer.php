@@ -12,7 +12,7 @@ use Morpho\Base\NotImplementedException;
 /**
  * Based on https://github.com/python/cpython/blob/3.12/Tools/peg_generator/pegen/tokenizer.py
  */
-class GrammarTokenizer implements IGrammarTokenizer {
+class Tokenizer implements ITokenizer {
     private int $index = 0;
 
     /**
@@ -20,10 +20,10 @@ class GrammarTokenizer implements IGrammarTokenizer {
      */
     private array $tokens = [];
 
-    private Iterator $tokenGen;
+    private Iterator $tokenIt;
 
-    public function __construct(Iterator $tokenGen) {
-        $this->tokenGen = $tokenGen;
+    public function __construct(Iterator $tokenIt) {
+        $this->tokenIt = $tokenIt;
     }
 
     /*
@@ -39,8 +39,8 @@ class GrammarTokenizer implements IGrammarTokenizer {
 
     public function peekToken(): Token {
         while ($this->index === count($this->tokens)) {
-            $tok = $this->tokenGen->current();
-            $this->tokenGen->next();
+            $tok = $this->tokenIt->current();
+            $this->tokenIt->next();
             if (in_array($tok->type, [TokenType::NL, TokenType::COMMENT])) {
                 continue;
             }
@@ -52,7 +52,7 @@ class GrammarTokenizer implements IGrammarTokenizer {
         return $this->tokens[$this->index];
     }
 
-    public function diagnose(): Token {
+    public function lastReadToken(): Token {
         if (!$this->tokens) {
             $this->nextToken();
         }
@@ -73,10 +73,10 @@ class GrammarTokenizer implements IGrammarTokenizer {
 
     /**
      * get_lines(self, line_numbers: List[int]) -> List[str]:
-     */
     public function lines(array $lineNumbers): array {
         throw new NotImplementedException();
     }
+     */
 
     /**
      * mark() in Python

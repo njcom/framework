@@ -9,7 +9,7 @@ namespace Morpho\Compiler\Frontend;
 enum Lexeme: string {
     case At = '@';
     // Back quote
-    case BackQuote = '`';
+    case Backtick = '`';
     case BackSlash = '\\';
     case Caret = '^';
     // Closing angle bracket

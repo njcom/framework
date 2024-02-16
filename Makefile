@@ -74,13 +74,11 @@ update: update-peg
 	cd $(frontend-dir-path) && npm install
 
 update-peg:
-	#curl -fL 'https://raw.githubusercontent.com/python/cpython/main/Grammar/Tokens' | tee $(CURDIR)/lib/Tech/Python/python.token > $(CURDIR)/test/Unit/Tech/Python/test-data/ParserTest
-	curl -fL 'https://raw.githubusercontent.com/python/cpython/main/Grammar/Tokens' > $(CURDIR)/lib/Tech/Python/python.token
-	#curl -fL 'https://raw.githubusercontent.com/python/cpython/main/Grammar/python.gram' | tee $(CURDIR)/lib/Tech/Python/python.gram > $(CURDIR)/test/Unit/Tech/Python/test-data/ParserTest
-	curl -fL 'https://raw.githubusercontent.com/python/cpython/main/Grammar/python.gram' > $(CURDIR)/lib/Tech/Python/python.gram
-	curl -fLo $(CURDIR)/lib/Compiler/Frontend/Peg/meta.gram 'https://raw.githubusercontent.com/python/cpython/main/Tools/peg_generator/pegen/metagrammar.gram'
-	target_file_path=$(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data/GeneralTokenizerTest/meta-token \
-		&& cat $(CURDIR)/lib/Compiler/Frontend/Peg/meta.gram | $(CURDIR)/bin/gen-py-tokens > "$$target_file_path" \
+	curl -fLo $(CURDIR)/lib/Tech/Python/python.token 'https://raw.githubusercontent.com/python/cpython/main/Grammar/Tokens'
+	curl -fLo $(CURDIR)/lib/Tech/Python/python.gram 'https://raw.githubusercontent.com/python/cpython/main/Grammar/python.gram'
+	curl -fLo $(CURDIR)/lib/Tech/Python/meta.gram 'https://raw.githubusercontent.com/python/cpython/main/Tools/peg_generator/pegen/metagrammar.gram'
+	target_file_path=$(CURDIR)/test/Unit/Compiler/Frontend/Peg/test-data/PythonTokenizerTest/meta-token \
+		&& cat $(CURDIR)/lib/Tech/Python/meta.gram | $(CURDIR)/bin/gen-py-tokens > "$$target_file_path" \
 		&& echo "Written '$$target_file_path'"
 
 init:

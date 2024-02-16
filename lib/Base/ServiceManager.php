@@ -6,6 +6,7 @@
  */
 namespace Morpho\Base;
 
+use ArrayAccess;
 use ArrayObject;
 use RuntimeException;
 use Throwable;
@@ -21,15 +22,15 @@ use function strtolower;
  *     1) DI/Dependency Injection - inject/push dependent objects to the objects but not inject self
  *     2) Service Locator - inject/push self to the object and allow to pull from self
  */
-class ServiceManager extends ArrayObject implements IConfigurableServiceManager {
+class ServiceManager extends ArrayObject implements ArrayAccess {
+    public array $aliases = [];
+    public mixed $conf;
     protected const FACTORY_METHOD_PREFIX = 'mk';
     protected const FACTORY_METHOD_SUFFIX = 'Service';
-    protected array $aliases = [];
-    protected mixed $conf;
     private array $loading = [];
 
     public function __construct(array $services = null) {
-        parent::__construct([]);
+        parent::__construct();
         if (null !== $services) {
             foreach ($services as $id => $service) {
                 $this->offsetSet($id, $service);
@@ -73,27 +74,6 @@ class ServiceManager extends ArrayObject implements IConfigurableServiceManager 
         return $service;
     }
 
-    protected function mkService(string $id): mixed {
-        $method = self::FACTORY_METHOD_PREFIX . $id . self::FACTORY_METHOD_SUFFIX;
-        if (method_exists($this, $method)) {
-            $this->beforeCreate($id);
-            $service = $this->{$method}();
-            $this->afterCreate($id, $service);
-            return $service;
-        }
-        throw new ServiceNotFoundException($id);
-    }
-
-    protected function beforeCreate(string $id): void {
-        // Do nothing by default.
-    }
-
-    protected function afterCreate(string $id, $service): void {
-        if ($service instanceof IHasServiceManager) {
-            $service->setServiceManager($this);
-        }
-    }
-
     public function offsetUnset($id): void {
         $id = strtolower($id);
         if ($this->offsetExists($id)) {
@@ -120,21 +100,24 @@ class ServiceManager extends ArrayObject implements IConfigurableServiceManager 
         return method_exists($this, $method);
     }
 
-    public function setConf(mixed $conf): static {
-        $this->conf = $conf;
-        return $this;
+    protected function mkService(string $id): mixed {
+        $method = self::FACTORY_METHOD_PREFIX . $id . self::FACTORY_METHOD_SUFFIX;
+        if (method_exists($this, $method)) {
+            $this->beforeCreate($id);
+            $service = $this->{$method}();
+            $this->afterCreate($id, $service);
+            return $service;
+        }
+        throw new ServiceNotFoundException($id);
     }
 
-    public function conf(): mixed {
-        return $this->conf;
+    protected function beforeCreate(string $id): void {
+        // Do nothing by default.
     }
 
-    public function setAliases(array $aliases): static {
-        $this->aliases = $aliases;
-        return $this;
-    }
-
-    public function setAlias(string $alias, string $name): void {
-        $this->aliases[$alias] = $name;
+    protected function afterCreate(string $id, $service): void {
+        if ($service instanceof IHasServiceManager) {
+            $service->setServiceManager($this);
+        }
     }
 }

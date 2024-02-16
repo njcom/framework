@@ -6,14 +6,14 @@
  */
 namespace Morpho\App\Web;
 
+use ArrayAccess;
 use Morpho\Base\Event;
 use Morpho\Base\EventManager as BaseEventManager;
-use Morpho\Base\IServiceManager;
 
 class EventManager extends BaseEventManager {
-    protected IServiceManager $serviceManager;
+    protected ArrayAccess $serviceManager;
 
-    public function __construct(IServiceManager $serviceManager) {
+    public function __construct(ArrayAccess $serviceManager) {
         $this->serviceManager = $serviceManager;
         $this->attachHandlers();
     }

@@ -6,7 +6,9 @@
  */
 namespace Morpho\Compiler;
 
-interface ICompiler {
+use Morpho\Base\IPipe;
+
+interface ICompiler extends IPipe {
     public function frontend(): callable;
 
     public function midend(): callable;

@@ -2,6 +2,10 @@
 import sys
 import tokenize
 
+# Usage: cat $file_path | ./gen-py-tokens
+#        ./gen-py-tokens ...$file_path
+#            $file_path: file path or - to read from stdin
+
 
 def process(readline) -> None:
     for token in tokenize.generate_tokens(readline):

@@ -6,15 +6,16 @@
  */
 namespace Morpho\Test\Unit\App\Web;
 
+use ArrayAccess;
 use ArrayObject;
 use FastRoute\Dispatcher as IDispatcher;
 use Morpho\App\Web\FastRouter;
 use Morpho\App\Web\HttpMethod;
 use Morpho\App\Web\IRequest;
 use Morpho\App\Web\IResponse;
+use Morpho\Base\ServiceManager;
 use Morpho\Uri\Path;
 use Morpho\Uri\Uri;
-use Morpho\Base\IServiceManager;
 use Morpho\Base\NotImplementedException;
 use Morpho\Caching\ICache;
 use Morpho\Testing\TestCase;
@@ -82,32 +83,23 @@ class FastRouterTest extends TestCase {
             FastRouter::class,
             [
                 'mkRouteDispatcher',
+                'conf',
             ]
         );
         $router->expects($this->once())
             ->method('mkRouteDispatcher')
             ->willReturn($dispatcher);
-
-        $serviceManager = $this->createMock(IServiceManager::class);
-        $serviceManager->expects($this->any())
-            ->method('offsetGet')
-            ->with($this->identicalTo('routerCache'))
-            ->willReturn($this->createMock(ICache::class));
-        $serviceManager->expects($this->any())
+        $router->expects($this->any())
             ->method('conf')
-            ->willReturn(
-                [
-                    'router' => [
-                        'handlers' => [
-                            'badRequest'       => ['this is badRequest handler'],
-                            'notFound'         => ['this is notFound handler'],
-                            'methodNotAllowed' => ['this is methodNotAllowed handler'],
-                        ],
+            ->willReturnCallback(function () {
+                return [
+                    'handlers' => [
+                        'badRequest'       => ['this is badRequest handler'],
+                        'notFound'         => ['this is notFound handler'],
+                        'methodNotAllowed' => ['this is methodNotAllowed handler'],
                     ],
-                ]
-            );
-        $router->setServiceManager($serviceManager);
-
+                ];
+            });
         $this->assertSame($expectedHandler, $router->__invoke($request));
     }
 
