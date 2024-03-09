@@ -50,6 +50,14 @@ class PhpTemplateEngineTest extends TestCase {
         $this->assertInstanceOf(IPipe::class, $this->templateEngine);
     }
 
+    public function testE() {
+        $this->assertSame('', $this->templateEngine->e(null));
+        $this->assertSame('', $this->templateEngine->e(''));
+        $this->assertSame('0', $this->templateEngine->e('0'));
+        $this->assertSame('0', $this->templateEngine->e(0));
+        $this->assertSame('&quot;', $this->templateEngine->e('"'));
+    }
+
     public static function dataEval() {
         yield [
             '',

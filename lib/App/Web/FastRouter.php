@@ -11,6 +11,7 @@ use FastRoute\Dispatcher as IDispatcher;
 use FastRoute\Dispatcher\GroupCountBased as GroupCountBasedDispatcher;
 use FastRoute\RouteCollector;
 use FastRoute\RouteParser\Std as StdRouteParser;
+use Morpho\Base\IFn;
 use Morpho\Base\IHasServiceManager;
 use Morpho\Base\ServiceManager;
 use Morpho\Caching\ICache;
@@ -20,7 +21,7 @@ use function Morpho\Base\compose;
 use function Morpho\Base\only;
 use function Morpho\Caching\cacheKey;
 
-class FastRouter implements IHasServiceManager {
+class FastRouter implements IHasServiceManager, IFn {
     protected ServiceManager $serviceManager;
 
     protected ICache $cache;
@@ -31,26 +32,21 @@ class FastRouter implements IHasServiceManager {
         $this->cacheKey = cacheKey($this, __FUNCTION__);
     }
 
-    public function setServiceManager(ServiceManager $serviceManager): static {
+    public function setServiceManager(ServiceManager $serviceManager): void {
         $this->serviceManager = $serviceManager;
         $this->cache = $serviceManager['routerCache'];
-        return $this;
     }
 
-    public function __invoke(IRequest $request): array {
+    public function __invoke(mixed $context): mixed {
         $routeInfo = $this->mkRouteDispatcher()
-            ->dispatch($request->method()->value, $request->uri()->path()->toStr(false));
-        switch ($routeInfo[0]) {
-            case IDispatcher::NOT_FOUND: // 404 Not Found
-                return $this->conf()['handlers']['notFound'];
-            case IDispatcher::METHOD_NOT_ALLOWED: // 405 Method Not Allowed
-                return $this->conf()['handlers']['methodNotAllowed'];
-            case IDispatcher::FOUND: // 200 OK
-                $handlerMeta = $routeInfo[1];
-                return array_merge($handlerMeta, ['args' => $routeInfo[2] ?? []]);
-            default:
-                throw new UnexpectedValueException();
-        }
+            ->dispatch($context->method()->value, $context->uri()->path()->toStr(false));
+        $context->handler = match ($routeInfo[0]) {
+            IDispatcher::NOT_FOUND => $this->conf()['handlers']['notFound'], // 404 Not Found
+            IDispatcher::METHOD_NOT_ALLOWED => $this->conf()['handlers']['methodNotAllowed'], // 405 Method Not Allowed
+            IDispatcher::FOUND => array_merge($routeInfo[1], ['args' => $routeInfo[2] ?? []]), // 200 OK
+            default => throw new UnexpectedValueException(),
+        };
+        return $context;
     }
 
     protected function mkRouteDispatcher(): IDispatcher {

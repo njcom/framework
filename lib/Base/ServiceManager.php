@@ -44,6 +44,7 @@ class ServiceManager extends ArrayObject implements ArrayAccess {
 
     /**
      * This method uses logic found in the Symfony\Component\DependencyInjection\Container::get().
+     * @throws \Morpho\Base\ServiceNotFoundException
      */
     public function offsetGet(mixed $id): mixed {
         // Resolve alias:
@@ -100,6 +101,9 @@ class ServiceManager extends ArrayObject implements ArrayAccess {
         return method_exists($this, $method);
     }
 
+    /**
+     * @throws \Morpho\Base\ServiceNotFoundException
+     */
     protected function mkService(string $id): mixed {
         $method = self::FACTORY_METHOD_PREFIX . $id . self::FACTORY_METHOD_SUFFIX;
         if (method_exists($this, $method)) {

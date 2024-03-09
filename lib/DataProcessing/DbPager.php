@@ -16,10 +16,9 @@ abstract class DbPager extends Pager implements IHasServiceManager {
     protected ServiceManager $serviceManager;
     protected ?IClient $db;
 
-    public function setServiceManager(ServiceManager $serviceManager): static {
+    public function setServiceManager(ServiceManager $serviceManager): void {
         $this->serviceManager = $serviceManager;
         $this->db = null;
-        return $this;
     }
 
     protected function itemList($offset, $pageSize): iterable {

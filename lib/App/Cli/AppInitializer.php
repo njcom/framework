@@ -14,12 +14,5 @@ class AppInitializer extends BaseAppInitializer {
         $siteConf = $this->serviceManager['site']->conf();
         $this->applySiteConf($siteConf);
         $this->serviceManager['errorHandler']->register();
-        $this->serviceManager['app']->on(
-            'exit',
-            function ($event) {
-                $response = $this->serviceManager['request']->response();
-                $event['exitCode'] = $response->statusCode();
-            }
-        );
     }
 }

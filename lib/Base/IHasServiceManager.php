@@ -7,5 +7,5 @@
 namespace Morpho\Base;
 
 interface IHasServiceManager {
-    public function setServiceManager(ServiceManager $serviceManager): static;
+    public function setServiceManager(ServiceManager $serviceManager): void;
 }

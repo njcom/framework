@@ -51,22 +51,4 @@ class Site implements ISite {
     public function moduleConf(string $moduleName): array {
         return $this->allModulesConf[$moduleName];
     }
-
-    public function __invoke(mixed $serviceManager): IResponse|false {
-        try {
-            /** @var IRequest $request */
-            $request = $serviceManager['request'];
-            $handler = $serviceManager['router']->__invoke($request);
-            $request->setHandler($handler);
-            $request = $serviceManager['dispatcher']->__invoke($request);
-            $response = $request->response();
-            $response->send();
-            return $response;
-        } catch (Throwable $e) {
-            $errorHandler = $serviceManager['errorHandler'];
-            $errorHandler->handleException($e);
-            //$this->trigger(new Event('error', ['exception' => $e]));
-            return false;
-        }
-    }
 }

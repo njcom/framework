@@ -32,30 +32,6 @@ class HtmlResponseRendererTest extends TestCase {
                 return $this->headers;
             }
 
-            public function body(): string {
-                return $this->body;
-            }
-
-            public function setBody(string $body): void {
-                $this->body = $body;
-            }
-
-            public function isBodyEmpty(): bool {
-                // TODO: Implement isBodyEmpty() method.
-            }
-
-            public function send(): void {
-                // TODO: Implement send() method.
-            }
-
-            public function setStatusCode(int $statusCode): void {
-                // TODO: Implement setStatusCode() method.
-            }
-
-            public function statusCode(): int {
-                // TODO: Implement statusCode() method.
-            }
-
             public function resetState(): void {
                 // TODO: Implement resetState() method.
             }

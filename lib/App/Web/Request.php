@@ -7,7 +7,6 @@
 namespace Morpho\App\Web;
 
 use ArrayObject;
-use Morpho\App\Request as BaseRequest;
 use Morpho\Uri\Authority;
 use Morpho\Uri\Path;
 use Morpho\Uri\Uri;
@@ -34,7 +33,10 @@ use function ucwords;
  * @copyright Copyright (c) 2005-2017 Zend Technologies USA Inc. (http://www.zend.com)
  * @license https://github.com/zendframework/zend-http/blob/master/LICENSE.md New BSD License
  */
-class Request extends BaseRequest implements IRequest {
+class Request extends ArrayObject implements IRequest {
+    public bool $handled = false;
+    public array $handler = [];
+    public Response $response;
     protected array $knownMethods;
     protected ?ArrayObject $headers = null;
     protected ?HttpMethod $originalMethod;
@@ -43,7 +45,7 @@ class Request extends BaseRequest implements IRequest {
     private ?array $serverVars;
     private ?Uri $uri = null;
     private ?array $trustedProxyIps = null;
-    private ?IResponse $response = null;
+    #private ?IResponse $response = null;
 
     public function __construct(array $vals = null, ?array $serverVars = null) {
         parent::__construct((array)$vals);
@@ -52,6 +54,23 @@ class Request extends BaseRequest implements IRequest {
         $method = $this->detectOriginalMethod();
         $this->originalMethod = null !== $method ? $method : HttpMethod::Get;
         $this->overwrittenMethod = null;//$this->detectOverwrittenMethod();
+        $this->response = new Response();
+    }
+
+    public function redirect(string $uri = null, int $statusCode = null): IResponse {
+        if (null === $uri) {
+            $uri = $this->uri();
+            $query = $uri->query();
+            if (isset($query['redirect'])) {
+                $redirectUri = rawurldecode($query['redirect']);
+                $uri = new Uri($redirectUri);
+                $query = $uri->query();
+                if (isset($query['redirect'])) {
+                    unset($query['redirect']);
+                }
+            }
+        }
+        return $this->response->redirect($uri, $statusCode);
     }
 
     public function setServerVars(array $vars): void {
@@ -77,35 +96,24 @@ class Request extends BaseRequest implements IRequest {
         return $_SERVER[$name] ?? $default;
     }
 
-    public function setResponse(IResponse $response): void {
-        $this->response = $response;
-    }
-
-    public function response(): IResponse {
-        if (null === $this->response) {
-            $this->response = $this->mkResponse();
-        }
-        return $this->response;
-    }
-
-/*    public function data(array $source, $name = null, callable|bool $filter = true): mixed {
-        // NB: On change sync code with query() and post()
-        if (null === $name) {
-            return $filter ? etrim($source) : $source;
-        }
-        if (is_array($name)) {
-            $data = array_intersect_key($source, array_flip(array_values($name)));
-            $data += array_fill_keys($name, null);
-            return $filter ? etrim($data) : $data;
-        }
-        if ($filter) {
-            // todo: support custom $filter
-            return isset($source[$name])
-                ? etrim($source[$name])
-                : null;
-        }
-        return $source[$name] ?? null;
-    }*/
+    /*    public function data(array $source, $name = null, callable|bool $filter = true): mixed {
+            // NB: On change sync code with query() and post()
+            if (null === $name) {
+                return $filter ? etrim($source) : $source;
+            }
+            if (is_array($name)) {
+                $data = array_intersect_key($source, array_flip(array_values($name)));
+                $data += array_fill_keys($name, null);
+                return $filter ? etrim($data) : $data;
+            }
+            if ($filter) {
+                // todo: support custom $filter
+                return isset($source[$name])
+                    ? etrim($source[$name])
+                    : null;
+            }
+            return $source[$name] ?? null;
+        }*/
 
     public function isAjax(bool $flag = null): bool {
         if (null !== $flag) {
@@ -115,9 +123,7 @@ class Request extends BaseRequest implements IRequest {
             return $this->isAjax;
         }
         $headers = $this->headers();
-        return $headers->offsetExists('X-Requested-With') && $headers->offsetGet(
-                'X-Requested-With'
-            ) === 'XMLHttpRequest';
+        return $headers->offsetExists('X-Requested-With') && $headers->offsetGet('X-Requested-With') === 'XMLHttpRequest';
     }
 
     /**
@@ -372,9 +378,9 @@ class Request extends BaseRequest implements IRequest {
         return '/' . $basePath;
     }
 
-    protected function mkResponse(): IResponse {
-        return new Response();
-    }
+    /*    protected function mkResponse(): IResponse {
+            return new Response();
+        }*/
 
     protected function detectOverwrittenMethod(): ?HttpMethod {
         $overwrittenMethod = null;

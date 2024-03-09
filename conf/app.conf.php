@@ -12,7 +12,7 @@ return [
         $hostNameValidator = PHP_SAPI === 'cli' ? new Cli\HostNameValidator(['localhost'], 'localhost') : new Web\HostNameValidator(
             ['framework', 'localhost', '127.0.0.1']
         );
-        return new SiteFactory($hostNameValidator, $app->conf());
+        return new SiteFactory($hostNameValidator, $app->conf);
     },
     'sites'       => [
         'localhost' => [

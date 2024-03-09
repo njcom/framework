@@ -9,6 +9,7 @@
  */
 namespace Morpho\Base;
 
+use BackedEnum;
 use Closure;
 use Generator;
 use InvalidArgumentException;
@@ -122,9 +123,9 @@ function enumVals(string $enumClass, bool $preserveNames = true): array {
 
 /**
  * @param iterable|Stringable|string|resource $source
- * @param bool $asArr
- * @param bool $filterEmpty
- * @param bool $trim
+ * @param bool                                $asArr
+ * @param bool                                $filterEmpty
+ * @param bool                                $trim
  * @return iterable
  */
 function lines($source, bool $asArr = true, bool $filterEmpty = true, bool $trim = true): iterable {
@@ -222,45 +223,57 @@ function unpackArgs(array $args): array {
 }
 
 /**
- * @param string|iterable|int|float|object $list
- * @param string                           $pre
- * @param string|null                      $post
- * @return string|array
+ * @param string                                     $prefix
+ * @param string|null                                $suffix
+ * @param string|\Stringable|iterable|int|float|null|BackedEnum $list
+ * @return string|array|\Closure
+ * @todo: preserve structure, use fmap (map)
+ * @todo: support short form wrap($prefix, $it)
  */
-function wrap(string|iterable|int|float|object $list, string $pre, string $post = null): string|array {
-    if (null === $post) {
-        $post = $pre;
+function wrap(string $prefix, ?string $suffix, string|Stringable|iterable|int|float|BackedEnum $list = null): string|array|Closure {
+    if (null === $suffix) {
+        $suffix = $prefix;
+    }
+    if (null === $list) {
+        return function (string|Stringable|iterable|int|float|BackedEnum $list) use ($prefix, $suffix) {
+            return wrap($prefix, $suffix, $list);
+        };
     }
     if (is_iterable($list)) {
         $r = [];
         foreach ($list as $k => $v) {
-            if ($v instanceof \BackedEnum) {
-                $r[$k] = $pre . $v->value . $post;
+            if ($v instanceof BackedEnum) {
+                $r[$k] = $prefix . $v->value . $suffix;
             } else {
-                $r[$k] = $pre . $v . $post;
+                $r[$k] = $prefix . $v . $suffix;
             }
         }
         return $r;
     }
     if (is_object($list)) {
         if (!$list instanceof Stringable) {
-            if (!$list instanceof \BackedEnum) { // enums extending `string` or `int` types
-                throw new \UnexpectedValueException();
+            if (!$list instanceof BackedEnum) { // enums extending `string` or `int` types
+                throw new UnexpectedValueException();
             }
-            return $pre . $list->value . $post;
+            return $prefix . $list->value . $suffix;
         }
     }
     // string or Stringable
-    return $pre . $list . $post;
+    return $prefix . (string)$list . $suffix;
 }
 
-function wrapFn(string $prefix, string $suffix): Closure {
-    return function (string|Stringable|int|float $list) use ($prefix, $suffix) {
-        return $prefix . $list . $suffix;
-    };
-}
-
-function prepend(string|Stringable|iterable|int|float $list, string $prefix): string|array {
+/**
+ * @param string                                                 $prefix
+ * @param string|\Stringable|iterable|int|float|\BackedEnum|null $list
+ * @return string|array|\Closure
+ * @todo: preserve structure, use fmap (map)
+ */
+function prepend(string $prefix, string|Stringable|iterable|int|float|BackedEnum $list = null): string|array|Closure {
+    if (null === $list) {
+        return function (string|Stringable|int|float|BackedEnum $list) use ($prefix) {
+            return prepend($prefix, $list);
+        };
+    }
     if (is_iterable($list)) {
         $r = [];
         foreach ($list as $k => $v) {
@@ -271,13 +284,18 @@ function prepend(string|Stringable|iterable|int|float $list, string $prefix): st
     return $prefix . (string)$list;
 }
 
-function prependFn(string $prefix): Closure {
-    return function (string|Stringable|int|float $list) use ($prefix) {
-        return $prefix . $list;
-    };
-}
-
-function append(string|Stringable|iterable|int|float $list, string $suffix): string|array {
+/**
+ * @param string                                     $suffix
+ * @param string|\Stringable|iterable|int|float|null|BackedEnum $list
+ * @return string|array|\Closure
+ * @todo: preserve structure, use fmap (map)
+ */
+function append(string $suffix, string|Stringable|iterable|int|float|BackedEnum $list = null): string|array|Closure {
+    if (null === $list) {
+        return function (string|Stringable|int|float $list) use ($suffix) {
+            return append($suffix, $list);
+        };
+    }
     if (is_iterable($list)) {
         $r = [];
         foreach ($list as $k => $v) {
@@ -286,12 +304,6 @@ function append(string|Stringable|iterable|int|float $list, string $suffix): str
         return $r;
     }
     return (string)$list . $suffix;
-}
-
-function appendFn(string $suffix): Closure {
-    return function (string|Stringable|int|float $list) use ($suffix) {
-        return $list . $suffix;
-    };
 }
 
 /**
@@ -317,11 +329,11 @@ function unindent(string|Stringable|int|float $text, int $indentSize = INDENT_SI
 }
 
 function q(string|iterable|int|float|object $list): string|array {
-    return wrap($list, "'");
+    return wrap("'", null, $list);
 }
 
 function qq(string|iterable|int|float|object $list): string|array {
-    return wrap($list, '"');
+    return wrap('"', null, $list);
 }
 
 /**
@@ -467,9 +479,9 @@ function humanize(string|Stringable|int $list, bool $escape = true) {
  * 'foo bar_baz' -> 'Foo bar baz'
  *
  * @param string|Stringable|int|float $list
- * @param bool   $ucwords If == true -> all words will be titleized, else only first word will
+ * @param bool                        $ucwords If == true -> all words will be titleized, else only first word will
  *                        titleized.
- * @param bool   $escape Either need to apply escaping of HTML special chars?
+ * @param bool                        $escape Either need to apply escaping of HTML special chars?
  *
  * @return string.
  */
@@ -512,7 +524,7 @@ function etrim(string|Stringable|iterable|int|float $list, string $chars = null)
  * @param Stringable|int|string|float $list Source string with duplicated characters.
  * @param Stringable|int|string|float $chars Either a set of characters to use in character class or a reg-exp pattern that must match
  *                               all duplicated characters that must be removed.
- * @param bool                  $isCharClass
+ * @param bool                        $isCharClass
  * @return string                String with removed duplicates.
  */
 function deleteDups(string|Stringable|int|float $list, Stringable|int|string|float $chars, bool $isCharClass = true) {
@@ -553,7 +565,7 @@ function normalizeEols(string $list): string {
 function toStr(iterable $it, string $eol = "\n"): string {
     $result = '';
     foreach ($it as $v) {
-        $result .= (string) $v . $eol;
+        $result .= (string)$v . $eol;
     }
     return $result;
 }
@@ -740,9 +752,9 @@ function op(string $operator, $arg = null): Closure {
     }
 }
 
-function not(callable $predicateFn): Closure {
-    return function (...$args) use ($predicateFn) {
-        return !$predicateFn(...$args);
+function not(callable $predicate): Closure {
+    return function (...$args) use ($predicate) {
+        return !$predicate(...$args);
     };
 }
 
@@ -899,17 +911,16 @@ function pipe($iter, mixed $val): mixed {
  * Example:
  *     chain(range(0, 5), range(6, 10), range(11, 15))
  *     => iterable(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
-function chain(...$iterables): iterable {
-    // @TODO: Handle strings
-    //_assertAllIterable($iterables);
-    foreach ($iterables as $iterable) {
-        foreach ($iterable as $key => $value) {
-            yield $key => $value;
-        }
-    }
-}
-*/
-
+ * function chain(...$iterables): iterable {
+ * // @TODO: Handle strings
+ * //_assertAllIterable($iterables);
+ * foreach ($iterables as $iterable) {
+ * foreach ($iterable as $key => $value) {
+ * yield $key => $value;
+ * }
+ * }
+ * }
+ */
 function contains(iterable|string $haystack, mixed $needle): bool {
     if (is_string($haystack)) {
         if ($needle === '') {
@@ -1147,6 +1158,7 @@ function tail($list, string $separator = null) {
 }
 
 /**
+ * @todo: Ensure it works like fmap for Functor, preserving structure
  * @return string|Generator|array
  */
 function map(callable $fn, $it, bool $passKey = false) {

@@ -135,7 +135,7 @@ class PhpTemplateEngine extends ArrPipe {
     */
 
     public function instance(): mixed {
-        return $this->request->handler()['instance'];
+        return $this->request->handler['fn'];
     }
 
     public function forceCompile(bool $flag = null): bool {
@@ -253,7 +253,7 @@ class PhpTemplateEngine extends ArrPipe {
     }
 
     public function pageHtmlId(): string {
-        $handler = $this->request->handler();
+        $handler = $this->request->handler;
         return $this->htmlId(str_replace('/', '-', $handler['controllerPath'])) . '-' . dasherize($handler['method']);
     }
 
@@ -460,10 +460,6 @@ class PhpTemplateEngine extends ArrPipe {
         }
         return '© ' . $range . ', ' . $this->e($brand);
     }
-
-    /*public function handlerInstance() {
-        return $this->request->handler()['instance'];
-    }*/
 
     public function jsConf(): ArrayObject {
         if (!isset($this->request['jsConf'])) {

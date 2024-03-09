@@ -17,7 +17,6 @@ use RuntimeException;
 use Throwable;
 
 use function chmod;
-use function count;
 use function date_default_timezone_get;
 use function date_default_timezone_set;
 use function defined;

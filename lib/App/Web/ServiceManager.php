@@ -113,8 +113,8 @@ class ServiceManager extends BaseServiceManager {
             return composerAutoloader();
         }*/
 
-    protected function mkActionResultRendererService() {
-        return new ActionResultRenderer(
+    protected function mkResultRendererService() {
+        return new ResultRenderer(
             function ($format) {
                 if ($format === ContentFormat::HTML) {
                     return new HtmlResponseRenderer(
@@ -133,10 +133,6 @@ class ServiceManager extends BaseServiceManager {
 
     protected function mkMessengerService() {
         return new Messenger();
-    }
-
-    protected function mkEventManagerService() {
-        return new EventManager($this);
     }
 
     protected function mkRouterCacheService() {
@@ -180,8 +176,8 @@ class ServiceManager extends BaseServiceManager {
     protected function mkDispatchErrorHandlerService() {
         $dispatchErrorHandler = new DispatchErrorHandler();
         $conf = $this->conf['dispatchErrorHandler'];
-        $dispatchErrorHandler->throwErrors($conf['throwErrors']);
-        $dispatchErrorHandler->setExceptionHandler($conf['exceptionHandler']);
+        $dispatchErrorHandler->throwErrors = $conf['throwErrors'];
+        $dispatchErrorHandler->exceptionHandler = $conf['exceptionHandler'];
         return $dispatchErrorHandler;
     }
 

@@ -11,7 +11,7 @@ use Monolog\Handler\ErrorLogHandler as PhpErrorLogWriter;
 use Monolog\Logger;
 use Monolog\LogRecord;
 use Morpho\App\ServiceManager as BaseServiceManager;
-use Morpho\Base\EventManager;
+use Morpho\Base\IFn;
 use Morpho\Base\NotImplementedException;
 use Morpho\Tech\Php\ErrorHandler;
 use Morpho\Tech\Php\LogListener;
@@ -62,11 +62,21 @@ class ServiceManager extends BaseServiceManager {
         throw new NotImplementedException();
     }
 
-    protected function mkEventManagerService() {
-        $eventManager = new EventManager();
-        $eventManager->on('dispatchError', function ($event) {
-            throw $event['exception'];
-        });
-        return $eventManager;
+    protected function mkDispatchErrorHandlerService() {
+        return new class implements IFn {
+            public function __invoke(mixed $context): mixed {
+                throw $context['error'];
+            }
+        };
+    }
+
+    protected function mkResultRendererService() {
+        return new class implements IFn {
+            public function __invoke(mixed $context): mixed {
+                $result = $context->response['result'];
+                $context->response->body = is_iterable($result) ? Terminal::renderList($result) : (string) $result;
+                return $context;
+            }
+        };
     }
 }

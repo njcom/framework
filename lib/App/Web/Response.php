@@ -7,7 +7,6 @@
 namespace Morpho\App\Web;
 
 use ArrayObject;
-use Morpho\App\Response as BaseResponse;
 use RuntimeException;
 use Morpho\Uri\Uri;
 
@@ -15,7 +14,7 @@ use function header;
 use function intval;
 use function is_string;
 
-class Response extends BaseResponse implements IResponse {
+class Response extends ArrayObject implements IResponse {
     public const OK_STATUS_CODE = 200;
     public const MOVED_PERMANENTLY = 301;
     public const FOUND_STATUS_CODE = 302;
@@ -27,7 +26,9 @@ class Response extends BaseResponse implements IResponse {
     public const METHOD_NOT_ALLOWED = 405;
     public const INTERNAL_SERVER_ERROR_STATUS_CODE = 500;
     public const SERVICE_UNAVAILABLE_CODE = 503;
-    protected int $statusCode = self::OK_STATUS_CODE;
+
+    public int $statusCode = self::OK_STATUS_CODE;
+    public string $body;
     protected ?ArrayObject $headers;
     private ?string $statusLine = null;
     private array $formats;
@@ -64,7 +65,7 @@ class Response extends BaseResponse implements IResponse {
 
     public function redirect(string|Uri $uri, int $statusCode = null): static {
         $this->headers()->offsetSet('Location', is_string($uri) ? $uri : $uri->toStr(null, true));
-        $this->setStatusCode($statusCode ?: self::FOUND_STATUS_CODE);
+        $this->statusCode = $statusCode ?: self::FOUND_STATUS_CODE;
         return $this;
     }
 
@@ -83,13 +84,9 @@ class Response extends BaseResponse implements IResponse {
     }
 
     public function resetState(): void {
-        parent::resetState();
+        $this->statusCode = self::OK_STATUS_CODE;
         $this->headers->exchangeArray([]);
         $this->statusLine = '';
-    }
-
-    public function resetStatusCode(): void {
-        $this->statusCode = self::OK_STATUS_CODE;
     }
 
     public function isSuccess(): bool {
@@ -97,10 +94,11 @@ class Response extends BaseResponse implements IResponse {
         return 200 <= $statusCode && $statusCode < 400;
     }
 
-    public function send(): void {
+    public function send(): mixed {
         $this->sendStatusLine();
         $this->sendHeaders();
-        parent::send();
+        echo $this->body;
+        return null;
     }
 
     public function statusLine(): string {

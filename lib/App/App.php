@@ -7,9 +7,8 @@
 namespace Morpho\App;
 
 use Morpho\Base\Env;
-use Morpho\Base\Event;
+use Morpho\Base\IFn;
 use Morpho\Base\ServiceManager;
-use Morpho\Base\EventManager;
 use Morpho\Tech\Php\ErrorHandler;
 use Throwable;
 
@@ -17,7 +16,7 @@ use function addslashes;
 use function error_log;
 use function umask;
 
-class App extends EventManager {
+class App implements IFn {
     public readonly array $conf;
     private ?ServiceManager $serviceManager = null;
 
@@ -26,34 +25,37 @@ class App extends EventManager {
     }
 
     public function init(): ServiceManager {
-        if ($this->serviceManager) {
-            // Already initialized.
-            return $this->serviceManager;
+        if (!$this->serviceManager) {
+            $this->serviceManager = $this->mkServiceManager();
         }
-        return $this->serviceManager = $this->_init();
+        return $this->serviceManager;
     }
 
-    public function run(): mixed {
+    public function __invoke(mixed $context): mixed {
         try {
             $serviceManager = $this->init();
-            $site = $serviceManager['site'];
-
-            $response = $site->__invoke($serviceManager);
-
-            $exitCode = $response ? Env::SUCCESS_CODE : Env::FAILURE_CODE;
-            $event = new Event('exit', ['exitCode' => $exitCode, 'response' => $response]);
-            $this->trigger($event);
-            return $event['exitCode'];
+            try {
+                $request = $serviceManager['request'];
+                $request = $serviceManager['router']->__invoke($request);
+                $request = $serviceManager['dispatcher']->__invoke($request);
+                $response = $request->response;
+                return $response->send();
+            } catch (Throwable $e) {
+                $errorHandler = $serviceManager['errorHandler'];
+                $errorHandler->handleException($e);
+            }
         } catch (Throwable $e) {
             $this->handleException($e);
         }
-        return Env::FAILURE_CODE;
+        return null;
     }
 
     protected function handleException(Throwable $e): void {
         if (Env::boolIniVal('display_errors')) {
             /** @noinspection PhpStatementHasEmptyBodyInspection */
-            while (@ob_end_clean());
+            while (@ob_end_clean()) {
+                ;
+            }
             echo $e;
         }
         if (ErrorHandler::isErrorLogEnabled()) {
@@ -62,7 +64,7 @@ class App extends EventManager {
         }
     }
 
-    protected function _init(): ServiceManager {
+    protected function mkServiceManager(): ServiceManager {
         /** @var SiteFactory $siteFactory */
         $siteFactory = $this->conf['siteFactory']($this);
         $site = $siteFactory->__invoke();

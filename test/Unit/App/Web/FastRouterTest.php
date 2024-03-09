@@ -138,16 +138,16 @@ class FastRouterTest extends TestCase {
                 throw new NotImplementedException();
             }
 
-            public function handler(): array {
+            /*public function handler(): array {
                 return $this->handler;
-            }
-
-            public function setServerVars(array $vars): void {
-                throw new NotImplementedException();
             }
 
             public function setHandler(array $handler): void {
                 $this->handler = $handler;
+            }*/
+
+            public function setServerVars(array $vars): void {
+                throw new NotImplementedException();
             }
 
             public function setServerVar(string $name, mixed $val): void {
@@ -166,9 +166,9 @@ class FastRouterTest extends TestCase {
                 throw new NotImplementedException();
             }
 
-            public function isHandled(bool $flag = null): bool {
+/*            public function isHandled(bool $flag = null): bool {
                 throw new NotImplementedException();
-            }
+            }*/
 
             public function response(): IResponse {
                 throw new NotImplementedException();

@@ -11,7 +11,6 @@ use Morpho\App\Web\IRequest;
 use Morpho\App\Web\Request;
 use Morpho\Uri\Uri;
 use Morpho\Testing\TestCase;
-use Traversable;
 
 use function rawurlencode;
 
@@ -31,10 +30,10 @@ class RequestTest extends TestCase {
         $_SERVER = $this->serverVars;
     }
 
-    public function testResponse_ReturnsTheSameInstance() {
+/*    public function testResponse_ReturnsTheSameInstance() {
         $response = $this->request->response();
         $this->assertSame($response, $this->request->response());
-    }
+    }*/
 
     public function testIsAjax_BoolAccessor() {
         $this->checkBoolAccessor([$this->request, 'isAjax'], false);

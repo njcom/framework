@@ -7,5 +7,12 @@
 namespace Morpho\Base;
 
 abstract class HavingServiceManager implements IHasServiceManager {
-    use THasServiceManager;
+    protected ServiceManager $serviceManager;
+
+    /**
+     * @notCommand
+     */
+    public function setServiceManager(ServiceManager $serviceManager): void {
+        $this->serviceManager = $serviceManager;
+    }
 }

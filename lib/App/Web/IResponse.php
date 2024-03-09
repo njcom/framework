@@ -7,8 +7,8 @@
 namespace Morpho\App\Web;
 
 use ArrayObject;
-use Morpho\App\IResponse as IBaseResponse;
 use Morpho\Uri\Uri;
+use Morpho\App\IResponse as IBaseResponse;
 
 interface IResponse extends IBaseResponse {
     public function allowAjax(bool $flag = null): bool|static;
@@ -27,11 +27,7 @@ interface IResponse extends IBaseResponse {
 
     public function resetState(): void;
 
-    public function resetStatusCode(): void;
-
     public function isSuccess(): bool;
-
-    public function send(): void;
 
     public function statusLine(): string;
 

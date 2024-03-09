@@ -1,40 +1,22 @@
 <?php declare(strict_types=1);
 /**
- * This file is part of morpho-os/framework
- * It is distributed under the 'Apache License Version 2.0' license.
- * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
+ * Some methods in this class based on \Zend\Http\PhpEnvironment\Request class.
+ * @see https://github.com/zendframework/zend-http for the canonical source repository
+ * @copyright Copyright (c) 2005-2017 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license https://github.com/zendframework/zend-http/blob/master/LICENSE.md New BSD License
  */
 namespace Morpho\App\Cli;
 
-use Morpho\App\Request as BaseRequest;
+use ArrayObject;
+use Morpho\App\IMessage;
 
-class Request extends BaseRequest implements IRequest {
-    #protected array|null $args = null;
-    private ?IResponse $response = null;
+class Request extends ArrayObject implements IMessage {
+    public bool $handled = false;
+    public array $handler = [];
+    public Response $response;
 
-    public function setResponse(IResponse $response): void {
-        $this->response = $response;
+    public function __construct(array $vals = null) {
+        parent::__construct((array)$vals);
+        $this->response = new Response();
     }
-
-    public function response(): IResponse {
-        if (null === $this->response) {
-            $this->response = $this->mkResponse();
-        }
-        return $this->response;
-    }
-
-    protected function mkResponse(): IResponse {
-        return new Response();
-    }
-
-/*    public function setArgs(array $args): void {
-        $this->args = $args;
-    }*/
-
-/*    public function args(mixed $filter = null): array {
-        if (null === $this->args) {
-            $this->args = $_SERVER['argv'];
-        }
-        return $this->args;
-    }*/
 }

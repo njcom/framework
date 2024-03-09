@@ -10,8 +10,6 @@ namespace Morpho\App;
  * site: {conf, module[]}
  */
 interface ISite {
-    public function __invoke(mixed $serviceManager): IResponse|false;
-
     /**
      * Returns site's name.
      */

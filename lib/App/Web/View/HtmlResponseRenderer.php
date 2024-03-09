@@ -6,42 +6,40 @@
  */
 namespace Morpho\App\Web\View;
 
-use Morpho\App\IRequest;
-
 use Morpho\App\ModuleIndex;
+
+use Morpho\App\Web\Request;
 
 use function Morpho\Base\dasherize;
 
 class HtmlResponseRenderer {
-    private $templateEngine;
+    private PhpTemplateEngine $templateEngine;
 
     private ModuleIndex $moduleIndex;
 
     private string $pageRenderingModule;
 
-    public function __construct($templateEngine, $moduleIndex, string $pageRenderingModule) {
+    public function __construct(PhpTemplateEngine $templateEngine, $moduleIndex, string $pageRenderingModule) {
         $this->templateEngine = $templateEngine;
         $this->moduleIndex = $moduleIndex;
         $this->pageRenderingModule = $pageRenderingModule;
     }
 
-    public function __invoke(mixed $context): IRequest {
-        $response = $context->response();
-        $html = $this->renderHtml($context);
-
-        $response->setBody($html);
+    public function __invoke(mixed $request): Request {
+        $response = $request->response;
+        $html = $this->renderHtml($request);
+        $response->body = $html;
         // https://tools.ietf.org/html/rfc7231#section-3.1.1
         $response->headers()['Content-Type'] = 'text/html;charset=utf-8';
-
-        return $context;
+        return $request;
     }
 
     protected function renderHtml($request): string {
-        $response = $request->response();
-        $handler = $request->handler();
-
+        $response = $request->response;
+        $handler = $request->handler;
         $actionResult = $response['result'];
 
+        /** @var \Morpho\App\BackendModule $handlerModule */
         $handlerModule = $this->moduleIndex->module($handler['module']);
 
         $this->templateEngine->setBaseTargetDirPath($handlerModule->compiledTemplatesDirPath());
@@ -53,7 +51,7 @@ class HtmlResponseRenderer {
         if (!isset($actionResult['_view'])) {
             $actionResult['_view'] = dasherize($handler['method']);
         }
-        if (false === strpos($actionResult['_view'], '/')) {
+        if (!str_contains($actionResult['_view'], '/')) {
             $actionResult['_view'] = $handler['controllerPath'] . '/' . $actionResult['_view'];
         }
 

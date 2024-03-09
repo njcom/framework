@@ -1,12 +1,21 @@
 <?php declare(strict_types=1);
 /**
- * This file is part of morpho-os/framework
- * It is distributed under the 'Apache License Version 2.0' license.
- * See the https://github.com/njcom/framework/blob/main/LICENSE for the full license text.
+ * Some methods in this class based on \Zend\Http\PhpEnvironment\Request class.
+ * @see https://github.com/zendframework/zend-http for the canonical source repository
+ * @copyright Copyright (c) 2005-2017 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license https://github.com/zendframework/zend-http/blob/master/LICENSE.md New BSD License
  */
 namespace Morpho\App\Cli;
 
-use Morpho\App\Response as BaseResponse;
+use ArrayObject;
+use Morpho\App\IMessage;
 
-class Response extends BaseResponse implements IResponse {
+class Response extends ArrayObject implements IMessage {
+    public string $body;
+    public int $statusCode = Env::SUCCESS_CODE;
+
+    public function send(): mixed {
+        echo $this->body;
+        return $this->statusCode;
+    }
 }

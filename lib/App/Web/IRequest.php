@@ -7,19 +7,21 @@
 namespace Morpho\App\Web;
 
 use ArrayObject;
-use Morpho\App\IRequest as IBaseRequest;
+use Morpho\App\IMessage;
 use Morpho\Uri\Uri;
 
-interface IRequest extends IBaseRequest {
+interface IRequest extends IMessage {
+    public function redirect(string $uri = null, int $statusCode = null): IResponse;
+
     public function setServerVars(array $vars): void;
 
     public function setServerVar(string $name, mixed $val): void;
 
     public function serverVar(string $name, $default = null): mixed;
 
-    public function setResponse(IResponse $response): void;
+    //public function setResponse(IResponse $response): void;
 
-    public function response(): IResponse;
+    //public function response(): IResponse;
 
     public function isKnownMethod(string $method): bool;
 

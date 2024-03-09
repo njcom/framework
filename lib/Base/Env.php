@@ -22,9 +22,6 @@ abstract class Env {
     public const ENCODING = 'UTF-8';
     public const TIMEZONE = 'UTC';
 
-    public const SUCCESS_CODE = 0;
-    public const FAILURE_CODE = 1;
-
     public static function isXdebugEnabled(): bool {
         return self::boolIniVal('xdebug.default_enable');
     }

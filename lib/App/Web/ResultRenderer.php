@@ -6,23 +6,27 @@
  */
 namespace Morpho\App\Web;
 
-class ActionResultRenderer {
-    private $contentNegotiator;
+use Morpho\Base\IFn;
+
+class ResultRenderer implements IFn {
+    private ContentNegotiator $contentNegotiator;
 
     private $rendererFactory;
 
     public function __construct(callable $rendererFactory) {
         $this->rendererFactory = $rendererFactory;
+        // @todo: pass as argument
+        $this->contentNegotiator = new ContentNegotiator();
     }
 
     public function __invoke(mixed $request): mixed {
-        $response = $request->response();
+        $response = $request->response;
         if (!$response->isRedirect()) {
             $formats = $response->formats();
             if (count($formats)) {
                 $currentFormat = null;
                 if (count($formats) > 1) {
-                    $contentNegotiator = $this->contentNegotiator();
+                    $contentNegotiator = $this->contentNegotiator;
                     $clientFormat = $contentNegotiator->__invoke($request);
                     $key = array_search($clientFormat, $formats, true);
                     if (false !== $key) {
@@ -37,17 +41,6 @@ class ActionResultRenderer {
                 }
             }
         }
-        return null;
-    }
-
-    public function contentNegotiator() {
-        if (null === $this->contentNegotiator) {
-            $this->contentNegotiator = new ContentNegotiator();
-        }
-        return $this->contentNegotiator;
-    }
-
-    public function setContentNegotiator($contentNegotiator) {
-        $this->contentNegotiator = $contentNegotiator;
+        return $request;
     }
 }

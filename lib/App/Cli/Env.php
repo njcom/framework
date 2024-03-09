@@ -9,6 +9,9 @@ namespace Morpho\App\Cli;
 use Morpho\Base\Env as BaseEnvironment;
 
 class Env extends BaseEnvironment {
+    public const SUCCESS_CODE = 0;
+    public const FAILURE_CODE = 1;
+
     public static function init(): void {
         parent::init();
         $_SERVER += [

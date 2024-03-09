@@ -10,6 +10,6 @@ use Morpho\App\ActionMetaProvider as BaseActionMetaProvider;
 
 class ActionMetaProvider extends BaseActionMetaProvider {
     protected function baseControllerClasses(): array {
-        return [Controller::class];
+        return [];
     }
 }

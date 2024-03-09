@@ -6,10 +6,11 @@
  */
 namespace Morpho\App;
 
+use Morpho\Base\IFn;
 use Morpho\Base\IHasServiceManager;
 use Morpho\Base\ServiceManager;
 
-class HandlerProvider {
+class HandlerProvider implements IFn {
     protected ModuleIndex $moduleIndex;
 
     private array $registeredModules = [];
@@ -21,27 +22,19 @@ class HandlerProvider {
         $this->serviceManager = $serviceManager;
     }
 
-    public function __invoke(IRequest $request): callable {
-        $handler = $request->handler();
-
+    public function __invoke(mixed $context): callable {
+        $handler = $context->handler;
         $module = $this->moduleIndex->module($handler['module']);
-
-        // @TODO: Register simple common autoloader, which must try to load the class using simple scheme, then call Composer's autoloader in case of failure.
         $this->registerModuleClassLoader($module);
-
         $instance = new $handler['class'];
         if ($instance instanceof IHasServiceManager) {
             $instance->setServiceManager($this->serviceManager);
         }
-
-        $handler['instance'] = $instance;
-
-        $request->setHandler($handler);
-
-        return $instance;
+        return [$instance, $handler['method']];
     }
 
     protected function registerModuleClassLoader(Module $module): void {
+        // @TODO: Register simple common autoloader, which must try to load the class using simple scheme, then call Composer's autoloader in case of failure.
         $moduleName = $module->name();
         if (!isset($this->registeredModules[$moduleName])) {
             require_once $module->autoloadFilePath();

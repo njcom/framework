@@ -7,23 +7,23 @@ use Morpho\App\Web\Controller;
  * @noRoutes
  */
 class ErrorController extends Controller {
-    public function badRequest() {
-        $this->request()->response()->setStatusCode(400);
+    public function badRequest($request) {
+        $request->response->statusCode = 400;
     }
 
-    public function forbidden() {
-        $this->request()->response()->setStatusCode(403);
+    public function forbidden($request) {
+        $request->response->statusCode = 403;
     }
 
-    public function notFound() {
-        $this->request()->response()->setStatusCode(404);
+    public function notFound($request) {
+        $request->response->statusCode = 404;
     }
 
-    public function uncaught() {
-        $this->request()->response()->setStatusCode(500);
+    public function uncaught($request) {
+        $request->response->statusCode = 500;
     }
 
-    public function methodNotAllowed() {
-        $this->request()->response()->setStatusCode(405);
+    public function methodNotAllowed($request) {
+        $request->response->statusCOde = 405;
     }
 }

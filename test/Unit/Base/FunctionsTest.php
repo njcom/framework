@@ -7,8 +7,8 @@
 namespace Morpho\Test\Unit\Base;
 
 use ArrayIterator;
+use Exception;
 use IteratorAggregate;
-use Morpho\Base\Exception;
 use Morpho\Base\IDisposable;
 use Morpho\Test\Unit\Base\FunctionsTest\IntBacked;
 use Morpho\Test\Unit\Base\FunctionsTest\StringBacked;
@@ -23,7 +23,7 @@ use function call_user_func;
 use function count;
 use function file_put_contents;
 use function get_class_methods;
-use function Morpho\Base\{all, append, appendFn, camelize, camelizeKeys, capture, cartesianProduct, caseVal, classify, compose, dasherize, deleteDups, enumVals, etrim, formatBytes, formatFloat, fromJson, humanize, indent, index, isEnumCase, isSubset, isUtf8Text, last, lastPos, lines, memoize, merge, normalizeEols, not, op, partial, permutations, pipe, prepend, prependFn, q, qq, reorderKeys, sanitize, setProps, setsEqual, shorten, subsets, symDiff, titleize, toIt, toJson, tpl, ucfirst, underscore, underscoreKeys, unindent, union, uniqueName, unsetMany, unsetOne, unsetRecursive, waitUntilNumOfAttempts, waitUntilTimeout, with, words, wrap, wrapFn};
+use function Morpho\Base\{all, append, camelize, camelizeKeys, capture, cartesianProduct, caseVal, classify, compose, dasherize, deleteDups, enumVals, etrim, formatBytes, formatFloat, fromJson, humanize, indent, index, isEnumCase, isSubset, isUtf8Text, last, lastPos, lines, memoize, merge, normalizeEols, not, op, partial, permutations, pipe, prepend, q, qq, reorderKeys, sanitize, setProps, setsEqual, shorten, subsets, symDiff, titleize, toIt, toJson, tpl, ucfirst, underscore, underscoreKeys, unindent, union, uniqueName, unsetMany, unsetOne, unsetRecursive, waitUntilNumOfAttempts, waitUntilTimeout, with, words, wrap};
 use function property_exists;
 
 use const Morpho\Base\PHP_FILE_FULL_RE;
@@ -815,44 +815,40 @@ OUT;
     }
 
     public function testPrepend() {
-        $this->assertSame([], prepend([], 'pre'));
-        $this->assertSame(['pre123', 'pre123'], prepend(['123', 123], 'pre'));
-        $this->assertSame('pre123', prepend('123', 'pre'));
-        $this->assertSame('pre123', prepend(123, 'pre'));
-    }
-
-    public function testPrependFn() {
-        $this->assertSame('prefoo', prependFn('pre')('foo'));
+        $this->assertSame([], prepend('pre', []));
+        $this->assertSame(['pre123', 'pre123'], prepend('pre', ['123', 123]));
+        $this->assertSame('pre123', prepend('pre', '123'));
+        $this->assertSame('pre123', prepend('pre', 123));
+        $this->assertSame('prefoo', prepend('pre')('foo'));
     }
 
     public function testAppend() {
-        $this->assertSame([], append([], 'post'));
-        $this->assertSame(['123post', '123post'], append(['123', 123], 'post'));
-        $this->assertSame('123post', append('123', 'post'));
-        $this->assertSame('123post', append(123, 'post'));
+        $this->assertSame([], append('post', []));
+        $this->assertSame(['123post', '123post'], append('post', ['123', 123]));
+        $this->assertSame('123post', append('post', '123'));
+        $this->assertSame('123post', append('post', 123));
+        $this->assertSame('foopost', append('post')('foo'));
     }
 
-    public function testAppendFn() {
-        $this->assertSame('foopost', appendFn('post')('foo'));
+    public function testWrap_PrefixSuffix() {
+        $this->assertSame([], wrap('pre', 'post', []));
+        $this->assertSame(['pre123post', 'pre123post'], wrap('pre', 'post', ['123', 123]));
+        $this->assertSame('pre123post', wrap('pre', 'post', '123'));
+        $this->assertSame('pre123post', wrap('pre', 'post', 123));
+
+        $this->assertSame('prefoopost', wrap('pre', 'post')('foo'));
     }
 
-    public function testWrap() {
-        $this->assertSame([], wrap([], 'pre', 'post'));
-        $this->assertSame(['pre123post', 'pre123post'], wrap(['123', 123], 'pre', 'post'));
-        $this->assertSame('pre123post', wrap('123', 'pre', 'post'));
-        $this->assertSame('pre123post', wrap(123, 'pre', 'post'));
+    public function testWrap_PrefixOnly() {
+        $this->assertSame([], wrap('!', null, []));
+        $this->assertSame(['!123!', '!123!'], wrap('!', null, ['123', 123]));
+        $this->assertSame('!123!', wrap('!', null, '123'));
+        $this->assertSame('!123!', wrap('!', null, 123));
 
-        $this->assertSame([], wrap([], '!'));
-        $this->assertSame(['!123!', '!123!'], wrap(['123', 123], '!'));
-        $this->assertSame('!123!', wrap('123', '!'));
-        $this->assertSame('!123!', wrap(123, '!'));
+        $this->assertSame('!abc!', wrap('!', null, StringBacked::First));
+        $this->assertSame('!7!', wrap('!', null, IntBacked::Seven));
 
-        $this->assertSame('!abc!', wrap(StringBacked::First, '!'));
-        $this->assertSame('!7!', wrap(IntBacked::Seven, '!'));
-    }
-
-    public function testWrapFn() {
-        $this->assertSame('prefoopost', wrapFn('pre', 'post')('foo'));
+        $this->assertSame('+foo+', wrap('+', null)('foo'));
     }
 
     public function testSubsets_AllSubsets() {
@@ -1574,7 +1570,7 @@ OUT;
             [
                 $quote . IntBacked::Seven->value . $quote,
                 IntBacked::Seven,
-            ]
+            ],
         ];
     }
 }

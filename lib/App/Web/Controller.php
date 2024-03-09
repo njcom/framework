@@ -6,50 +6,17 @@
  */
 namespace Morpho\App\Web;
 
-use ArrayObject;
-use Morpho\App\Controller as BaseController;
 use Morpho\Base\IHasServiceManager;
 use Morpho\Base\ServiceManager;
-use Morpho\Base\Result;
-use Morpho\Uri\Uri;
 
-abstract class Controller extends BaseController implements IHasServiceManager {
-    private IRequest $request;
-
+abstract class Controller implements IHasServiceManager {
     protected ServiceManager $serviceManager;
 
-    public function setServiceManager(ServiceManager $serviceManager): static {
+    public function setServiceManager(ServiceManager $serviceManager): void {
         $this->serviceManager = $serviceManager;
-        return $this;
     }
 
-    protected function beforeEach($request): void {
-        parent::beforeEach($request);
-        $this->request = $request;
-    }
-
-    protected function request(): IRequest {
-        return $this->request;
-    }
-
-    protected function redirect(string $uri = null, int $statusCode = null): IResponse {
-        $request = $this->request;
-        if (null === $uri) {
-            $uri = $request->uri();
-            $query = $uri->query();
-            if (isset($query['redirect'])) {
-                $redirectUri = rawurldecode($query['redirect']);
-                $uri = new Uri($redirectUri);
-                $query = $uri->query();
-                if (isset($query['redirect'])) {
-                    unset($query['redirect']);
-                }
-            }
-        }
-        return $request->response()->redirect($uri, $statusCode);
-    }
-
-    protected function jsConf(): ArrayObject {
+/*    protected function jsConf(): ArrayObject {
         if (!isset($this->request['jsConf'])) {
             $this->request['jsConf'] = new ArrayObject();
         }
@@ -67,5 +34,5 @@ abstract class Controller extends BaseController implements IHasServiceManager {
                 ->setFormats([ContentFormat::JSON]);
         }
         return $actionResult;
-    }
+    }*/
 }

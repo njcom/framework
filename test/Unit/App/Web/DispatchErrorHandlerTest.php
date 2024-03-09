@@ -31,7 +31,7 @@ class DispatchErrorHandlerTest extends TestCase {
         bool $mustLogError
     ) {
         $request = new Request();
-        $request->isHandled(true);
+        $request->handled = true;;
 
         $serviceManager = $this->mkServiceManagerWithLogger($mustLogError, $exception, 2);
 
@@ -39,10 +39,10 @@ class DispatchErrorHandlerTest extends TestCase {
 
         $dispatchErrorHandler->handleException($exception, $request);
 
-        $this->assertFalse($request->isHandled());
+        $this->assertFalse($request->handled);
         $this->assertEquals($expectedHandler, $request->handler());
         $this->assertEquals($exception, $request['error']);
-        $this->assertEquals($expectedStatusCode, $request->response()->statusCode());
+        $this->assertEquals($expectedStatusCode, $request['response']->statusCode());
 
         try {
             $dispatchErrorHandler->handleException($exception, $request);
@@ -85,7 +85,7 @@ class DispatchErrorHandlerTest extends TestCase {
         //yield [, true];
         $dispatchErrorHandler = new DispatchErrorHandler();
         $request = new Request();
-        $request->isHandled(true);
+        $request->handled = true;
         $exceptionMessage = $exception->getMessage();
         $dispatchErrorHandler->throwErrors(true);
         $serviceManager = $this->mkServiceManagerWithLogger(true, $exception, 1);
@@ -97,7 +97,7 @@ class DispatchErrorHandlerTest extends TestCase {
             $this->assertSame([], $request->handler());
             $this->assertSame($exception, $e);
             $this->assertSame($exceptionMessage, $e->getMessage());
-            $this->assertTrue($request->isHandled()); // break the main loop
+            $this->assertTrue($request->handled); // break the main loop
         }
     }
 }

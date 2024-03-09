@@ -6,6 +6,7 @@
  */
 namespace Morpho\App\Web;
 
+use Morpho\Base\IFn;
 use Morpho\Base\IHasServiceManager;
 use Morpho\Base\THasServiceManager;
 use Morpho\Tech\Php\ErrorHandler;
@@ -13,27 +14,16 @@ use RuntimeException;
 use Throwable;
 use UnexpectedValueException;
 
-class DispatchErrorHandler implements IHasServiceManager {
+class DispatchErrorHandler implements IHasServiceManager, IFn {
     use THasServiceManager;
 
-    private $thrownExceptions = [];
+    public bool $throwErrors = false;
+    public array $exceptionHandler;
 
-    private bool $throwErrors = false;
+    private array $thrownExceptions = [];
 
-    private $exceptionHandler;
-
-    public function throwErrors(bool $flag = null): bool {
-        if (null !== $flag) {
-            $this->throwErrors = $flag;
-        }
-        return $this->throwErrors;
-    }
-
-    public function setExceptionHandler(array $handler): void {
-        $this->exceptionHandler = $handler;
-    }
-
-    public function handleException(Throwable $exception, Request $request): void {
+    public function __invoke(mixed $request): mixed {
+        $exception = $request['error'];
         $this->logError($exception);
 
         if ($this->throwErrors) {
@@ -52,10 +42,10 @@ class DispatchErrorHandler implements IHasServiceManager {
         }
         $this->thrownExceptions[] = $exception;
 
-        $request->setHandler($exceptionHandler);
-        $request->isHandled(false);
+        $request->handler = $exceptionHandler;
+        $request->handled = false;
         $request['error'] = $exception;
-        $request->response()->setStatusCode(Response::INTERNAL_SERVER_ERROR_STATUS_CODE);
+        $request->response->statusCode = Response::INTERNAL_SERVER_ERROR_STATUS_CODE;
     }
 
     protected function logError(Throwable $exception): void {

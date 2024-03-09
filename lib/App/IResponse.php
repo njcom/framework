@@ -7,17 +7,5 @@
 namespace Morpho\App;
 
 interface IResponse extends IMessage {
-    public function setBody(string $body): void;
-
-    public function body(): string;
-
-    public function isBodyEmpty(): bool;
-
-    public function send(): void;
-
-    public function setStatusCode(int $statusCode): void;
-
-    public function statusCode(): int;
-
-    public function resetState(): void;
+    public function send(): mixed;
 }
