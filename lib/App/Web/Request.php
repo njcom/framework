@@ -128,6 +128,7 @@ class Request extends ArrayObject implements IRequest {
 
     /**
      * Note: Returned headers can contain user input and therefore can be not safe in some scenarios.
+     * @todo: remove this method
      */
     public function headers(): ArrayObject {
         if (null === $this->headers) {
@@ -136,10 +137,12 @@ class Request extends ArrayObject implements IRequest {
         return $this->headers;
     }
 
+    // @todo: remove this method
     public function setUri(Uri $uri): void {
         $this->uri = $uri;
     }
 
+    // @todo: remove this method
     public function uri(): Uri {
         if (null === $this->uri) {
             $this->uri = $this->mkUri();
@@ -162,10 +165,12 @@ class Request extends ArrayObject implements IRequest {
         return $uri;
     }
 
+    // @todo: remove this method
     public function setTrustedProxyIps(array $ips): void {
         $this->trustedProxyIps = $ips;
     }
 
+    // @todo: remove this method
     public function trustedProxyIps(): ?array {
         return $this->trustedProxyIps;
     }

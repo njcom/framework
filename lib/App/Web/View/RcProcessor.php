@@ -100,10 +100,7 @@ class RcProcessor extends HtmlProcessor {
             ];
             $scripts[] = [
                 '_tagName' => 'script',
-                '_text'    => 'define(["require", "exports", "' . $fullJsModuleId . '"], function (require, exports, module) { module.main(window.app || {}, ' . json_encode(
-                        $jsConf,
-                        JSON_UNESCAPED_SLASHES
-                    ) . '); });',
+                '_text'    => 'define(["require", "exports", "' . $fullJsModuleId . '"], function (require, exports, module) { if (!window.app) window.app = {}; module.main(window.app, ' . json_encode($jsConf, JSON_UNESCAPED_SLASHES) . '); });',
             ];
         }
         return $scripts;
@@ -154,10 +151,10 @@ class RcProcessor extends HtmlProcessor {
     protected function renderScripts(array $scripts): string {
         $html = [];
         foreach ($scripts as $tag) {
-/* @todo: Already done in UriProcessor?
-if (isset($tag['src'])) {
-                $tag['src'] = $this->request->prependWithBasePath($tag['src'])->toStr(null, false);
-            }*/
+            /* @todo: Already done in UriProcessor?
+             * if (isset($tag['src'])) {
+             * $tag['src'] = $this->request->prependWithBasePath($tag['src'])->toStr(null, false);
+             * }*/
             unset($tag[$this->indexAttr]);
             $html[] = $this->renderTag($tag);
         }

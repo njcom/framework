@@ -44,8 +44,10 @@ class DispatchErrorHandler implements IHasServiceManager, IFn {
 
         $request->handler = $exceptionHandler;
         $request->handled = false;
-        $request['error'] = $exception;
+        //$request['error'] = $exception;
         $request->response->statusCode = Response::INTERNAL_SERVER_ERROR_STATUS_CODE;
+
+        return $request;
     }
 
     protected function logError(Throwable $exception): void {

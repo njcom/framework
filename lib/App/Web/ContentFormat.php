@@ -7,18 +7,11 @@
 namespace Morpho\App\Web;
 
 class ContentFormat {
-    /*
-    public const HTML = 1;//'html';
-    public const JSON = 2;//'json';
-    public const XML  = 4;//'xml';
-    public const TEXT  = 8;//'text';
-    public const BIN  = 16;//'bin';
-    public const ANY = -1;//'any';
-     */
+    // NB: The constants are used as the enums are not supported as arrays' keys.
+    public const ANY = 'any';
+    public const BIN = 'bin';
     public const HTML = 'html';
     public const JSON = 'json';
-    public const XML = 'xml';
     public const TEXT = 'text';
-    public const BIN = 'bin';
-    public const ANY = 'any';
+    public const XML = 'xml';
 }

@@ -1,5 +1,6 @@
 # Composer's files:
 /vendor/
+.vscode/
 
 # Generated files:
 cache/*

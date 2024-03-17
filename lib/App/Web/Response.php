@@ -15,24 +15,23 @@ use function intval;
 use function is_string;
 
 class Response extends ArrayObject implements IResponse {
-    public const OK_STATUS_CODE = 200;
-    public const MOVED_PERMANENTLY = 301;
-    public const FOUND_STATUS_CODE = 302;
-    public const NOT_MODIFIED_STATUS_CODE = 304;
-    public const BAD_REQUEST_STATUS_CODE = 400;
+    public const int OK_STATUS_CODE = 200;
+    public const int MOVED_PERMANENTLY = 301;
+    public const int FOUND_STATUS_CODE = 302;
+    public const int NOT_MODIFIED_STATUS_CODE = 304;
+    public const int BAD_REQUEST_STATUS_CODE = 400;
+    public const int FORBIDDEN_STATUS_CODE = 403;
+    public const int NOT_FOUND_STATUS_CODE = 404;
+    public const int METHOD_NOT_ALLOWED = 405;
+    public const int INTERNAL_SERVER_ERROR_STATUS_CODE = 500;
+    public const int SERVICE_UNAVAILABLE_CODE = 503;
 
-    public const FORBIDDEN_STATUS_CODE = 403;
-    public const NOT_FOUND_STATUS_CODE = 404;
-    public const METHOD_NOT_ALLOWED = 405;
-    public const INTERNAL_SERVER_ERROR_STATUS_CODE = 500;
-    public const SERVICE_UNAVAILABLE_CODE = 503;
-
+    public array $formats;
     public int $statusCode = self::OK_STATUS_CODE;
     public string $body;
-    protected ?ArrayObject $headers;
-    private ?string $statusLine = null;
-    private array $formats;
-    private bool $allowAjax = false;
+    public ArrayObject $headers;
+    public string $statusLine;
+    public bool $allowAjax = false;
 
     public function __construct(array $input = null) {
         parent::__construct((array) $input);
@@ -44,43 +43,19 @@ class Response extends ArrayObject implements IResponse {
             // ContentFormat::TEXT => false,
             // ContentFormat::BIN => false,
         ];
-    }
-
-    public function allowAjax(bool $flag = null): bool|static {
-        if ($flag !== null) {
-            $this->allowAjax = $flag;
-            return $this;
-        }
-        return $this->allowAjax;
-    }
-
-    public function setFormats(array $formats): static {
-        $this->formats = $formats;
-        return $this;
-    }
-
-    public function formats(): array {
-        return $this->formats;
+        $this->statusLine = $this->statusCodeToStatusLine($this->statusCode);
     }
 
     public function redirect(string|Uri $uri, int $statusCode = null): static {
-        $this->headers()->offsetSet('Location', is_string($uri) ? $uri : $uri->toStr(null, true));
+        $this->headers->offsetSet('Location', is_string($uri) ? $uri : $uri->toStr(null, true));
         $this->statusCode = $statusCode ?: self::FOUND_STATUS_CODE;
         return $this;
     }
 
-    public function headers(): ArrayObject {
-        return $this->headers;
-    }
-
     public function isRedirect(): bool {
         $statusCode = $this->statusCode;
-        return isset($this->headers()['Location'])
+        return isset($this->headers['Location'])
             && 300 <= $statusCode && $statusCode < 400;
-    }
-
-    public function setStatusLine(string $statusLine): void {
-        $this->statusLine = $statusLine;
     }
 
     public function resetState(): void {
@@ -99,13 +74,6 @@ class Response extends ArrayObject implements IResponse {
         $this->sendHeaders();
         echo $this->body;
         return null;
-    }
-
-    public function statusLine(): string {
-        if (null == $this->statusLine) {
-            $this->statusLine = $this->statusCodeToStatusLine($this->statusCode);
-        }
-        return $this->statusLine;
     }
 
     public function statusCodeToStatusLine(int $statusCode): string {
@@ -193,14 +161,14 @@ class Response extends ArrayObject implements IResponse {
     }
 
     protected function sendHeaders(): void {
-        foreach ($this->headers() as $name => $value) {
+        foreach ($this->headers as $name => $value) {
             $this->sendHeader($name . ': ' . $value);
         }
     }
 
     protected function sendStatusLine(): void {
         // @TODO: http_response_code
-        $this->sendHeader($this->statusLine());
+        $this->sendHeader($this->statusLine);
     }
 
     protected function sendHeader(string $value): void {

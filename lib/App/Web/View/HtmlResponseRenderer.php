@@ -7,31 +7,30 @@
 namespace Morpho\App\Web\View;
 
 use Morpho\App\ModuleIndex;
-
-use Morpho\App\Web\Request;
+use Morpho\Base\IFn;
 
 use function Morpho\Base\dasherize;
 
-class HtmlResponseRenderer {
+class HtmlResponseRenderer implements IFn {
     private PhpTemplateEngine $templateEngine;
 
     private ModuleIndex $moduleIndex;
 
     private string $pageRenderingModule;
 
-    public function __construct(PhpTemplateEngine $templateEngine, $moduleIndex, string $pageRenderingModule) {
+    public function __construct(PhpTemplateEngine $templateEngine, ModuleIndex $moduleIndex, string $pageRenderingModule) {
         $this->templateEngine = $templateEngine;
         $this->moduleIndex = $moduleIndex;
         $this->pageRenderingModule = $pageRenderingModule;
     }
 
-    public function __invoke(mixed $request): Request {
-        $response = $request->response;
-        $html = $this->renderHtml($request);
+    public function __invoke(mixed $context): mixed {
+        $response = $context->response;
+        $html = $this->renderHtml($context);
         $response->body = $html;
         // https://tools.ietf.org/html/rfc7231#section-3.1.1
-        $response->headers()['Content-Type'] = 'text/html;charset=utf-8';
-        return $request;
+        $response->headers['Content-Type'] = 'text/html;charset=utf-8';
+        return $context;
     }
 
     protected function renderHtml($request): string {
@@ -64,7 +63,7 @@ class HtmlResponseRenderer {
         */
 
         $html = $this->templateEngine->__invoke($actionResult);
-        if (!$response->allowAjax() || !$request->isAjax()) {
+        if (!$response->allowAjax || !$request->isAjax()) {
             $page = $actionResult['_parentView'] ?? ['_view' => 'index'];
             $page['body'] = $html;
             $html = $this->templateEngine->__invoke($page);

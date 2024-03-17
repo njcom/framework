@@ -16,6 +16,10 @@ abstract class Controller implements IHasServiceManager {
         $this->serviceManager = $serviceManager;
     }
 
+    protected function messenger(): View\Messenger {
+        return $this->serviceManager['messenger'];
+    }
+
 /*    protected function jsConf(): ArrayObject {
         if (!isset($this->request['jsConf'])) {
             $this->request['jsConf'] = new ArrayObject();
@@ -23,9 +27,6 @@ abstract class Controller implements IHasServiceManager {
         return $this->request['jsConf'];
     }
 
-    protected function messenger(): View\Messenger {
-        return $this->serviceManager['messenger'];
-    }
 
     protected function handleResult(mixed $actionResult): mixed {
         if ($actionResult instanceof Result) {

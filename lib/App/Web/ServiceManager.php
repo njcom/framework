@@ -10,6 +10,7 @@ use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\ErrorLogHandler as PhpErrorLogWriter;
 use Monolog\Handler\NativeMailerHandler as NativeMailerLogWriter;
 use Monolog\Handler\StreamHandler;
+use Monolog\Level as LogLevel;
 use Monolog\Logger;
 use Monolog\Processor\IntrospectionProcessor;
 use Monolog\Processor\MemoryPeakUsageProcessor;
@@ -55,11 +56,11 @@ class ServiceManager extends BaseServiceManager {
 
     protected function mkDebugLoggerService() {
         $logger = new Logger('debug');
-        $this->appendLogFileWriter($logger, Logger::DEBUG);
+        $this->appendLogFileWriter($logger, LogLevel::Debug);
         return $logger;
     }
 
-    private function appendLogFileWriter(Logger $logger, int $logLevel): void {
+    private function appendLogFileWriter(Logger $logger, LogLevel $logLevel): void {
         $moduleIndex = $this['backendModuleIndex'];
         $filePath = $moduleIndex->module($this['site']->moduleName())->logDirPath() . '/' . $logger->getName() . '.log';
         $handler = new StreamHandler($filePath, $logLevel);
@@ -154,12 +155,12 @@ class ServiceManager extends BaseServiceManager {
 
         if (!empty($conf['mailWriter']['enabled'])) {
             $logger->pushHandler(
-                new NativeMailerLogWriter($conf['mailTo'], 'An error has occurred', $conf['mailFrom'], Logger::NOTICE)
+                new NativeMailerLogWriter($conf['mailTo'], 'An error has occurred', $conf['mailFrom'], LogLevel::Notice)
             );
         }
 
         if ($conf['logFileWriter']) {
-            $this->appendLogFileWriter($logger, Logger::DEBUG);
+            $this->appendLogFileWriter($logger, LogLevel::Debug);
         }
 
         /*       if ($conf['debugWriter']) {

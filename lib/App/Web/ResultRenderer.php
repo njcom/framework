@@ -9,37 +9,47 @@ namespace Morpho\App\Web;
 use Morpho\Base\IFn;
 
 class ResultRenderer implements IFn {
-    private ContentNegotiator $contentNegotiator;
+    protected array $priorities = ['text/html', 'application/json'/*, 'application/xml;q=0.5'*/];
 
-    private $rendererFactory;
+    protected string $defaultFormat = ContentFormat::HTML;
 
-    public function __construct(callable $rendererFactory) {
-        $this->rendererFactory = $rendererFactory;
-        // @todo: pass as argument
-        $this->contentNegotiator = new ContentNegotiator();
+    private $formatRendererFactory;
+
+    public function __construct(callable $formatRendererFactory) {
+        $this->formatRendererFactory = $formatRendererFactory;
     }
 
     public function __invoke(mixed $request): mixed {
         $response = $request->response;
         if (!$response->isRedirect()) {
-            $formats = $response->formats();
-            if (count($formats)) {
-                $currentFormat = null;
-                if (count($formats) > 1) {
-                    $contentNegotiator = $this->contentNegotiator;
-                    $clientFormat = $contentNegotiator->__invoke($request);
-                    $key = array_search($clientFormat, $formats, true);
-                    if (false !== $key) {
-                        $currentFormat = $formats[$key];
-                    }
-                } else {
-                    $currentFormat = current($formats);
+            $allowedFormats = $response->formats;
+            $currentFormat = $this->defaultFormat;
+            /*
+            $n = count($allowedFormats);
+            if ($n == 1) {
+                $currentFormat = $allowedFormats[0];
+            } else {
+                $headers = $request->headers();
+                if (!$headers->offsetExists('Accept')) {
+                    return $this->defaultFormat;
                 }
-                if ($currentFormat) {
-                    $renderer = ($this->rendererFactory)($currentFormat);
-                    $renderer->__invoke($request);
+                $acceptHeaderStr = $headers->offsetGet('Accept');
+
+                $negotiator = new MediaTypeNegotiator();
+                $mediaType = $negotiator->dataDetectBestMediaRange($acceptHeaderStr, $this->priorities);
+                if (!$mediaType) {
+                    $clientFormat = $this->defaultFormat;
+                } else {
+                    $clientFormat = strtolower($mediaType->subPart);
+                }
+                $key = array_search($clientFormat, $allowedFormats, true);
+                if (false !== $key) {
+                    $currentFormat = $allowedFormats[$key];
                 }
             }
+            */
+            $renderer = ($this->formatRendererFactory)($currentFormat);
+            $renderer->__invoke($request);
         }
         return $request;
     }

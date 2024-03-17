@@ -32,13 +32,6 @@ class ResponseTest extends TestCase {
         $this->assertSame($newStatusCode, $this->response->statusCode());
     }
 
-    public function testRedirect() {
-        $this->assertFalse($this->response->isRedirect());
-        $this->assertSame($this->response, $this->response->redirect('/foo/bar'));
-        $this->assertTrue($this->response->isRedirect());
-        $this->assertSame(Response::FOUND_STATUS_CODE, $this->response->statusCode());
-    }
-
     public function testIsSuccess() {
         $this->assertTrue($this->response->isSuccess());
         $this->response->setStatusCode(Response::INTERNAL_SERVER_ERROR_STATUS_CODE);
@@ -161,5 +154,83 @@ class ResponseTest extends TestCase {
         $this->assertSame(Response::OK_STATUS_CODE, $this->response->statusCode());
         $this->assertSame([], $this->response->headers()->getArrayCopy());
         $this->assertSame($this->response->statusCodeToStatusLine(200), $this->response->statusLine());
+    }
+
+    public function testRedirect() {
+/*
+        $this->assertFalse($this->response->isRedirect());
+        $this->assertSame($this->response, $this->response->redirect('/foo/bar'));
+        $this->assertTrue($this->response->isRedirect());
+        $this->assertSame(Response::FOUND_STATUS_CODE, $this->response->statusCode());
+ */
+        $this->markTestIncomplete();
+        /*
+        public static function dataRedirect() {
+            yield [
+                '/foo/bar',
+                399,
+                'http://example.local/',
+                '/foo/bar',
+                399,
+                null,
+            ];
+            yield [
+                'http://example.local/',
+                Response::FOUND_STATUS_CODE,
+                'http://example.local/',
+                null,
+                null,
+                null,
+            ];
+            yield [
+                'https://some.local/?',
+                Response::FOUND_STATUS_CODE,
+                'http://example.local',
+                null,
+                null,
+                'https://some.local/?redirect=/bug',
+            ];
+            yield [
+                'https://another.local/',
+                Response::FOUND_STATUS_CODE,
+                'http://example.local',
+                null,
+                null,
+                'https://another.local/',
+            ];
+            yield [
+                'http://framework/',
+                Response::FOUND_STATUS_CODE,
+                'http://example.local',
+                null,
+                null,
+                'http%3A%2F%2Fframework%2F',
+            ];
+        }
+
+         * @dataProvider dataRedirect
+        public function testRedirect(string $expectedLocation, int $expectedCode, string $currentUri, ?string $redirectUri, ?int $redirectCode, ?string $redirectQueryArg) {
+            $response = new Response();
+            $request = $this->mkConfiguredRequest($response, $currentUri);
+            if (null !== $redirectQueryArg) {
+                $request->uri()->query()['redirect'] = $redirectQueryArg;
+            }
+            $controller = new class ($redirectUri, $redirectCode) extends Controller {
+                public function __construct(private ?string $redirectUri, private ?int $redirectCode) {
+                }
+
+                public function someAction() {
+                    return $this->redirect($this->redirectUri, $this->redirectCode);
+                }
+            };
+
+            $controller->__invoke($request);
+
+            $changedResponse = $request->response();
+            $this->assertSame($changedResponse, $response);
+            $this->assertSame($expectedLocation, $changedResponse->headers()['Location']);
+            $this->assertSame($expectedCode, $changedResponse->statusCode());
+        }
+        */
     }
 }

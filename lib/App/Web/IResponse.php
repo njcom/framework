@@ -6,30 +6,17 @@
  */
 namespace Morpho\App\Web;
 
-use ArrayObject;
 use Morpho\Uri\Uri;
 use Morpho\App\IResponse as IBaseResponse;
 
 interface IResponse extends IBaseResponse {
-    public function allowAjax(bool $flag = null): bool|static;
-
-    public function setFormats(array $formats): static;
-
-    public function formats(): array;
-
     public function redirect(string|Uri $uri, int $statusCode = null): static;
 
-    public function headers(): ArrayObject;
-
     public function isRedirect(): bool;
-
-    public function setStatusLine(string $statusLine): void;
 
     public function resetState(): void;
 
     public function isSuccess(): bool;
-
-    public function statusLine(): string;
 
     public function statusCodeToStatusLine(int $statusCode): string;
 

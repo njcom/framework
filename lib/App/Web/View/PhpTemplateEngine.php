@@ -40,7 +40,12 @@ use function ucfirst;
 class PhpTemplateEngine extends ArrPipe {
     //public const HIDDEN_FIELD = 'hidden';
 
-    public const VIEW_FILE_EXT = '.phtml';
+    public IRequest $request;
+
+    public const string VIEW_FILE_EXT = '.phtml';
+
+    public array $vars = [];
+
     private static array $htmlIds = [];
 
     protected bool $forceCompile;
@@ -54,11 +59,7 @@ class PhpTemplateEngine extends ArrPipe {
      */
     private $pluginFactory;
 
-    private IRequest $request;
-
     private ?Uri $uri = null;
-
-    protected array $vars = [];
 
     public function __construct(array $conf = null) {
         $this->init();
@@ -85,14 +86,6 @@ class PhpTemplateEngine extends ArrPipe {
         return htmlspecialchars_decode((string)$text, ENT_QUOTES);
     }
 
-    public function setRequest(IRequest $request): void {
-        $this->request = $request;
-    }
-
-    public function request(): IRequest {
-        return $this->request;
-    }
-
     public function __set(string $varName, $value): void {
         $this->vars[$varName] = $value;
     }
@@ -112,18 +105,6 @@ class PhpTemplateEngine extends ArrPipe {
         unset($this->vars[$name]);
     }
 
-    public function mergeVars(array $vars): void {
-        $this->vars = array_merge($this->vars, $vars);
-    }
-
-    public function setVars(array $vars): void {
-        $this->vars = $vars;
-    }
-
-    public function vars(): array {
-        return $this->vars;
-    }
-
     /*
         public function isUserLoggedIn(): bool {
             return $this->serviceManager['userManager']->isUserLoggedIn();
@@ -134,7 +115,7 @@ class PhpTemplateEngine extends ArrPipe {
         }
     */
 
-    public function instance(): mixed {
+    public function handler(): mixed {
         return $this->request->handler['fn'];
     }
 

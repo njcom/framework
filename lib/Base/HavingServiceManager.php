@@ -10,7 +10,7 @@ abstract class HavingServiceManager implements IHasServiceManager {
     protected ServiceManager $serviceManager;
 
     /**
-     * @notCommand
+     * @notAction
      */
     public function setServiceManager(ServiceManager $serviceManager): void {
         $this->serviceManager = $serviceManager;

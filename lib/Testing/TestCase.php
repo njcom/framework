@@ -185,13 +185,15 @@ abstract class TestCase extends BaseTestCase {
         $this->assertNull($value);
     }
 
-    protected function checkBoolAccessor(callable $callback, bool $initialValue): void {
+/*
+    @todo: simplify all methods using this method
+   protected function checkBoolAccessor(callable $callback, bool $initialValue): void {
         $this->assertSame($initialValue, $callback());
         $this->assertTrue($callback(true), 'Returns the passed true');
         $this->assertTrue($callback(), 'Returns the previous value that was set: true');
         $this->assertFalse($callback(false), 'Returns the passed false');
         $this->assertFalse($callback(), 'Returns the previous value that was set: false');
-    }
+    }*/
 
     protected function checkAccessors(callable $getter, $initialValue, $newValue, $setterReturnVal = null): void {
         if (!isset($getter[1]) || !is_string($getter[1])) {
@@ -247,6 +249,15 @@ abstract class TestCase extends BaseTestCase {
             }
         }
     }
+
+    /**
+     * @throws \ReflectionException
+    protected function callPrivateMethod(object $object, string $method, array $args) {
+        $method = new ReflectionMethod($object, $method);
+        $method->setAccessible(true);
+        return $method->invokeArgs($object, $args);
+    }
+    */
 
     private function tryDeleteDir(string $dirPath): bool {
         $this->fixPerms($dirPath);
