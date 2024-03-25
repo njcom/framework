@@ -8,5 +8,6 @@ class IndexController extends Controller {
      * @GET /
      */
     public function index() {
+        dd();
     }
 }

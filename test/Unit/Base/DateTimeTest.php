@@ -8,6 +8,7 @@ namespace Morpho\Test\Unit\Base;
 
 use Morpho\Base\DateTime;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class DateTimeTest extends TestCase {
     private const MYSQL_DATETIME_RE = '~^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2}) (?<hour>\d{2}):(?<min>\d{2}):(?<sec>\d{2})$~s';
@@ -57,9 +58,7 @@ class DateTimeTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataTestIsTimestamp
-     */
+    #[DataProvider('dataTestIsTimestamp')]
     public function testIsTimestamp($value, $isTrue) {
         if ($isTrue) {
             $this->assertTrue(DateTime::isTimestamp($value));

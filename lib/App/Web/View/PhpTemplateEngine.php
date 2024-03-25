@@ -46,6 +46,8 @@ class PhpTemplateEngine extends ArrPipe {
 
     public array $vars = [];
 
+    public ?Uri $uri = null;
+
     private static array $htmlIds = [];
 
     protected bool $forceCompile;
@@ -59,8 +61,6 @@ class PhpTemplateEngine extends ArrPipe {
      */
     private $pluginFactory;
 
-    private ?Uri $uri = null;
-
     public function __construct(array $conf = null) {
         $this->init();
         $conf = (array)$conf;
@@ -68,6 +68,7 @@ class PhpTemplateEngine extends ArrPipe {
         $this->pluginFactory = $conf['pluginFactory'] ?? function () {
         };
         $this->request = $conf['request'];
+        $this->uri = $this->request->uri;
         parent::__construct($conf['steps']);
     }
 
@@ -393,15 +394,8 @@ class PhpTemplateEngine extends ArrPipe {
      */
     public function uriWithRedirectToSelf(string|Uri $uri): string {
         $newUri = $this->request->prependWithBasePath(is_string($uri) ? $uri : $uri->toStr(null, false));
-        $newUri->query()['redirect'] = $this->uri()->toStr(null, false);
+        $newUri->query()['redirect'] = $this->uri->toStr(null, false);
         return $newUri->toStr(null, true);
-    }
-
-    public function uri(): Uri {
-        if (null === $this->uri) {
-            $this->uri = $this->request->uri();
-        }
-        return $this->uri;
     }
 
     /**

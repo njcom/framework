@@ -9,6 +9,8 @@ namespace Morpho\Test\Unit\Base;
 use Morpho\Base\Env;
 use Morpho\Testing\TestCase;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 use function ini_set;
 use function strpos;
 use function strtoupper;
@@ -125,9 +127,7 @@ class EnvTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataIniValToBool
-     */
+    #[DataProvider('dataIniValToBool')]
     public function testIniValToBool($expected, $actual) {
         $this->assertEquals($expected, Env::iniValToBool($actual));
     }

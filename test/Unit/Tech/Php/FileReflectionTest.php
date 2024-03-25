@@ -12,6 +12,7 @@ use Morpho\Tech\Php\ClassTypeReflection;
 use Morpho\Tech\Php\FileReflection;
 use Morpho\Tech\Php\NamespaceReflection;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
 use ReflectionFunction;
 
@@ -197,9 +198,7 @@ class FileReflectionTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataNamespaces_MultipleNamespaces
-     */
+    #[DataProvider('dataNamespaces_MultipleNamespaces')]
     public function testNamespaces_MultipleNamespaces($filePath, $expected) {
         $rFile = new FileReflection($filePath);
         $i = 0;

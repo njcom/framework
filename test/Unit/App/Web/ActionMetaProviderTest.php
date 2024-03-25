@@ -9,6 +9,8 @@ namespace Morpho\Test\Unit\App\Web;
 use Morpho\App\Web\ActionMetaProvider;
 use Morpho\Testing\TestCase;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 use function iterator_to_array;
 
 class ActionMetaProviderTest extends TestCase {
@@ -186,9 +188,7 @@ class ActionMetaProviderTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataInvoke
-     */
+    #[DataProvider('dataInvoke')]
     public function testInvoke($moduleMeta, $expected) {
         $module = $this->mkModule($moduleMeta[0], $moduleMeta[1]);
         $actual = iterator_to_array($this->actionMetaProvider->__invoke([$module]), false);

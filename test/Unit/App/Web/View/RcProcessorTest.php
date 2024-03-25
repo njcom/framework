@@ -13,6 +13,7 @@ use Morpho\App\Web\Request;
 use Morpho\Uri\Uri;
 use Morpho\App\Web\View\RcProcessor;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 
 use const Morpho\App\FRONTEND_DIR_NAME;
@@ -126,9 +127,7 @@ OUT;
         ];
     }
 
-    /**
-     * @dataProvider dataSkipAttribute
-     */
+    #[DataProvider('dataSkipAttribute')]
     public function testSkipAttribute($tag) {
         $processor = new class ($this->mkRequest('foo'), $this->mkSiteStub('abc/efg')) extends RcProcessor {
             protected function containerBody(array $tag): array|string|false|null {
@@ -167,9 +166,7 @@ OUT;
         ];
     }
 
-    /**
-     * @dataProvider dataAutoInclusionOfActionScripts_WithoutChildScripts
-     */
+    #[DataProvider('dataAutoInclusionOfActionScripts_WithoutChildScripts')]
     public function testAutoInclusionOfActionScripts_WithoutChildScripts($jsConf) {
         $request = $this->mkRequest('cat/tail');
         $request['jsConf'] = $jsConf;
@@ -252,7 +249,7 @@ OUT;
         $request = new Request(['view' => $view]);
         $uri = new Uri('http://localhost' . $this->baseUriPath . '?one=123');
         $uri->path()->setBasePath($this->baseUriPath);
-        $request->setUri($uri);
+        $request->uri = $uri;
         return $request;
     }
 }

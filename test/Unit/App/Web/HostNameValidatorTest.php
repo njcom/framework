@@ -9,6 +9,8 @@ namespace Morpho\Test\Unit\App\Web;
 use Morpho\App\Web\HostNameValidator;
 use Morpho\Testing\TestCase;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 use function strtolower;
 
 class HostNameValidatorTest extends TestCase {
@@ -59,9 +61,7 @@ class HostNameValidatorTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataCurrentHostName_ValidIps
-     */
+    #[DataProvider('dataCurrentHostName_ValidIps')]
     public function testCurrentHostName_ValidIps(string $expected, string $ip) {
         $_SERVER['HTTP_HOST'] = $ip;
         $validator = new HostNameValidator([$ip]);
@@ -95,9 +95,7 @@ class HostNameValidatorTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataCurrentHostName_InvalidIps
-     */
+    #[DataProvider('dataCurrentHostName_InvalidIps')]
     public function testCurrentHostName_InvalidIps(string $ip) {
         $_SERVER['HTTP_HOST'] = $ip;
         $validator = new HostNameValidator([$ip]);

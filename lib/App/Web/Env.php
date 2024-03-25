@@ -14,7 +14,6 @@ use function preg_match;
 use function strtolower;
 
 class Env extends BaseEnvironment {
-    public const HTTP_PROTO = 'HTTP/1.1';
     //protected bool $startSession = false;
 
     public static function clientIp(): array {
@@ -45,7 +44,7 @@ class Env extends BaseEnvironment {
     public static function init(): void {
         parent::init();
         $_SERVER['HTTP_REFERER'] = self::httpReferrer();
-        $_SERVER['SERVER_PROTOCOL'] = self::httpProto();
+        $_SERVER['SERVER_PROTOCOL'] = self::httpVersion()->value;
         $_SERVER['HTTP_HOST'] = self::httpHost();
         $_SERVER += [
             'SCRIPT_NAME'     => null,
@@ -64,14 +63,18 @@ class Env extends BaseEnvironment {
         return $_SERVER['HTTP_REFERER'] ?? '';
     }
 
-    public static function httpProto(): string {
+    // https://www.rfc-editor.org/rfc/rfc9112.html#name-http-version
+    public static function httpVersion(): HttpVersion {
         if (isset($_SERVER['SERVER_PROTOCOL'])) {
-            $proto = $_SERVER['SERVER_PROTOCOL'];
-            if (preg_match('~^HTTP/\d\.\d$~si', $proto)) {
-                return $proto;
+            $httpVersion = (string) $_SERVER['SERVER_PROTOCOL'];
+            if (str_starts_with($httpVersion, 'HTTP/')) {
+                $httpVersion = substr($httpVersion, 5);
+                if (HttpVersion::isValid($httpVersion)) {
+                    return HttpVersion::from($httpVersion);
+                }
             }
         }
-        return self::HTTP_PROTO;
+        return HttpVersion::V1_1;
     }
 
     public static function httpHost(): string {

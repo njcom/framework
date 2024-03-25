@@ -21,4 +21,13 @@ enum HttpMethod: string {
     case Options = 'OPTIONS';
     case Trace = 'TRACE';
     case Patch = 'PATCH';
+
+    public static function isValid(string $httpMethod): bool {
+        // @todo
+        return true;
+        dt();
+        foreach (self::cases() as $case) {
+            d($case);
+        }
+    }
 }

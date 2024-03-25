@@ -9,6 +9,8 @@ namespace Morpho\Test\Unit\App\Web;
 use Morpho\App\Web\RouteMetaProvider;
 use Morpho\Testing\TestCase;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 use function iterator_to_array;
 use function Morpho\Base\dasherize;
 
@@ -69,9 +71,7 @@ class RouteMetaProviderTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataInvoke_RestActions
-     */
+    #[DataProvider('dataInvoke_RestActions')]
     public function testInvoke_RestActions(string $action, string $expectedHttpMethod, ?string $expectedActionPath) {
         $actionMetas = [
             [
@@ -210,9 +210,7 @@ class RouteMetaProviderTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataDocComments
-     */
+    #[DataProvider('dataDocComments')]
     public function testDocComments(string $docComment, array $expected) {
         $this->assertSame($expected, RouteMetaProvider::parseDocComment($docComment));
     }

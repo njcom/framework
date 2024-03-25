@@ -9,6 +9,8 @@ namespace Morpho\Test\Unit\Uri;
 use Morpho\Uri\UriValidator;
 use Morpho\Testing\TestCase;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 use function print_r;
 
 class UriValidatorTest extends TestCase {
@@ -45,9 +47,7 @@ class UriValidatorTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataValidateScheme
-     */
+    #[DataProvider('dataValidateScheme')]
     public function testValidateScheme(string $scheme, bool $isValid) {
         $this->assertSame($isValid, UriValidator::validateScheme($scheme));
     }
@@ -87,9 +87,7 @@ class UriValidatorTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataValidateAuthority
-     */
+    #[DataProvider('dataValidateAuthority')]
     public function testValidateAuthority(string $authority, bool $isValid) {
         $this->assertSame($isValid, UriValidator::validateAuthority($authority));
     }
@@ -100,9 +98,7 @@ class UriValidatorTest extends TestCase {
         yield ['//', true];
     }
 
-    /**
-     * @dataProvider dataValidatePath_WithAuthorityCase
-     */
+    #[DataProvider('dataValidatePath_WithAuthorityCase')]
     public function testValidatePath_WithAuthorityCase(string $path, bool $isValid) {
         $this->validatePath($path, $isValid, true);
     }
@@ -120,9 +116,7 @@ class UriValidatorTest extends TestCase {
         */
     }
 
-    /**
-     * @dataProvider dataValidatePath_WithoutAuthorityCase
-     */
+    #[DataProvider('dataValidatePath_WithoutAuthorityCase')]
     public function testValidatePath_WithoutAuthorityCase(string $path, bool $isValid) {
         $this->validatePath($path, $isValid, false);
     }

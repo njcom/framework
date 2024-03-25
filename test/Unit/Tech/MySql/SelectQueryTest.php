@@ -10,6 +10,7 @@ use Morpho\Tech\MySql\SelectQuery;
 use Morpho\Tech\Sql\Expr;
 use Morpho\Tech\Sql\IQuery;
 use Morpho\Tech\Sql\ISelectQuery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use UnexpectedValueException;
 
 class SelectQueryTest extends QueryTest {
@@ -47,9 +48,7 @@ class SelectQueryTest extends QueryTest {
         ];
     }
 
-    /**
-     * @dataProvider dataColumns
-     */
+    #[DataProvider('dataColumns')]
     public function testColumns(string $expected, $columns) {
         $this->assertSame($expected, (string) $this->query->columns($columns));
     }
@@ -108,9 +107,7 @@ class SelectQueryTest extends QueryTest {
         yield ['RIGHT'];
     }
 
-    /**
-     * @dataProvider dataJoin
-     */
+    #[DataProvider('dataJoin')]
     public function testJoin($joinType) {
         $columns = 'task AS t.*, tL.startedAt, tL.endedAt, tL.exitCode';
         $join = 'taskLaunch tL ON t.id = tL.taskId';

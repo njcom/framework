@@ -10,15 +10,13 @@ use Morpho\Uri\Uri;
 use Morpho\App\IResponse as IBaseResponse;
 
 interface IResponse extends IBaseResponse {
-    public function redirect(string|Uri $uri, int $statusCode = null): static;
-
     public function isRedirect(): bool;
-
-    public function resetState(): void;
 
     public function isSuccess(): bool;
 
-    public function statusCodeToStatusLine(int $statusCode): string;
+    public function mkRedirect(string|Uri $uri, StatusCode $statusCode = null): static;
 
-    public static function statusCodeToReason(int $statusCode): string;
+    public function mkStatusLine(StatusCode $statusCode): StatusLine;
+
+    public function resetState(): void;
 }

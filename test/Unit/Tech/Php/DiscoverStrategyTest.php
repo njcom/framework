@@ -9,6 +9,8 @@ namespace Morpho\Test\Unit\Tech\Php;
 use Morpho\Tech\Php\IDiscoverStrategy;
 use Morpho\Testing\TestCase;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 use const Morpho\App\TEST_DATA_DIR_NAME;
 
 abstract class DiscoverStrategyTest extends TestCase {
@@ -44,9 +46,7 @@ abstract class DiscoverStrategyTest extends TestCase {
         ]);
     }
 
-    /**
-     * @dataProvider dataClassTypesDefinedInFile
-     */
+    #[DataProvider('dataClassTypesDefinedInFile')]
     public function testClassTypesDefinedInFile(array $expected, string $relFilePath) {
         $actual = $this->strategy->classTypesDefinedInFile(__DIR__ . '/' . TEST_DATA_DIR_NAME . '/DiscoverStrategyTest/' . $relFilePath);
         $this->assertEquals($expected, $actual);

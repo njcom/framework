@@ -11,6 +11,8 @@ use Morpho\Tech\Php\IDiscoverStrategy;
 use Morpho\Tech\Php\TokenStrategy;
 use Morpho\Testing\TestCase;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 use function get_class;
 
 class ClassTypeDiscovererTest extends TestCase {
@@ -52,7 +54,7 @@ class ClassTypeDiscovererTest extends TestCase {
         $discoverStrategy = $this->createMock(IDiscoverStrategy::class);
         $discoverStrategy->expects($this->atLeastOnce())
             ->method('classTypesDefinedInFile')
-            ->will($this->returnValue([]));
+            ->willReturn([]);
         $this->assertInstanceOf(
             get_class($this->classTypeDiscoverer),
             $this->classTypeDiscoverer->setDiscoverStrategy($discoverStrategy)
@@ -77,9 +79,7 @@ class ClassTypeDiscovererTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataClassTestFilePath
-     */
+    #[DataProvider('dataClassTestFilePath')]
     public function testClassTypeFilePath(string $class) {
         $filePath = $this->getTestDirPath() . '/Test.php';
         require_once $filePath;

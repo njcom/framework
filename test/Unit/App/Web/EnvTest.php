@@ -7,41 +7,37 @@
 namespace Morpho\Test\Unit\App\Web;
 
 use Morpho\App\Web\Env;
+use Morpho\App\Web\HttpVersion;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class EnvTest extends TestCase {
-    public static function dataHttpProto() {
-        yield [
-            'HTTP/1.0',
-            'HTTP/1.0',
-        ];
+    public static function dataHttpVersion(): iterable {
         yield [
             'HTTP/1.1',
-            'HTTP/1.1',
+            HttpVersion::V1_1,
         ];
         yield [
-            'HTTP/2.0',
-            'HTTP/2.0',
+            'HTTP/2',
+            HttpVersion::V2,
         ];
         yield [
             'HTTP/invalid',
-            Env::HTTP_PROTO,
+            HttpVersion::V1_1,
         ];
         yield [
             'invalid',
-            Env::HTTP_PROTO,
+            HttpVersion::V1_1,
         ];
         yield [
             'HTTP/10.1',
-            Env::HTTP_PROTO,
+            HttpVersion::V1_1,
         ];
     }
 
-    /**
-     * @dataProvider dataHttpProto
-     */
-    public function testHttpProto(string $serverProtocol, string $expected) {
+    #[DataProvider('dataHttpVersion')]
+    public function testHttpVersion(string $serverProtocol, HttpVersion $expected) {
         $_SERVER['SERVER_PROTOCOL'] = $serverProtocol;
-        $this->assertSame($expected, Env::httpProto());
+        $this->assertSame($expected, Env::httpVersion());
     }
 }

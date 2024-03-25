@@ -6,15 +6,18 @@
  */
 namespace Morpho\Test\Unit\App\Web;
 
+use Morpho\App\IMessage;
 use Morpho\App\Web\HttpMethod;
 use Morpho\App\Web\IRequest;
 use Morpho\App\Web\Request;
+use Morpho\Test\Unit\App\MessageTest;
 use Morpho\Uri\Uri;
-use Morpho\Testing\TestCase;
+
+use PHPUnit\Framework\Attributes\DataProvider;
 
 use function rawurlencode;
 
-class RequestTest extends TestCase {
+class RequestTest extends MessageTest {
     private IRequest $request;
     private array $serverVars;
 
@@ -22,7 +25,9 @@ class RequestTest extends TestCase {
         parent::setUp();
         $_GET = $_POST = $_REQUEST = $_COOKIE = [];
         $this->serverVars = $_SERVER;
-        $this->request = new Request(null, []);
+        $_SERVER['SCRIPT_NAME'] = '/index.php';
+        $_SERVER['REQUEST_URI'] = '/';
+        $this->request = new Request();
     }
 
     protected function tearDown(): void {
@@ -40,21 +45,13 @@ class RequestTest extends TestCase {
     }
 
     public function testIsAjax_ByDefaultReturnsValueFromHeaders() {
-        $this->request->headers()['X-Requested-With'] = 'XMLHttpRequest';
+        $this->request->headers['X-Requested-With'] = 'XMLHttpRequest';
         $this->assertTrue($this->request->isAjax());
-        $this->request->headers()->exchangeArray([]);
+        $this->request->headers->exchangeArray([]);
         $this->assertFalse($this->request->isAjax());
     }
 
-    public static function dataSettingHeadersThroughServerVars() {
-        yield [true];
-        yield [false];
-    }
-
-    /**
-     * @dataProvider dataSettingHeadersThroughServerVars
-     */
-    public function testSettingHeadersThroughServerVars($useGlobalServerVar) {
+    public function testSettingHeadersThroughServerVars() {
         $serverVars = [
             "HOME"                           => "/foo/bar",
             "USER"                           => "user-name",
@@ -93,32 +90,27 @@ class RequestTest extends TestCase {
             'Content-Type'              => $serverVars['CONTENT_TYPE'],
             'Content-MD5'               => $serverVars['CONTENT_MD5'],
         ];
-        if ($useGlobalServerVar) {
-            $_SERVER = $serverVars;
-            $request = new Request();
-        } else {
-            $request = new Request(null, $serverVars);
-        }
-        $this->assertSame($expectedHeaders, $request->headers()->getArrayCopy());
+        $_SERVER = array_merge($_SERVER, $serverVars);
+        $request = new Request();
+        $this->assertSame($expectedHeaders, $request->headers->getArrayCopy());
     }
 
     public function testHeadersAccessors() {
-        $this->assertSame([], $this->request->headers()->getArrayCopy());
-        $this->request->headers()['foo'] = 'bar';
-        $this->assertSame('bar', $this->request->headers()['foo']);
-        $this->assertSame(['foo' => 'bar'], $this->request->headers()->getArrayCopy());
+        $this->assertSame([], $this->request->headers->getArrayCopy());
+        $this->request->headers['foo'] = 'bar';
+        $this->assertSame('bar', $this->request->headers['foo']);
+        $this->assertSame(['foo' => 'bar'], $this->request->headers->getArrayCopy());
     }
 
     public function testHandlerAccessors() {
         $handler = ['foo', 'bar', 'baz'];
-        $this->request->setHandler($handler);
-        $this->assertEquals($handler, $this->request->handler());
+        $this->request->handler = $handler;
+        $this->assertEquals($handler, $this->request->handler);
     }
 
     public function testUri_HasValidComponents() {
         $trustedProxyIp = '127.0.0.3';
-        $this->request->setTrustedProxyIps([$trustedProxyIp]);
-        $this->request->setServerVars([
+        $_SERVER = array_merge($_SERVER, [
             'REMOTE_ADDR' => $trustedProxyIp,
             'HTTP_X_FORWARDED_PROTO' => 'https',
             'HTTP_HOST' => 'blog.example.com:8042',
@@ -126,34 +118,24 @@ class RequestTest extends TestCase {
             'QUERY_STRING' => 'page=news&skip=10',
             'SCRIPT_NAME' => '/',
         ]);
-        $uri = $this->request->uri();
+        $request = new Request(trustedProxyIps: [$trustedProxyIp]);
+        $uri = $request->uri;
         $this->assertEquals('https://blog.example.com:8042/top.htm?page=news&skip=10', $uri->toStr(null, true));
     }
 
-    public static function dataMethodAccessors(): iterable {
+    public static function dataHttpMethod(): iterable {
         return array_map(fn ($v) => [$v], HttpMethod::cases());
     }
 
-    /**
-     * @dataProvider dataMethodAccessors
-     */
-    public function testMethod_Default(HttpMethod $httpMethod) {
-        $request = new Request(null, ['REQUEST_METHOD' => $httpMethod->value]);
-        $this->assertSame($httpMethod, $request->method());
+    #[DataProvider('dataHttpMethod')]
+    public function testHttpMethod(HttpMethod $httpMethod) {
+        $_SERVER['REQUEST_METHOD'] = $httpMethod->value;
+        $request = new Request();
+        $this->assertSame($httpMethod, $request->httpMethod);
     }
 
     /**
-     * @dataProvider dataMethodAccessors
-     */
-    public function testMethodAccessors(HttpMethod $method) {
-        $_SERVER['REQUEST_METHOD'] = 'unknown';
-        $this->request->setMethod($method);
-        $this->assertSame($method, $this->request->method());
-    }
-
-    /**
-     * @dataProvider dataMethodAccessors
-
+     * dataProvider dataMethodAccessors
     public function testMethod_OverwritingHttpMethod_ThroughMethodArg(HttpMethod $httpMethod) {
         $_GET['_method'] = $httpMethod->value;
         $this->checkHttpMethod(['REQUEST_METHOD' => HttpMethod::Post->value], $httpMethod);
@@ -161,7 +143,7 @@ class RequestTest extends TestCase {
 */
 
     /**
-     * @dataProvider dataMethodAccessors
+     * dataProvider dataMethodAccessors
     public function testMethod_OverwritingHttpMethod_ThroughHeader(HttpMethod $httpMethod) {
         $this->checkHttpMethod(
             [
@@ -173,41 +155,14 @@ class RequestTest extends TestCase {
     }
     */
 
-    public function testIsHandled() {
-        $this->checkBoolAccessor([$this->request, 'isHandled'], false);
-    }
-
-    public static function dataArgs() {
-        yield [HttpMethod::Get];
-        yield [HttpMethod::Post];
-    }
-
-    /**
-     * @dataProvider dataArgs
-     */
-/*    public function testArgs(HttpMethod $httpMethod) {
-        // @TODO: Test patch, put
-        $this->request->setMethod($httpMethod);
-
-        // Write to $_GET | $_POST
-        $GLOBALS['_' . $httpMethod->value]['foo']['bar'] = 'baz';
-
-        $this->assertEquals(
-            ['non' => null, 'foo' => ['bar' => 'baz']],
-            $this->request->args(['foo', 'non'])
-        );
-    }*/
-
     public function testUriInitialization_BasePath() {
         $basePath = '/foo/bar/baz';
-        $request = new Request(null,
-            [
-                'REQUEST_URI' => $basePath . '/index.php/one/two',
-                'SCRIPT_NAME' => $basePath . '/index.php',
-            ]
-        );
-        $uri = $request->uri();
-        $this->assertSame($basePath, $uri->path()->basePath());
+        $_SERVER = array_merge($_SERVER, [
+            'REQUEST_URI' => $basePath . '/index.php/one/two',
+            'SCRIPT_NAME' => $basePath . '/index.php',
+        ]);
+        $request = new Request();
+        $this->assertSame($basePath, $request->uri->path()->basePath());
     }
 
     public static function dataPrependWithBasePath() {
@@ -277,15 +232,13 @@ class RequestTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataPrependWithBasePath
-     */
+    #[DataProvider('dataPrependWithBasePath')]
     public function testPrependWithBasePath($expectedUri, $expectedBasePath, $basePath, $pathToPrepend) {
         $fullRequestUri = 'http://localhost/foo/bar/baz';
         $uri = new Uri($fullRequestUri);
         $uri->path()->setBasePath($basePath);
-        $this->request->setUri($uri);
-        $this->assertSame($basePath, $this->request->uri()->path()->basePath());
+        $this->request->uri = $uri;
+        $this->assertSame($basePath, $this->request->uri->path()->basePath());
 
         $prepended = $this->request->prependWithBasePath($pathToPrepend);
 
@@ -307,31 +260,31 @@ class RequestTest extends TestCase {
         yield [false, ['HTTP_X_FORWARDED_PROTO' => '']];
     }
 
-    /**
-     * @dataProvider dataUriInitialization_Scheme
-     */
+    #[DataProvider('dataUriInitialization_Scheme')]
     public function testUriInitialization_Scheme($isHttps, $serverVars) {
         $trustedProxyIp = '127.0.0.2';
-        $serverVars['REMOTE_ADDR'] = $trustedProxyIp;
-        $request = new Request(null, $serverVars);
-        $request->setTrustedProxyIps([$trustedProxyIp]);
+        $_SERVER = array_merge($_SERVER, $serverVars);
+        $_SERVER['REMOTE_ADDR'] = $trustedProxyIp;
+        $request = new Request(trustedProxyIps: [$trustedProxyIp]);
         if ($isHttps) {
-            $this->assertSame('https', $request->uri()->scheme());
+            $this->assertSame('https', $request->uri->scheme());
         } else {
-            $this->assertSame('http', $request->uri()->scheme());
+            $this->assertSame('http', $request->uri->scheme());
         }
     }
 
     public function testUriInitialization_Query() {
-        $request = new Request(null,
-            [
-                'REQUEST_URI'  => '/',
-                'SCRIPT_NAME'  => '/index.php',
-                'QUERY_STRING' => '',
-                'HTTP_HOST'    => 'framework',
-            ]
-        );
-        $uri = $request->uri();
-        $this->assertSame('http://framework/', $uri->toStr(null, true));
+        $_SERVER = array_merge($_SERVER, [
+            'REQUEST_URI'  => '/',
+            'SCRIPT_NAME'  => '/index.php',
+            'QUERY_STRING' => '',
+            'HTTP_HOST'    => 'framework',
+        ]);
+        $request = new Request();
+        $this->assertSame('http://framework/', $request->uri->toStr(null, true));
+    }
+
+    protected function mkMessage(): IMessage {
+        return clone $this->request;
     }
 }

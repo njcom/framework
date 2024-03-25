@@ -11,6 +11,7 @@ use ArrayObject;
 use Morpho\App\Cli\Exception as CliException;
 use Morpho\Base\InvalidConfException;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use Morpho\App\Cli\ICommandResult;
 
@@ -94,9 +95,7 @@ class FunctionsTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataWriteErrorAndWriteErrorLine
-     */
+    #[DataProvider('dataWriteErrorAndWriteErrorLine')]
     public function testWriteErrorAndWriteErrorLine($fn, $expectedMessage, $error) {
         $tmpFilePath = $this->createTmpFile();
         $autoloadFilePath = BASE_DIR_PATH . '/vendor/autoload.php';
@@ -166,9 +165,7 @@ OUT
         yield [true, true];
     }
 
-    /**
-     * @dataProvider dataSh_CaptureAndShowConfOptions
-     */
+    #[DataProvider('dataSh_CaptureAndShowConfOptions')]
     public function testSh_CaptureAndShowConfOptions(bool $capture, bool $show) {
         $cmd = 'ls ' . escapeshellarg(__DIR__);
         ob_start();

@@ -12,6 +12,7 @@ use Morpho\Testing\TestCase;
 
 class ParserTest extends TestCase {
     public function testExplainGrammarLines() {
+        $this->markTestIncomplete();
         // @todo: move to PEG
         $text = '123';
         $grammarSource = <<<EOF

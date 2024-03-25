@@ -57,7 +57,7 @@ namespace Morpho\Tech\Php {
      * @return Node\Stmt[]|null Array of statements, representing the text.
      */
     function parse(string $text): ?array {
-        $parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP7);
+        $parser = (new ParserFactory())->createForNewestSupportedVersion();
         return $parser->parse($text);
     }
 

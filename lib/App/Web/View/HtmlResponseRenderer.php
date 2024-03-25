@@ -63,11 +63,12 @@ class HtmlResponseRenderer implements IFn {
         */
 
         $html = $this->templateEngine->__invoke($actionResult);
-        if (!$response->allowAjax || !$request->isAjax()) {
+
+        //if (!$response->allowAjax || !$request->isAjax()) {
             $page = $actionResult['_parentView'] ?? ['_view' => 'index'];
             $page['body'] = $html;
             $html = $this->templateEngine->__invoke($page);
-        }
+        //}
 
         return $html;
     }

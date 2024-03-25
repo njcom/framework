@@ -9,15 +9,21 @@ namespace Morpho\Test\Unit\App\Web\View;
 use ArrayIterator;
 use Morpho\App\ISite;
 use Morpho\App\Web\IRequest;
+use Morpho\App\Web\IResponse;
 use Morpho\App\Web\View\FormProcessor;
 use Morpho\App\Web\View\PhpProcessor;
 use Morpho\App\Web\View\PhpTemplateEngine;
 use Morpho\App\Web\View\RcProcessor;
 use Morpho\App\Web\View\UriProcessor;
 use Morpho\Base\IPipe;
+use Morpho\Base\NotImplementedException;
 use Morpho\Testing\TestCase;
 
 use Morpho\Uri\Uri;
+use Override;
+use PHPUnit\Framework\Attributes\DataProvider;
+
+use Traversable;
 
 use function date;
 use function file_put_contents;
@@ -32,7 +38,8 @@ class PhpTemplateEngineTest extends TestCase {
     }
 
     private function templateEngineConf(): array {
-        $request = $this->createMock(IRequest::class);
+        //$request = $this->createMock(IRequest::class);
+        $request = $this->mkRequestStub();
         $site = $this->createMock(ISite::class);
         return [
             'request' => $request,
@@ -71,9 +78,7 @@ class PhpTemplateEngineTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataEval
-     */
+    #[DataProvider('dataEval')]
     public function testEval_DefaultSteps($expected, $source, $vars) {
         $compiled = $this->templateEngine->eval($source, $vars);
         $this->assertSame($expected, $compiled);
@@ -125,12 +130,13 @@ class PhpTemplateEngineTest extends TestCase {
     public function testLink_WithoutText() {
         $uri = 'http://localhost/?foo=123&bar=456';
 
+        //$request = $this->mkRequestStub();
         $request = $this->createMock(IRequest::class);
         $request->expects($this->any())
             ->method('prependWithBasePath')
             ->with($this->identicalTo($uri))
             ->willReturn(new Uri($uri));
-        $this->templateEngine->setRequest($request);
+        $this->templateEngine->request = $request;
 
         $this->assertSame('<a href="' . htmlspecialchars($uri, ENT_QUOTES) . '">' . htmlspecialchars($uri, ENT_QUOTES) . '</a>', $this->templateEngine->l($uri));
     }
@@ -264,9 +270,7 @@ class PhpTemplateEngineTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataAttribs
-     */
+    #[DataProvider('dataAttribs')]
     public function testAttribs($expected, $attribs, string $msg = '') {
         $this->assertSame($expected, $this->templateEngine->attribs($attribs), $msg);
     }
@@ -332,17 +336,12 @@ class PhpTemplateEngineTest extends TestCase {
     }
 
     public function testPageHtmlId() {
-        $request = $this->createMock(IRequest::class);
-        $request->expects($this->any())
-            ->method('handler')
-            ->willReturn(
-                [
-                    'controllerPath' => 'foo/bar',
-                    'method'         => 'baz',
-                ]
-            );
-        $this->templateEngine->setRequest($request);
-
+        $request = $this->mkRequestStub();
+        $request->handler = [
+            'controllerPath' => 'foo/bar',
+            'method' => 'baz',
+        ];
+        $this->templateEngine->request = $request;
         $this->assertSame('foo-bar-baz', $this->templateEngine->pageHtmlId());
     }
 
@@ -402,5 +401,52 @@ class PhpTemplateEngineTest extends TestCase {
             $this->assertSame($expected, $encoded);
             $this->assertSame($char, $this->templateEngine->de($encoded));
         }
+    }
+
+    private function mkRequestStub(): IRequest {
+        return new class implements IRequest {
+            public array $handler = [];
+            public mixed $uri = null;
+
+            #[Override] public function getIterator(): Traversable {
+                throw new NotImplementedException();
+            }
+
+            #[Override] public function offsetExists(mixed $offset): bool {
+                throw new NotImplementedException();
+            }
+
+            #[Override] public function offsetGet(mixed $offset): mixed {
+                throw new NotImplementedException();
+            }
+
+            #[Override] public function offsetSet(mixed $offset, mixed $value): void {
+                throw new NotImplementedException();
+            }
+
+            #[Override] public function offsetUnset(mixed $offset): void {
+                throw new NotImplementedException();
+            }
+
+            #[Override] public function count(): int {
+                throw new NotImplementedException();
+            }
+
+            #[Override] public function exchangeArray(object|array $arr) {
+                throw new NotImplementedException();
+            }
+
+            #[Override] public function redirect(string $uri = null, int $statusCode = null): IResponse {
+                throw new NotImplementedException();
+            }
+
+            #[Override] public function isAjax(bool $flag = null): bool {
+                throw new NotImplementedException();
+            }
+
+            #[Override] public function prependWithBasePath(string $path): Uri {
+                throw new NotImplementedException();
+            }
+        };
     }
 }

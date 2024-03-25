@@ -12,15 +12,16 @@ use Morpho\Tech\Php\ExceptionHandler;
 use Morpho\Tech\Php\HandlerManager;
 use Morpho\Tech\Php\IErrorHandler;
 use Morpho\Tech\Php\WarningException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 
 use function ini_get;
 use function ini_set;
 use function trigger_error;
 
-require_once __DIR__ . '/BaseErrorHandlerTest.php';
+require_once __DIR__ . '/BaseErrorHandler.php';
 
-class ErrorHandlerTest extends BaseErrorHandlerTest {
+class ErrorHandlerTest extends BaseErrorHandler {
     private $oldErrorLevel;
 
     protected function setUp(): void {
@@ -131,19 +132,22 @@ class ErrorHandlerTest extends BaseErrorHandlerTest {
         ];
     }
 
-    /**
-     * @dataProvider dataTestHandleError_ConvertsErrorToException
-     */
+    #[DataProvider('dataTestHandleError_ConvertsErrorToException')]
     public function testHandleError_ConvertsErrorToException($severity, $expectedErrorClass) {
         $errorHandler = $this->mkErrorHandler();
         $errorHandler->register();
+        $oldErrorReporting = error_reporting(E_ALL);
         try {
-            trigger_error("My message", $severity);
-            $this->fail();
-        } catch (ErrorException $ex) {
-            $this->assertInstanceOf('Morpho\\Tech\\Php\\' . $expectedErrorClass, $ex);
+            try {
+                trigger_error("My message", $severity);
+                $this->fail();
+            } catch (ErrorException $ex) {
+                $this->assertInstanceOf('Morpho\\Tech\\Php\\' . $expectedErrorClass, $ex);
+            }
+        } finally {
+            error_reporting($oldErrorReporting);
         }
-        $this->assertEquals(__LINE__ - 5, $ex->getLine());
+        $this->assertEquals(__LINE__ - 8, $ex->getLine());
         $this->assertEquals("My message", $ex->getMessage());
         $this->assertEquals(__FILE__, $ex->getFile());
         $this->assertEquals($severity, $ex->getSeverity());
@@ -169,9 +173,7 @@ class ErrorHandlerTest extends BaseErrorHandlerTest {
         ];
     }
 
-    /**
-     * @dataProvider dataErrorToException
-     */
+    #[DataProvider('dataErrorToException')]
     public function testErrorToException($severity, $class) {
         $message = 'some';
         $lineNo = __LINE__;

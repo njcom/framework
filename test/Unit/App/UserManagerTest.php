@@ -11,6 +11,7 @@ use Morpho\App\IUserRepo;
 use Morpho\App\UserManager;
 use Morpho\App\Web\Session;
 use Morpho\Testing\DbTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 
 class UserManagerTest extends DbTestCase {
@@ -118,9 +119,7 @@ class UserManagerTest extends DbTestCase {
         return [['my-login', ''], ['', 'my-password'], ['', '']];
     }
 
-    /**
-     * @dataProvider dataLogIn_EmptyLoginOrPasswordReturnsError
-     */
+    #[DataProvider('dataLogIn_EmptyLoginOrPasswordReturnsError')]
     public function testLogIn_EmptyLoginOrPasswordReturnsError($login, $password) {
         $this->userManager->registerUser(['login' => $login, 'password' => $password]);
         $this->assertEquals(

@@ -11,7 +11,7 @@ use ArrayObject;
 use Morpho\App\IMessage;
 
 class Request extends ArrayObject implements IMessage {
-    public bool $handled = false;
+    public bool $isHandled = false;
     public array $handler = [];
     public Response $response;
 

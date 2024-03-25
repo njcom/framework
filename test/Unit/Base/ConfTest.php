@@ -10,6 +10,7 @@ use ArrayObject;
 use Morpho\Base\Conf;
 use Morpho\Base\InvalidConfException;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ConfTest extends TestCase {
     public function testInterface() {
@@ -55,9 +56,7 @@ class ConfTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataMerge
-     */
+    #[DataProvider('dataMerge')]
     public function testMerge(bool $recursive, $expected) {
         $conf = new Conf(['foo' => ['bar']]);
         $this->assertSame($expected, $conf->merge(['foo' => ['abc']], $recursive)->getArrayCopy());
@@ -98,9 +97,7 @@ class ConfTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataCheck_Array
-     */
+    #[DataProvider('dataCheck_Array')]
     public function testCheck_Array($expected, $conf, $defaultConf) {
         $this->assertEquals(
             $expected,

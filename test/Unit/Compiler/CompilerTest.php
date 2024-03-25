@@ -11,6 +11,7 @@ use Morpho\Base\Pipe;
 use Morpho\Compiler\Compiler;
 use Morpho\Compiler\ICompiler;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class CompilerTest extends TestCase {
     public function testCompilerInterface() {
@@ -79,9 +80,7 @@ class CompilerTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataStepsAccessors
-     */
+    #[DataProvider('dataStepsAccessors')]
     public function testStepsAccessors(string $method) {
         $compiler = new Compiler($this->mkCompilerConf());
         $oldStep = $compiler->$method();

@@ -17,6 +17,12 @@ use RuntimeException;
 use Throwable;
 
 class DispatchErrorHandlerTest extends TestCase {
+    protected function setUp(): void {
+        parent::setUp();
+        $_SERVER['SCRIPT_NAME'] = '/index.php';
+        $_SERVER['REQUEST_URI'] = '/';
+    }
+
     public function testInterface() {
         $dispatchErrorHandler = new DispatchErrorHandler();
         $this->assertInstanceOf(IFn::class, $dispatchErrorHandler);
@@ -35,7 +41,7 @@ class DispatchErrorHandlerTest extends TestCase {
         $exception = new RuntimeException('Uncaught test');
         $dispatchErrorHandler = new DispatchErrorHandler();
         $request = new Request();
-        $request->handled = true;
+        $request->isHandled = true;
         $exceptionMessage = $exception->getMessage();
         $dispatchErrorHandler->throwErrors = true;
         $serviceManager = $this->mkServiceManagerWithLogger(true, $exception, 1);
@@ -48,13 +54,13 @@ class DispatchErrorHandlerTest extends TestCase {
             $this->assertSame([], $request->handler);
             $this->assertSame($exception, $e);
             $this->assertSame($exceptionMessage, $e->getMessage());
-            $this->assertTrue($request->handled); // break the main loop
+            $this->assertTrue($request->isHandled); // break the main loop
         }
     }
 
     private function checkHandlesTheSameErrorOccurredTwice(DispatchErrorHandler $dispatchErrorHandler, array $expectedHandler, Throwable $exception, int $expectedStatusCode, bool $mustLogError) {
         $request = new Request();
-        $request->handled = true;;
+        $request->isHandled = true;;
         $request['error'] = $exception;
 
         $serviceManager = $this->mkServiceManagerWithLogger($mustLogError, $exception, 2);
@@ -63,10 +69,10 @@ class DispatchErrorHandlerTest extends TestCase {
 
         $this->assertSame($request, $dispatchErrorHandler->__invoke($request));
 
-        $this->assertFalse($request->handled);
+        $this->assertFalse($request->isHandled);
         $this->assertSame($expectedHandler, $request->handler);
         $this->assertSame($exception, $request['error']);
-        $this->assertSame($expectedStatusCode, $request->response->statusCode);
+        $this->assertSame($expectedStatusCode, $request->response->statusLine->statusCode->value);
 
         try {
             $dispatchErrorHandler->__invoke($request);

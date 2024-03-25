@@ -9,6 +9,7 @@ namespace Morpho\Test\Unit\Uri;
 use Morpho\Testing\TestCase;
 use Morpho\Uri\IUriComponent;
 use Morpho\Uri\Path;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use Morpho\Test\Unit\Base\PathTest as BasePathTest;
 
@@ -49,9 +50,7 @@ class PathTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataBasePathAccessors
-     */
+    #[DataProvider('dataBasePathAccessors')]
     public function testBasePathAccessors(string $uri, string $basePathStr, string $relPathStr) {
         $path = new Path($uri);
         /** @noinspection PhpVoidFunctionResultUsedInspection */
@@ -79,9 +78,7 @@ class PathTest extends TestCase {
         yield ['.', true];
     }
 
-    /**
-     * @dataProvider dataIsRel
-     */
+    #[DataProvider('dataIsRel')]
     public function testIsRel(string $pathStr, bool $isRel) {
         $path = new Path($pathStr);
         $isRel ? $this->assertTrue($path->isRel()) : $this->assertFalse($path->isRel());
@@ -129,9 +126,7 @@ class PathTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataCombine
-     */
+    #[DataProvider('dataCombine')]
     public function testCombine(string $expected, ...$paths) {
         $this->assertSame($expected, Path::combine(...$paths));
     }

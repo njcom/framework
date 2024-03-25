@@ -10,6 +10,7 @@ use Exception;
 use Morpho\Fs\IFs;
 use Morpho\Fs\Stat;
 use Morpho\Testing\Vfs;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use UnexpectedValueException;
@@ -202,9 +203,7 @@ class VfsTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataEntryName
-     */
+    #[DataProvider('dataEntryName')]
     public function testEntryName(string $uri, $expectedNameOrException) {
         if ($expectedNameOrException instanceof Exception) {
             $this->expectException(get_class($expectedNameOrException));
@@ -278,9 +277,7 @@ class VfsTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataReadingAfterWriting
-     */
+    #[DataProvider('dataReadingAfterWriting')]
     public function testReadingAfterWriting(string $contents) {
         Vfs::register();
         $fileUri = Vfs::URI_PREFIX . '/foo';

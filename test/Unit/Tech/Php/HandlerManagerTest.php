@@ -18,9 +18,9 @@ use function set_error_handler;
 
 use const E_WARNING;
 
-require_once __DIR__ . '/BaseErrorHandlerTest.php';
+require_once __DIR__ . '/BaseErrorHandler.php';
 
-class HandlerManagerTest extends BaseErrorHandlerTest {
+class HandlerManagerTest extends BaseErrorHandler {
     public function testIsHandlerRegistered() {
         $callback = function () {};
         foreach ([HandlerManager::ERROR, HandlerManager::EXCEPTION] as $handlerType) {

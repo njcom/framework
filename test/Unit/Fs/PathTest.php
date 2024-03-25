@@ -12,6 +12,7 @@ use Morpho\Fs\Path;
 use Morpho\Test\Unit\Base\PathTest as BasePathTest;
 use Morpho\Testing\TestCase;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use UnexpectedValueException;
 
 use function basename;
@@ -67,9 +68,7 @@ class PathTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataIsAbs
-     */
+    #[DataProvider('dataIsAbs')]
     public function testIsAbs($path, $isAbs) {
         $isAbs ? $this->assertTrue(Path::isAbs($path)) : $this->assertFalse(Path::isAbs($path));
     }
@@ -95,9 +94,7 @@ class PathTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataAssertSafe_NotSafePath
-     */
+    #[DataProvider('dataAssertSafe_NotSafePath')]
     public function testAssertSafe_NotSafePath($path) {
         $this->expectException(SecurityException::class, 'Invalid file path was detected.');
         Path::assertSafe($path);
@@ -116,9 +113,7 @@ class PathTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataAssertSafe_SafePath
-     */
+    #[DataProvider('dataAssertSafe_SafePath')]
     public function testAssertSafe_SafePath($path) {
         $this->assertSame($path, Path::assertSafe($path));
     }
@@ -148,9 +143,7 @@ class PathTest extends TestCase {
         }
     }
 
-    /**
-     * @dataProvider dataNormalize
-     */
+    #[DataProvider('dataNormalize')]
     public function testNormalize(string $expected, string $path) {
         $this->assertSame($expected, Path::normalize($path));
     }
@@ -200,9 +193,7 @@ class PathTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataCombine
-     */
+    #[DataProvider('dataCombine')]
     public function testCombine(string $expected, ...$paths) {
         $this->assertSame($expected, Path::combine(...$paths));
     }
@@ -255,7 +246,7 @@ class PathTest extends TestCase {
         $this->assertSame('dir/foo.d.ts', Path::changeExt('dir/foo.d.ts', 'd.ts'));
     }
 
-    public static function dataChangeExt_GuessOldExt_EmptyPathOrNewExt() {
+    public static function dataChangeExt_GuessExt_EmptyPathOrNewExt() {
         yield [
             'term',
             null,
@@ -269,9 +260,7 @@ class PathTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataChangeExt_GuessOldExt_EmptyPathOrNewExt
-     */
+    #[DataProvider('dataChangeExt_GuessExt_EmptyPathOrNewExt')]
     public function testChangeExt_GuessExt_EmptyPathOrNewExt(string $path, ?string $oldExt, string $newExt) {
         $this->expectExceptionObject(new UnexpectedValueException("Path or extension can't be empty"));
         Path::changeExt($path, $newExt, $oldExt);

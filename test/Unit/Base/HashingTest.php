@@ -8,6 +8,7 @@ namespace Morpho\Test\Unit\Base;
 
 use Morpho\Base\Hashing;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class HashingTest extends TestCase {
     public static function dataIsMd5Like() {
@@ -22,9 +23,7 @@ class HashingTest extends TestCase {
         (yield [true, 'abcdAbcdabcdabcdAbcdabcdabcda123']);
     }
 
-    /**
-     * @dataProvider dataIsMd5Like
-     */
+    #[DataProvider('dataIsMd5Like')]
     public function testIsMd5Like(bool $expected, string $testString) {
         $this->assertSame($expected, Hashing::isMd5Like($testString));
     }

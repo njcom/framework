@@ -34,32 +34,29 @@ use function ucwords;
  * @license https://github.com/zendframework/zend-http/blob/master/LICENSE.md New BSD License
  */
 class Request extends ArrayObject implements IRequest {
-    public bool $handled = false;
+    public bool $isHandled = false;
     public array $handler = [];
     public Response $response;
-    protected array $knownMethods;
-    protected ?ArrayObject $headers = null;
-    protected ?HttpMethod $originalMethod;
-    protected ?HttpMethod $overwrittenMethod;
-    protected ?bool $isAjax = null;
-    private ?array $serverVars;
-    private ?Uri $uri = null;
-    private ?array $trustedProxyIps = null;
-    #private ?IResponse $response = null;
+    public Uri $uri;
+    public HttpMethod $httpMethod;
+    public array $trustedProxyIps = [];
+    public ArrayObject $headers;
+    private ?bool $isAjax = null;
 
-    public function __construct(array $vals = null, ?array $serverVars = null) {
+    public function __construct(array $vals = null, array $trustedProxyIps = null) {
         parent::__construct((array)$vals);
-        $this->serverVars = $serverVars;
-        $this->knownMethods = array_column(HttpMethod::cases(), 'value');
-        $method = $this->detectOriginalMethod();
-        $this->originalMethod = null !== $method ? $method : HttpMethod::Get;
-        $this->overwrittenMethod = null;//$this->detectOverwrittenMethod();
+        if (null !== $trustedProxyIps) {
+            $this->trustedProxyIps = $trustedProxyIps;
+        }
+        $this->httpMethod = $this->detectHttpMethod();
         $this->response = new Response();
+        $this->headers = $this->mkHeaders();
+        $this->uri = $this->mkUri();
     }
 
     public function redirect(string $uri = null, int $statusCode = null): IResponse {
         if (null === $uri) {
-            $uri = $this->uri();
+            $uri = $this->uri;
             $query = $uri->query();
             if (isset($query['redirect'])) {
                 $redirectUri = rawurldecode($query['redirect']);
@@ -70,50 +67,8 @@ class Request extends ArrayObject implements IRequest {
                 }
             }
         }
-        return $this->response->redirect($uri, $statusCode);
+        return $this->response->mkRedirect($uri, $statusCode);
     }
-
-    public function setServerVars(array $vars): void {
-        if (null !== $this->serverVars) {
-            $this->serverVars = $vars;
-        } else {
-            $_SERVER = $vars;
-        }
-    }
-
-    public function setServerVar(string $name, mixed $val): void {
-        if (null !== $this->serverVars) {
-            $this->serverVars[$name] = $val;
-        } else {
-            $_SERVER[$name] = $val;
-        }
-    }
-
-    public function serverVar(string $name, $default = null): mixed {
-        if (null !== $this->serverVars) {
-            return $this->serverVars[$name] ?? $default;
-        }
-        return $_SERVER[$name] ?? $default;
-    }
-
-    /*    public function data(array $source, $name = null, callable|bool $filter = true): mixed {
-            // NB: On change sync code with query() and post()
-            if (null === $name) {
-                return $filter ? etrim($source) : $source;
-            }
-            if (is_array($name)) {
-                $data = array_intersect_key($source, array_flip(array_values($name)));
-                $data += array_fill_keys($name, null);
-                return $filter ? etrim($data) : $data;
-            }
-            if ($filter) {
-                // todo: support custom $filter
-                return isset($source[$name])
-                    ? etrim($source[$name])
-                    : null;
-            }
-            return $source[$name] ?? null;
-        }*/
 
     public function isAjax(bool $flag = null): bool {
         if (null !== $flag) {
@@ -122,32 +77,8 @@ class Request extends ArrayObject implements IRequest {
         if (null !== $this->isAjax) {
             return $this->isAjax;
         }
-        $headers = $this->headers();
+        $headers = $this->headers;
         return $headers->offsetExists('X-Requested-With') && $headers->offsetGet('X-Requested-With') === 'XMLHttpRequest';
-    }
-
-    /**
-     * Note: Returned headers can contain user input and therefore can be not safe in some scenarios.
-     * @todo: remove this method
-     */
-    public function headers(): ArrayObject {
-        if (null === $this->headers) {
-            $this->headers = $this->mkHeaders();
-        }
-        return $this->headers;
-    }
-
-    // @todo: remove this method
-    public function setUri(Uri $uri): void {
-        $this->uri = $uri;
-    }
-
-    // @todo: remove this method
-    public function uri(): Uri {
-        if (null === $this->uri) {
-            $this->uri = $this->mkUri();
-        }
-        return $this->uri;
     }
 
     public function prependWithBasePath(string $path): Uri {
@@ -155,7 +86,7 @@ class Request extends ArrayObject implements IRequest {
         if ($uri->authority()->isNull() && $uri->scheme() === '') {
             $uriPath = $uri->path();
             if (!$uriPath->isRel()) {
-                $basePath = $this->uri()->path()->basePath();
+                $basePath = $this->uri->path()->basePath();
                 $uriStr = Path::combine($basePath, $uri->toStr(null, false));
                 $uri = new Uri($uriStr);
                 $uri->path()->setBasePath($basePath);
@@ -163,34 +94,6 @@ class Request extends ArrayObject implements IRequest {
             }
         }
         return $uri;
-    }
-
-    // @todo: remove this method
-    public function setTrustedProxyIps(array $ips): void {
-        $this->trustedProxyIps = $ips;
-    }
-
-    // @todo: remove this method
-    public function trustedProxyIps(): ?array {
-        return $this->trustedProxyIps;
-    }
-
-    public function isKnownMethod(string $method): bool {
-        return in_array($method, $this->knownMethods, true);
-    }
-
-    /**
-     * NB: $method must not be taken from user input.
-     */
-    public function setMethod(HttpMethod $method): void {
-        $this->originalMethod = $method;
-        $this->overwrittenMethod = null;
-    }
-
-    public function method(): HttpMethod {
-        return null !== $this->overwrittenMethod
-            ? $this->overwrittenMethod
-            : $this->originalMethod;
     }
 
     protected function mkUri(): Uri {
@@ -214,9 +117,9 @@ class Request extends ArrayObject implements IRequest {
         $path->setBasePath($basePath);
         $uri->setPath($path);
 
-        $queryStr = $this->serverVar('QUERY_STRING');
-        if ($queryStr !== '') {
-            $uri->setQuery($queryStr);
+        $queryString = isset($_SERVER['QUERY_STRING']) ? (string)$_SERVER['QUERY_STRING'] : null;
+        if ($queryString) {
+            $uri->setQuery($queryString);
         }
 
         return $uri;
@@ -224,7 +127,7 @@ class Request extends ArrayObject implements IRequest {
 
     protected function mkHeaders(): ArrayObject {
         $headers = [];
-        foreach (null !== $this->serverVars ? $this->serverVars : $_SERVER as $key => $value) {
+        foreach ($_SERVER as $key => $value) {
             if (str_starts_with($key, 'HTTP_')) {
                 if (str_starts_with($key, 'HTTP_COOKIE')) {
                     // Cookies are handled using the $_COOKIE superglobal
@@ -248,22 +151,20 @@ class Request extends ArrayObject implements IRequest {
      * (c) Fabien Potencier <fabien@symfony.com>
      */
     protected function isSecure(): bool {
-        $https = $this->serverVar('HTTPS');
-        if ($https) {
+        $https = isset($_SERVER['HTTPS']) ? (string)$_SERVER['HTTPS'] : null;
+        if (null !== $https) {
             return 'off' !== strtolower($https);
         }
         if ($this->isFromTrustedProxy()) {
-            return in_array(strtolower($this->serverVar('HTTP_X_FORWARDED_PROTO', '')), ['https', 'on', 'ssl', '1'], true);
+            $forwardedProto = isset($_SERVER['HTTP_X_FORWARDED_PROTO']) ? (string)$_SERVER['HTTP_X_FORWARDED_PROTO'] : null;
+            return null !== $forwardedProto && in_array(strtolower($forwardedProto), ['https', 'on', 'ssl', '1'], true);
         }
         return false;
     }
 
     protected function isFromTrustedProxy(): bool {
-        return null !== $this->trustedProxyIps && in_array(
-                $this->serverVar('REMOTE_ADDR'),
-                $this->trustedProxyIps,
-                true
-            );
+        $remoteAddr = isset($_SERVER['REMOTE_ADDR']) ? (string)$_SERVER['REMOTE_ADDR'] : null;
+        return null !== $remoteAddr && $this->trustedProxyIps && in_array($remoteAddr, $this->trustedProxyIps, true);
     }
 
     /*
@@ -280,8 +181,8 @@ class Request extends ArrayObject implements IRequest {
         $port = null;
 
         // Set the host
-        if ($this->headers()->offsetExists('Host')) {
-            $host = $this->headers()->offsetGet('Host');
+        if ($this->headers->offsetExists('Host')) {
+            $host = $this->headers->offsetGet('Host');
 
             // works for regname, IPv4 & IPv6
             if (preg_match('~:(\d+)$~', $host, $matches)) {
@@ -301,17 +202,20 @@ class Request extends ArrayObject implements IRequest {
                         }*/
         }
 
-        $serverName = $this->serverVar('SERVER_NAME');
-        if (!$host && $serverName) {
+        $serverName = isset($_SERVER['SERVER_NAME']) ? (string)$_SERVER['SERVER_NAME'] : null;
+        if ($serverName && !$host) {
             $host = $serverName;
-            $port = intval($this->serverVar('SERVER_PORT', -1));
+            $port = isset($_SERVER['SERVER_PORT']) ? (string)$_SERVER['SERVER_PORT'] : null;
+            if (null !== $port) {
+                $port = intval($port);
+            }
             if ($port < 1) {
                 $port = null;
             } else {
                 // Check for misinterpreted IPv6-Address
                 // Reported at least for Safari on Windows
-                $serverAddr = $this->serverVar('SERVER_ADDR');
-                if (isset($serverAddr) && preg_match('/^\[[0-9a-fA-F:]+\]$/', $host)) {
+                $serverAddr = isset($_SERVER['SERVER_ADDR']) ? (string)$_SERVER['SERVER_ADDR'] : null;
+                if ($serverAddr && preg_match('/^\[[0-9a-fA-F:]+\]$/', $host)) {
                     $host = '[' . $serverAddr . ']';
                     if ($port . ']' == substr($host, strrpos($host, ':') + 1)) {
                         // The last digit of the IPv6-Address has been taken as port
@@ -325,98 +229,34 @@ class Request extends ArrayObject implements IRequest {
     }
 
     protected function detectPath(): string {
-        $requestUri = $this->serverVar('REQUEST_URI');
-
-        $normalizeUri = function ($requestUri) {
+        $requestUri = isset($_SERVER['REQUEST_URI']) ? (string)$_SERVER['REQUEST_URI'] : null;
+        if ($requestUri !== null) {
+            $requestUri = preg_replace('#^[^/:]+://[^/]+#si', '', $requestUri);
             if (($qpos = strpos($requestUri, '?')) !== false) {
                 return substr($requestUri, 0, $qpos);
             }
             return $requestUri;
-        };
-
-        // Check this first so IIS will catch.
-        $httpXRewriteUrl = $this->serverVar('HTTP_X_REWRITE_URL');
-        if ($httpXRewriteUrl !== null) {
-            $requestUri = $httpXRewriteUrl;
         }
-
-        // Check for IIS 7.0 or later with ISAPI_Rewrite
-        $httpXOriginalUrl = $this->serverVar('HTTP_X_ORIGINAL_URL');
-        if ($httpXOriginalUrl !== null) {
-            $requestUri = $httpXOriginalUrl;
-        }
-
-        // IIS7 with URL Rewrite: make sure we get the unencoded url
-        // (double slash problem).
-        $iisUrlRewritten = $this->serverVar('IIS_WasUrlRewritten');
-        $unencodedUrl = $this->serverVar('UNENCODED_URL', '');
-        if ('1' == $iisUrlRewritten && '' !== $unencodedUrl) {
-            return $normalizeUri($unencodedUrl);
-        }
-
-        if ($requestUri !== null) {
-            return $normalizeUri(preg_replace('#^[^/:]+://[^/]+#', '', $requestUri));
-        }
-
-        // IIS 5.0, PHP as CGI.
-        $origPathInfo = $this->serverVar('ORIG_PATH_INFO');
-        if ($origPathInfo !== null) {
-            $queryString = $this->serverVar('QUERY_STRING', '');
-            if ($queryString !== '') {
-                $origPathInfo .= '?' . $queryString;
-            }
-            return $normalizeUri($origPathInfo);
-        }
-
         return '/';
     }
 
     protected function detectBasePath(string $requestUri): string {
-        $scriptName = $this->serverVar('SCRIPT_NAME', '');
-        if ('' === $scriptName) {
+        $scriptName = isset($_SERVER['SCRIPT_NAME']) ? (string)$_SERVER['SCRIPT_NAME'] : null;
+        if (null === $scriptName) {
             return '/';
         }
         $basePath = ltrim(Path::normalize(dirname($scriptName)), '/');
-        /*        if (!Uri::validatePath($basePath)) {
-                    throw new BadRequestException();
-                }*/
         return '/' . $basePath;
     }
 
-    /*    protected function mkResponse(): IResponse {
-            return new Response();
-        }*/
-
-    protected function detectOverwrittenMethod(): ?HttpMethod {
-        $overwrittenMethod = null;
-        $httpMethod = $this->serverVar('HTTP_X_HTTP_METHOD_OVERRIDE');
+    protected function detectHttpMethod(): HttpMethod {
+        $httpMethod = isset($_SERVER['REQUEST_METHOD']) ? (string)$_SERVER['REQUEST_METHOD'] : null;
         if (null !== $httpMethod) {
-            $overwrittenMethod = (string)$httpMethod;
-        } elseif (isset($_GET['_method'])) {
-            // Allow to pass a method through the special '_method' item.
-            $overwrittenMethod = (string)$_GET['_method'];
-            unset($_GET['_method']);
-        } elseif (isset($_POST['_method'])) {
-            $overwrittenMethod = (string)$_POST['_method'];
-            unset($_POST['_method']);
-        }
-        if (null !== $overwrittenMethod) {
-            $overwrittenMethod = strtoupper($overwrittenMethod);
-            if ($this->isKnownMethod($overwrittenMethod)) {
-                return HttpMethod::from($overwrittenMethod);
-            }
-        }
-        return null;
-    }
-
-    protected function detectOriginalMethod(): ?HttpMethod {
-        $httpMethod = $this->serverVar('REQUEST_METHOD');
-        if (null !== $httpMethod) {
-            $httpMethod = strtoupper((string)$httpMethod);
-            if ($this->isKnownMethod($httpMethod)) {
+            $httpMethod = strtoupper($httpMethod);
+            if (HttpMethod::isValid($httpMethod)) {
                 return HttpMethod::from($httpMethod);
             }
         }
-        return null;
+        return HttpMethod::Get;
     }
 }

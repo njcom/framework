@@ -6,20 +6,20 @@
  */
 namespace Morpho\Test\Unit\App;
 
-use ArrayObject;
-use Morpho\App\Message;
+use Morpho\App\IMessage;
 use Morpho\Testing\TestCase;
 
 abstract class MessageTest extends TestCase {
     public function testMessage() {
         $message = $this->mkMessage();
-        $this->assertInstanceOf(ArrayObject::class, $message, 'Message is \\ArrayObject');
-
-        $this->assertSame('123', $message->test);
         $message['foo'] = 'bar';
         $this->assertSame(['foo' => 'bar'], $message->getArrayCopy(), 'Properties should be ignored');
     }
 
-    abstract protected function mkMessage(): Message;
+    public function testInterface() {
+        $this->assertInstanceOf(IMessage::class, $this->mkMessage());
+    }
+
+    abstract protected function mkMessage(): IMessage;
 }
 

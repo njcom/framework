@@ -22,9 +22,10 @@ class ResultRenderer implements IFn {
     public function __invoke(mixed $request): mixed {
         $response = $request->response;
         if (!$response->isRedirect()) {
-            $allowedFormats = $response->formats;
+            $allowedFormats = $response->allowedFormats;
             $currentFormat = $this->defaultFormat;
             /*
+            @todo
             $n = count($allowedFormats);
             if ($n == 1) {
                 $currentFormat = $allowedFormats[0];

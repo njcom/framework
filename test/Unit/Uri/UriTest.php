@@ -12,6 +12,8 @@ use Morpho\Uri\Query;
 use Morpho\Uri\Uri;
 use Morpho\Testing\TestCase;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 use function rawurlencode;
 use function str_replace;
 
@@ -139,9 +141,7 @@ class UriTest extends TestCase {
         }
     }
 
-    /**
-     * @dataProvider dataToStr
-     */
+    #[DataProvider('dataToStr')]
     public function testToStr(string $uriStr) {
         $uri = new Uri($uriStr);
         $this->assertSame($uriStr, $uri->toStr(null, false));
@@ -175,9 +175,7 @@ class UriTest extends TestCase {
         yield ['http://foo/bar', 'http://foo/bar'];
     }
 
-    /**
-     * @dataProvider dataResolveRelUri_NormalExamples
-     */
+    #[DataProvider('dataResolveRelUri_NormalExamples')]
     public function testResolveRelUri_NormalExamples($relUri, $expected) {
         $uri = Uri::resolveRelUri('http://a/b/c/d;p?q', $relUri);
         $this->assertSame($expected, $uri->toStr(null, false));
@@ -205,9 +203,7 @@ class UriTest extends TestCase {
         yield ['http:g', 'http:g'];
     }
 
-    /**
-     * @dataProvider dataResolveRelUri_AbnormalExamples
-     */
+    #[DataProvider('dataResolveRelUri_AbnormalExamples')]
     public function testResolveRelUri_AbnormalExamples($relUri, $expected) {
         $uri = Uri::resolveRelUri('http://a/b/c/d;p?q', $relUri);
         $this->assertSame($expected, $uri->toStr(null, false));

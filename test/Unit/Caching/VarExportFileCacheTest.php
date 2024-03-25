@@ -9,6 +9,7 @@ namespace Morpho\Test\Unit\Caching;
 use ArrayIterator;
 use Morpho\Caching\VarExportFileCache;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use stdClass;
 
@@ -40,9 +41,7 @@ class VarExportFileCacheTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataCaching
-     */
+    #[DataProvider('dataCaching')]
     public function testCaching($data) {
         $cache = new VarExportFileCache($this->createTmpDir());
 
@@ -68,9 +67,7 @@ class VarExportFileCacheTest extends TestCase {
         yield [STDIN];
     }
 
-    /**
-     * @dataProvider dataThrowsExceptionOnNotSupportedDataType
-     */
+    #[DataProvider('dataThrowsExceptionOnNotSupportedDataType')]
     public function testThrowsExceptionOnNotSupportedDataType($data) {
         $cache = new VarExportFileCache($this->createTmpDir());
         $this->expectException(

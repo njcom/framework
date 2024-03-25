@@ -9,6 +9,7 @@ namespace Morpho\Test\Unit\Compiler\Frontend\Peg;
 use Generator;
 use Morpho\Compiler\Frontend\Peg\PythonTokenizerRe;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use UnexpectedValueException;
 
 class PythonTokenizerReTest extends TestCase {
@@ -255,13 +256,7 @@ class PythonTokenizerReTest extends TestCase {
         ]);
     }
 
-    /**
-     * @dataProvider dataSimpleRes
-     * @param string $re
-     * @param string $input
-     * @param bool   $mustMatch
-     * @return void
-     */
+    #[DataProvider('dataSimpleRes')]
     public function testSimpleRes(string $re, string $input, bool $mustMatch): void {
         $this->checkRe($re, $input, $mustMatch);
     }
@@ -395,9 +390,7 @@ class PythonTokenizerReTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataIntNumberRe
-     */
+    #[DataProvider('dataIntNumberRe')]
     public function testIntNumberRe(string $input, bool $mustMatch) {
         $this->checkRe(PythonTokenizerRe::intNumberRe(), $input, $mustMatch);
     }
@@ -411,9 +404,7 @@ class PythonTokenizerReTest extends TestCase {
         }
     }
 
-    /**
-     * @dataProvider dataStringPrefixRe
-     */
+    #[DataProvider('dataStringPrefixRe')]
     public function testStringPrefixRe(string $prefix, bool $mustMatch) {
         $this->checkRe(PythonTokenizerRe::stringPrefixRe(), $prefix, $mustMatch);
     }

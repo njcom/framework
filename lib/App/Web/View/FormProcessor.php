@@ -12,12 +12,13 @@ namespace Morpho\App\Web\View;
  */
 class FormProcessor extends HtmlProcessor {
     const DEFAULT_METHOD = 'post';
-    private array $fpAutoIndexes;
+    /*private array $fpAutoIndexes;
 
     public function __invoke(mixed $context): mixed {
         $this->fpAutoIndexes = [];
         return parent::__invoke($context);
     }
+    */
 
     protected function tagForm($tag) {
         if (!isset($tag['method'])) {
@@ -28,7 +29,7 @@ class FormProcessor extends HtmlProcessor {
                             $tag['action'] = $request->path();
                         } else {
                             */
-            $tag['action'] = $this->request->uri()->toStr(null, false);
+            $tag['action'] = $this->request->uri->toStr(null, false);
         }
         return $tag;
     }

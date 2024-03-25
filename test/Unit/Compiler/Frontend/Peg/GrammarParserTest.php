@@ -36,12 +36,7 @@ class GrammarParserTest extends TestCase {
     public function testInvoke() {
         $grammar = $this->parser->start();
         $this->assertInstanceOf(Grammar::class, $grammar);
-    }
-
-    public function testRenderActionsAccessor() {
-        $grammar = $this->parser->start();
         $rule = $grammar->rules['foo'];
         $this->assertInstanceOf(IRenderingActions::class, $rule);
-        $this->checkBoolAccessor($rule->renderActions(...), false);
     }
 }

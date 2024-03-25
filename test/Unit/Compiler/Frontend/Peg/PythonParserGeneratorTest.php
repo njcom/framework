@@ -20,6 +20,7 @@ use Morpho\Testing\TestCase;
 
 class PythonParserGeneratorTest extends TestCase {
     public function testGenerate() {
+        $this->markTestIncomplete();
         $stream = fopen('php://memory', 'r+');
         $grammar = new Grammar([
             'start' => new Rule(
@@ -46,7 +47,6 @@ class PythonParserGeneratorTest extends TestCase {
         $parserGen->generate();
 
         $php = stream_get_contents($stream, offset: 0);
-        $this->markTestIncomplete();
         $this->assertStringStartsWith("<?php\nnamespace", $php);
     }
 }

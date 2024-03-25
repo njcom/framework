@@ -9,6 +9,7 @@ namespace Morpho\Test\Unit\Base;
 use JsonSerializable;
 use Morpho\Base\{Err, IFunctor, IMonad, Ok, Result};
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 
 use function strlen;
@@ -20,9 +21,7 @@ class ResultTest extends TestCase {
         yield [new Err()];
     }
 
-    /**
-     * @dataProvider dataInterface
-     */
+    #[DataProvider('dataInterface')]
     public function testInterface($instance) {
         $this->assertInstanceOf(IMonad::class, $instance);
         $this->assertInstanceOf(Result::class, $instance);
@@ -75,9 +74,7 @@ class ResultTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataComposition
-     */
+    #[DataProvider('dataComposition')]
     public function testComposition($req, $expected) {
         // Adopted from https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/results
 

@@ -9,6 +9,7 @@ namespace Morpho\Test\Unit\Uri;
 use Morpho\Uri\Authority;
 use Morpho\Uri\UriParser;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class UriParserTest extends TestCase {
     use TUriParserDataProvider;
@@ -17,9 +18,7 @@ class UriParserTest extends TestCase {
         $this->assertIsCallable(new UriParser());
     }
 
-    /**
-     * @dataProvider dataParse
-     */
+    #[DataProvider('dataParse')]
     public function testParse(string $uriStr, array $expected) {
         $this->checkParse($uriStr, $expected);
     }
@@ -163,9 +162,7 @@ class UriParserTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataParseOnlyAuthority_ValidCases
-     */
+    #[DataProvider('dataParseOnlyAuthority_ValidCases')]
     public function testParseOnlyAuthority_ValidCases($authority, $expected) {
         $authority = UriParser::parseOnlyAuthority($authority);
         $this->assertSame($expected['userInfo'], $authority->userInfo());
@@ -179,9 +176,7 @@ class UriParserTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataParseOnlyAuthority_InvalidCases
-     */
+    #[DataProvider('dataParseOnlyAuthority_InvalidCases')]
     public function testParseOnlyAuthority_InvalidCases($authority) {
         $this->assertEquals(new Authority(), UriParser::parseOnlyAuthority($authority));
     }
@@ -359,9 +354,7 @@ class UriParserTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataParseOnlyQuery
-     */
+    #[DataProvider('dataParseOnlyQuery')]
     public function testParseOnlyQuery($queryStr, $expected) {
         $query = UriParser::parseOnlyQuery($queryStr);
         $this->assertSame($expected, $query->getArrayCopy());

@@ -2,28 +2,29 @@
 namespace Morpho\Site\Localhost\App\Web;
 
 use Morpho\App\Web\Controller;
+use Morpho\App\Web\StatusCode;
 
 /**
  * @noRoutes
  */
 class ErrorController extends Controller {
     public function badRequest($request) {
-        $request->response->statusCode = 400;
+        $request->response->statusLine->statusCode = StatusCode::BadRequest;
     }
 
     public function forbidden($request) {
-        $request->response->statusCode = 403;
+        $request->response->statusLine->statusCode = StatusCode::Forbidden;
     }
 
     public function notFound($request) {
-        $request->response->statusCode = 404;
+        $request->response->statusLine->statusCode = StatusCode::NotFound;
     }
 
     public function uncaught($request) {
-        $request->response->statusCode = 500;
+        $request->response->statusLine->statusCode = StatusCode::InternalServerError;
     }
 
     public function methodNotAllowed($request) {
-        $request->response->statusCOde = 405;
+        $request->response->statusLine->statusCode = StatusCode::MethodNotAllowed;
     }
 }

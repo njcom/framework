@@ -8,14 +8,14 @@ namespace Morpho\Test\Unit\Tech\Php;
 
 use Morpho\Tech\Php\DiffStrategy;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 use function sort;
 
 use const Morpho\App\TEST_DATA_DIR_NAME;
 
 class DiffStrategyTest extends DiscoverStrategyTest {
-    /**
-     * @dataProvider dataClassTypesDefinedInFile
-     */
+    #[DataProvider('dataClassTypesDefinedInFile')]
     public function testClassTypesDefinedInFile(array $expected, string $relFilePath) {
         $actual = $this->strategy->classTypesDefinedInFile(__DIR__ . '/' . TEST_DATA_DIR_NAME . '/DiscoverStrategyTest/' . $relFilePath);
         // @todo: fix sorting

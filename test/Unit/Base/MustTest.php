@@ -9,6 +9,7 @@ namespace Morpho\Test\Unit\Base;
 use Morpho\Base\Must;
 use Morpho\Base\MustException;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class MustTest extends TestCase {
     public function testBeTruthy_Valid() {
@@ -52,9 +53,7 @@ class MustTest extends TestCase {
         yield [0.0];
     }
 
-    /**
-     * @dataProvider dataBeEmpty_Valid
-     */
+    #[DataProvider('dataBeEmpty_Valid')]
     public function testBeEmpty_Valid($v) {
         $this->assertSame($v, Must::beEmpty($v));
     }
@@ -72,9 +71,7 @@ class MustTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataBeNotEmpty_Invalid
-     */
+    #[DataProvider('dataBeNotEmpty_Invalid')]
     public function testBeNotEmpty_Invalid($v) {
         $this->expectExceptionObject(new MustException("The value must be non empty"));
         Must::beNotEmpty($v);
@@ -114,9 +111,7 @@ class MustTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataContain_Array_Valid
-     */
+    #[DataProvider('dataContain_Array_Valid')]
     public function testContain_Array_Valid($haystack, $needle) {
         /** @noinspection PhpVoidFunctionResultUsedInspection */
         $this->assertNull(Must::contain($haystack, $needle));
@@ -139,9 +134,7 @@ class MustTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataContain_Array_Invalid
-     */
+    #[DataProvider('dataContain_Array_Invalid')]
     public function testContain_Array_Invalid($haystack, $needle) {
         $this->expectExceptionObject(new MustException('A haystack does not contain a needle'));
         Must::contain($haystack, $needle);
@@ -164,9 +157,7 @@ class MustTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataHaveAtLeastKeys_Invalid
-     */
+    #[DataProvider('dataHaveAtLeastKeys_Invalid')]
     public function testHaveAtLeastKeys_Invalid($actual, $requiredKeys) {
         $this->expectExceptionObject(new MustException('The array must have the items with the specified keys'));
         Must::haveAtLeastKeys($actual, $requiredKeys);
@@ -189,9 +180,7 @@ class MustTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataHaveAtLeastKeys_Valid
-     */
+    #[DataProvider('dataHaveAtLeastKeys_Valid')]
     public function testHaveAtLeastKeys_Valid($actual, $requiredKeys) {
         Must::haveAtLeastKeys($actual, $requiredKeys);
         $this->markTestAsNotRisky();
@@ -214,9 +203,7 @@ class MustTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataHaveExactKeys_Invalid
-     */
+    #[DataProvider('dataHaveExactKeys_Invalid')]
     public function testHaveExactKeys_Invalid($val, $keys) {
         $this->expectExceptionObject(new MustException('The array must have the items with the specified keys and no other items'));
         Must::haveExactKeys($val, $keys);
@@ -239,9 +226,7 @@ class MustTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataHaveExactKeys_Valid
-     */
+    #[DataProvider('dataHaveExactKeys_Valid')]
     public function testHaveExactKeys_Valid(...$args) {
         Must::haveExactKeys(...$args);
         $this->markTestAsNotRisky();

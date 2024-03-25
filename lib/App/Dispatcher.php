@@ -26,7 +26,7 @@ class Dispatcher implements IFn {
     public function __invoke(mixed $request): mixed {
         $i = 0;
         do {
-            $request->handled = false;
+            $request->isHandled = false;
 
             if ($i >= $this->numOfIterations) {
                 throw new RuntimeException("Dispatch loop has been detected, iterated {$this->numOfIterations} times");
@@ -37,9 +37,14 @@ class Dispatcher implements IFn {
 
                 $fn = ($this->handlerProvider)($request);
                 $request->handler['fn'] = $fn;
-                $request->response['result'] = $fn($request);
+                $result = $fn($request);
+                if ($result instanceof IResponse) {
+                    $request->response = $result;
+                } else {
+                    $request->response['result'] = $result;
+                }
 
-                $request->handled = true;
+                $request->isHandled = true;
 
                 $request = $this->afterDispatch($request);
                 //$this->eventManager->trigger(new Event('afterDispatch', ['request' => $request]));
@@ -49,7 +54,7 @@ class Dispatcher implements IFn {
                 //$this->eventManager->trigger(new Event('dispatchError', ['request' => $request, 'exception' => $e]));
             }
             $i++;
-        } while (!$request->handled);
+        } while (!$request->isHandled);
 
         return $request;
     }

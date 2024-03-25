@@ -8,6 +8,7 @@ namespace Morpho\Test\Unit\Base;
 
 use Morpho\Base\Path;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 
 class PathTest extends TestCase {
@@ -28,9 +29,7 @@ class PathTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataNormalize
-     */
+    #[DataProvider('dataNormalize')]
     public function testNormalize(string $expected, string $path) {
         $this->assertSame($expected, Path::normalize($path));
     }
@@ -205,9 +204,7 @@ class PathTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataCombine
-     */
+    #[DataProvider('dataCombine')]
     public function testCombine(string $expected, ...$paths) {
         $this->assertSame($expected, Path::combine(...$paths));
     }

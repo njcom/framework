@@ -185,15 +185,13 @@ abstract class TestCase extends BaseTestCase {
         $this->assertNull($value);
     }
 
-/*
-    @todo: simplify all methods using this method
    protected function checkBoolAccessor(callable $callback, bool $initialValue): void {
         $this->assertSame($initialValue, $callback());
         $this->assertTrue($callback(true), 'Returns the passed true');
         $this->assertTrue($callback(), 'Returns the previous value that was set: true');
         $this->assertFalse($callback(false), 'Returns the passed false');
         $this->assertFalse($callback(), 'Returns the previous value that was set: false');
-    }*/
+    }
 
     protected function checkAccessors(callable $getter, $initialValue, $newValue, $setterReturnVal = null): void {
         if (!isset($getter[1]) || !is_string($getter[1])) {

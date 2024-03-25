@@ -9,6 +9,7 @@ namespace Morpho\Test\Unit\Caching;
 use ArrayIterator;
 use Morpho\Caching\ICache;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 
 use function is_object;
@@ -24,9 +25,7 @@ abstract class CacheTest extends TestCase {
         yield [new ArrayIterator([])];
     }
 
-    /**
-     * @dataProvider dataCaching
-     */
+    #[DataProvider('dataCaching')]
     public function testCaching($data) {
         // @TODO: get, set, delete, clear, getMultiple, setMultiple, deleteMultiple, has
         $cache = $this->mkCache();

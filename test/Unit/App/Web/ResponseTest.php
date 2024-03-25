@@ -7,16 +7,20 @@
 namespace Morpho\Test\Unit\App\Web;
 
 use ArrayObject;
-use Morpho\App\Web\Env;
+use Morpho\App\Web\HttpVersion;
 use Morpho\App\Web\Response;
-use Morpho\Testing\TestCase;
+use Morpho\App\Web\StatusCode;
+use Morpho\Test\Unit\App\MessageTest;
+use Morpho\App\IMessage;
+
+use PHPUnit\Framework\Attributes\DataProvider;
 
 use function array_merge;
 use function func_get_args;
 use function ob_get_clean;
 use function ob_start;
 
-class ResponseTest extends TestCase {
+class ResponseTest extends MessageTest {
     private Response $response;
 
     protected function setUp(): void {
@@ -24,213 +28,81 @@ class ResponseTest extends TestCase {
         $this->response = new Response();
     }
 
-    public function testStatusCodeAccessors() {
-        $this->assertSame(Response::OK_STATUS_CODE, $this->response->statusCode());
-        $newStatusCode = Response::FORBIDDEN_STATUS_CODE;
-        /** @noinspection PhpVoidFunctionResultUsedInspection */
-        $this->assertNull($this->response->setStatusCode($newStatusCode));
-        $this->assertSame($newStatusCode, $this->response->statusCode());
-    }
-
-    public function testIsSuccess() {
-        $this->assertTrue($this->response->isSuccess());
-        $this->response->setStatusCode(Response::INTERNAL_SERVER_ERROR_STATUS_CODE);
-        $this->assertFalse($this->response->isSuccess());
-    }
-
-    public function testStatusLineAccessors() {
-        $this->assertSame(
-            Env::httpProto() . ' ' . Response::OK_STATUS_CODE . ' OK',
-            $this->response->statusLine()
-        );
-        $newStatusLine = Env::httpProto() . ' ' . Response::NOT_FOUND_STATUS_CODE . ' Not Found';
-        /** @noinspection PhpVoidFunctionResultUsedInspection */
-        $this->assertNull($this->response->setStatusLine($newStatusLine));
-        $this->assertSame($newStatusLine, $this->response->statusLine());
-    }
-
     public function testHeadersAccessors() {
-        $headers = $this->response->headers();
+        $headers = $this->response->headers;
         $this->assertInstanceOf(ArrayObject::class, $headers);
-        $headersToSet = [
+
+        $newHeaders = [
             'Content-Type'        => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="sample.pdf"',
         ];
-        $headers->exchangeArray($headersToSet);
+        $headers->exchangeArray($newHeaders);
         $headers['Location'] = 'http://example.com';
         $this->assertSame(
-            array_merge($headersToSet, ['Location' => 'http://example.com']),
-            $this->response->headers()->getArrayCopy()
-        );
-    }
-
-    public static function dataStatusCodeToStatusLine() {
-        yield [
-            200,
-            'OK',
-        ];
-        yield [
-            302,
-            'Found',
-        ];
-        yield [
-            304,
-            'Not Modified',
-        ];
-        yield [
-            400,
-            'Bad Request',
-        ];
-        yield [
-            403,
-            'Forbidden',
-        ];
-        yield [
-            404,
-            'Not Found',
-        ];
-        yield [
-            500,
-            'Internal Server Error',
-        ];
-        yield [
-            201,
-            'Created',
-        ];
-        yield [
-            144,
-            'Unassigned',
-        ];
-    }
-
-    /**
-     * @dataProvider dataStatusCodeToStatusLine
-     */
-    public function testStatusCodeToStatusLine(int $statusCode, string $expectedReasonPhrase) {
-        $this->response->setStatusCode($statusCode);
-        $this->assertSame(
-            Env::HTTP_PROTO . ' ' . $statusCode . ' ' . $expectedReasonPhrase,
-            $this->response->statusLine()
+            array_merge($newHeaders, ['Location' => 'http://example.com']),
+            $this->response->headers->getArrayCopy()
         );
     }
 
     public function testSend() {
         $response = new class extends Response {
-            public $called = [];
+            public array $called = [];
 
-            protected function sendHeader(string $value): void {
+            protected function sendHeader(string $header): void {
                 $this->called[] = [__FUNCTION__, func_get_args()];
             }
         };
         $body = 'Such page does not exist';
-        $response->setStatusCode(404);
-        $response->setBody($body);
-        $response->headers()->exchangeArray(
-            [
-                'Location' => 'http://example.com',
-            ]
-        );
+        $response->body = $body;
+        $response->statusLine->statusCode = StatusCode::NotFound;
+        $locationHeaderValue = 'http://example.com';
+        $response->headers->exchangeArray(['Location' => $locationHeaderValue]);
+
         ob_start();
         $response->send();
         $this->assertSame($body, ob_get_clean());
+
         $this->assertSame(
             [
-                ['sendHeader', [Env::httpProto() . ' 404 Not Found']],
-                ['sendHeader', ['Location: http://example.com']],
+                ['sendHeader', ['HTTP/1.1 404']],
+                ['sendHeader', ['Location: ' . $locationHeaderValue]],
             ],
             $response->called
         );
     }
 
     public function testResetState() {
-        $this->response->setStatusCode(404);
-        $this->response->headers()['foo'] = 'bar';
-        $this->response->setBody('test');
-        $this->response->setStatusLine('Some status line');
+        $checkDefaultState = function () {
+            $this->assertSame('HTTP/1.1 200', (string)$this->response->statusLine);
+            $this->assertSame([], $this->response->headers->getArrayCopy());
+            $this->assertSame('', $this->response->body);
+        };
+
+        $checkDefaultState();
+
+        $this->response->statusLine->statusCode = StatusCode::NotFound;
+        $this->response->headers['foo'] = 'bar';
+        $this->response->body = 'test';
+        $this->response->statusLine->httpVersion = HttpVersion::V3;
 
         $this->response->resetState();
 
-        $this->assertSame('', $this->response->body());
-        $this->assertSame(Response::OK_STATUS_CODE, $this->response->statusCode());
-        $this->assertSame([], $this->response->headers()->getArrayCopy());
-        $this->assertSame($this->response->statusCodeToStatusLine(200), $this->response->statusLine());
+        $checkDefaultState();
     }
 
     public function testRedirect() {
-/*
         $this->assertFalse($this->response->isRedirect());
-        $this->assertSame($this->response, $this->response->redirect('/foo/bar'));
-        $this->assertTrue($this->response->isRedirect());
-        $this->assertSame(Response::FOUND_STATUS_CODE, $this->response->statusCode());
- */
-        $this->markTestIncomplete();
-        /*
-        public static function dataRedirect() {
-            yield [
-                '/foo/bar',
-                399,
-                'http://example.local/',
-                '/foo/bar',
-                399,
-                null,
-            ];
-            yield [
-                'http://example.local/',
-                Response::FOUND_STATUS_CODE,
-                'http://example.local/',
-                null,
-                null,
-                null,
-            ];
-            yield [
-                'https://some.local/?',
-                Response::FOUND_STATUS_CODE,
-                'http://example.local',
-                null,
-                null,
-                'https://some.local/?redirect=/bug',
-            ];
-            yield [
-                'https://another.local/',
-                Response::FOUND_STATUS_CODE,
-                'http://example.local',
-                null,
-                null,
-                'https://another.local/',
-            ];
-            yield [
-                'http://framework/',
-                Response::FOUND_STATUS_CODE,
-                'http://example.local',
-                null,
-                null,
-                'http%3A%2F%2Fframework%2F',
-            ];
-        }
 
-         * @dataProvider dataRedirect
-        public function testRedirect(string $expectedLocation, int $expectedCode, string $currentUri, ?string $redirectUri, ?int $redirectCode, ?string $redirectQueryArg) {
-            $response = new Response();
-            $request = $this->mkConfiguredRequest($response, $currentUri);
-            if (null !== $redirectQueryArg) {
-                $request->uri()->query()['redirect'] = $redirectQueryArg;
-            }
-            $controller = new class ($redirectUri, $redirectCode) extends Controller {
-                public function __construct(private ?string $redirectUri, private ?int $redirectCode) {
-                }
+        $redirect = $this->response->mkRedirect('/foo/bar');
+        $this->assertNotSame($this->response, $redirect);
 
-                public function someAction() {
-                    return $this->redirect($this->redirectUri, $this->redirectCode);
-                }
-            };
+        $this->assertFalse($this->response->isRedirect());
+        $this->assertSame('HTTP/1.1 200', $this->response->statusLine->__toString());
+        $this->assertTrue($redirect->isRedirect());
+        $this->assertSame('HTTP/1.1 302', $redirect->statusLine->__toString());
+    }
 
-            $controller->__invoke($request);
-
-            $changedResponse = $request->response();
-            $this->assertSame($changedResponse, $response);
-            $this->assertSame($expectedLocation, $changedResponse->headers()['Location']);
-            $this->assertSame($expectedCode, $changedResponse->statusCode());
-        }
-        */
+    protected function mkMessage(): IMessage {
+        return clone $this->response;
     }
 }

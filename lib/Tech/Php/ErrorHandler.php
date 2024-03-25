@@ -17,6 +17,7 @@ use function in_array;
 use function ini_get;
 use function ini_set;
 use function md5;
+use function Morpho\App\Cli\error;
 use function register_shutdown_function;
 use function str_replace;
 

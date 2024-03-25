@@ -45,11 +45,15 @@ class ClassTypeDepsCollector extends NodeVisitorAbstract {
     public function enterNode(Node $node) {
         if ($node instanceof FunctionStmt || $node instanceof Closure) {
             if ($node->returnType && $node->returnType instanceof FullyQualified) {
-                $this->classTypes[] = implode('\\', $node->returnType->parts);
+                /*if (!is_array($node->returnType->parts)) {
+                    d($node->returnType);
+                }*/
+                $this->classTypes[] = $node->returnType->name;//implode('\\', $node->returnType->parts);
             }
         } elseif ($node instanceof ClassMethodStmt) {
             if ($node->returnType && $node->returnType instanceof FullyQualified) {
-                $this->classTypes[] = implode('\\', $node->returnType->parts);
+                //$this->classTypes[] = implode('\\', $node->returnType->parts);
+                $this->classTypes[] = $node->returnType->name;
             }
         } elseif ($node instanceof ClassStmt) {
             if (isset($node->extends)) {
@@ -70,7 +74,7 @@ class ClassTypeDepsCollector extends NodeVisitorAbstract {
         } elseif ($node instanceof TryCatchStmt) {
             foreach ($node->catches as $catchStmt) {
                 foreach ($catchStmt->types as $classType) {
-                    $this->classTypes[] = implode('\\', $classType->parts);
+                    $this->classTypes[] = $classType->name;//implode('\\', $classType->parts);
                 }
             }
         } elseif ($node instanceof TraitUseStmt) {
@@ -80,7 +84,7 @@ class ClassTypeDepsCollector extends NodeVisitorAbstract {
         } elseif ($node instanceof New_ && $node->class instanceof FullyQualified) {
             $this->classTypes[] = $node->class->toString();
         } elseif ($node instanceof Param && $node->type instanceof FullyQualified) {
-            $this->classTypes[] = implode('\\', $node->type->parts);
+            $this->classTypes[] = $node->type->name;//implode('\\', $node->type->parts);
         } elseif ($node instanceof Instanceof_ && $node->class instanceof FullyQualified) {
             $this->classTypes[] = $node->class->toString();
         } elseif (($node instanceof StaticPropertyFetch || $node instanceof ClassConstFetch) && isset($node->class) && $node->class instanceof FullyQualified) {

@@ -39,7 +39,7 @@ class FastRouter implements IHasServiceManager, IFn {
 
     public function __invoke(mixed $context): mixed {
         $routeInfo = $this->mkRouteDispatcher()
-            ->dispatch($context->method()->value, $context->uri()->path()->toStr(false));
+            ->dispatch($context->httpMethod->value, $context->uri->path()->toStr(false));
         $context->handler = match ($routeInfo[0]) {
             IDispatcher::NOT_FOUND => $this->conf()['handlers']['notFound'], // 404 Not Found
             IDispatcher::METHOD_NOT_ALLOWED => $this->conf()['handlers']['methodNotAllowed'], // 405 Method Not Allowed

@@ -12,31 +12,32 @@ Not ready (WIP). API is not stable.
 
 ### For development
 
-* Server-side/Backend:
-  * Nginx
-  * PHP
-  * MySQL/MariaDB: optional, can be used as DBMS
-* Client-side/Frontend:
-  * TypeScript: required to compile to JavaScript
-  * SCSS: required to compile to CSS
-  * HTML
-* Infra:
-  * Git
-  * PHP
-  * Node.js: required for TypeScript
-  * GNU Bash
-  * GNU Make
+1. Containerization: todo
+1. Server-side/Backend:
+    1. Nginx
+    1. PHP
+    1. MySQL/MariaDB: optional, can be used as DBMS
+1. Client-side/Frontend:
+    1. TypeScript: required to compile to JavaScript
+    1. SCSS: required to compile to CSS
+    1. HTML
+1. Infra:
+    1. Git
+    1. PHP
+    1. Node.js: required for TypeScript
+    1. GNU Bash
+    1. GNU Make
 
 ### For production
 
-* Server-side/Backend:
-  * Nginx
-  * PHP
-  * MySQL/MariaDB: optional
-* Client-side/Frontend:
-  * JavaScript
-  * CSS
-  * HTML
+1. Server-side/Backend:
+    1. Nginx
+    1. PHP
+    1. MySQL/MariaDB: optional
+1. Client-side/Frontend:
+    1. JavaScript
+    1. CSS
+    1. HTML
 
 ## Supported OSs
 
@@ -45,10 +46,6 @@ Only Linux, other OSs are not supported.
 ## Documentation
 
 Documentation does not exist yet.
-
-## Third-party code
-
-* lib/Tech/Python uses code from [Python](https://www.python.org/)
 
 ## License
 

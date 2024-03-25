@@ -42,7 +42,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
     }
 
     public function generate(array $context = null): string {
-        $context = (array) $context;
+        $context = (array)$context;
         if (!isset($context['namespace'])) {
             $context['namespace'] = __NAMESPACE__ . '\\Generated' . str_replace([' ', '.'], '', microtime());
         }
@@ -131,7 +131,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
                 $this->write('$children = [];');
             }
             $this->visit($rhs, isLoop: $isLoop, isGather: $isGather);
-            
+
             if ($isLoop) {
                 $this->write('return $children;');
             } else {
@@ -223,7 +223,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
             if ($isGather) {
                 Must::beTruthy(count(last($this->localVarStack)) == 2);
                 $last = last($this->localVarStack);
-                $action = 'array_merge([$' . $last[0] . '], ' . '$' . $last[1] .');';
+                $action = 'array_merge([$' . $last[0] . '], ' . '$' . $last[1] . ');';
                 //$action = f"[{self.local_variable_names[0]}] + {self.local_variable_names[1]}"
             } else {
                 if ($this->invalidVisitor->visit($node)) {
@@ -231,7 +231,7 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
                 } elseif (count(last($this->localVarStack)) == 1) {
                     $action = '$' . last($this->localVarStack)[0];
                 } else {
-                    $action = '[' . implode(', ', prepend(last($this->localVarStack), '$')) . ']';
+                    $action = '[' . implode(', ', prepend(prefix: '$', list: last($this->localVarStack))) . ']';
                 }
             }
         } elseif (str_contains($action, 'LOCATIONS')) {
@@ -330,5 +330,5 @@ class PhpParserGenerator extends ParserGenerator implements IGrammarVisitor {
             . $wrapperPostCode . "\n" // decorator end like ');'
             . $lines[$rightOffset] // function end like '}'
         );
-    }    
+    }
 }

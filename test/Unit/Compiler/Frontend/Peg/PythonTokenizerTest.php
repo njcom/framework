@@ -87,7 +87,7 @@ EOF,
     }
 
     public function testTokenize_MetaGrammar() {
-        $stream = $this->mkStream(file_get_contents(BASE_DIR_PATH . '/' . LIB_DIR_NAME . '/Compiler/Frontend/Peg/meta.gram'));
+        $stream = $this->mkStream(file_get_contents(BASE_DIR_PATH . '/' . LIB_DIR_NAME . '/Tech/Python/meta.gram'));
         $tokens = $this->tokenizer->tokenize($stream);
         $this->checkTokens(file_get_contents($this->getTestDirPath() . '/meta-token'), $tokens);
     }

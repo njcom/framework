@@ -11,9 +11,12 @@ use Morpho\Base\ServiceManager;
 use Morpho\Testing\TestCase;
 
 class AppTest extends TestCase {
-    public function testConfAccessors() {
+    public function testConf_InitialVal() {
         $app = new App();
         $this->assertEquals([], $app->conf);
+    }
+
+    public function testConf_CanBePassedAsConstructorArg() {
         $newConf = ['foo' => 'bar'];
         $app = new App($newConf);
         $this->assertSame($newConf, $app->conf);
@@ -35,7 +38,7 @@ class SimpleApp extends App {
         $this->serviceManager = $serviceManager;
     }
 
-    protected function _init(): ServiceManager {
+    protected function mkServiceManager(): ServiceManager {
         return $this->serviceManager;
     }
 }

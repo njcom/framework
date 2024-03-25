@@ -11,6 +11,7 @@ use Morpho\App\Web\AppInitializer;
 use Morpho\Base\ServiceManager;
 use Morpho\Tech\Php\IErrorHandler;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use UnexpectedValueException;
 
 use function ini_get;
@@ -40,9 +41,7 @@ class AppInitializerTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataTimezoneCanBeSetThroughSiteConf
-     */
+    #[DataProvider('dataTimezoneCanBeSetThroughSiteConf')]
     public function testTimezoneCanBeSetThroughSiteConf(string $timeZone) {
         $siteConf = [
             'iniConf' => [
@@ -69,18 +68,16 @@ class AppInitializerTest extends TestCase {
         $errorHandler = $this->createMock(IErrorHandler::class);
         $serviceManager->expects($this->any())
             ->method('offsetGet')
-            ->will(
-                $this->returnCallback(
-                    function ($id) use ($site, $errorHandler) {
-                        if ($id === 'site') {
-                            return $site;
-                        }
-                        if ($id === 'errorHandler') {
-                            return $errorHandler;
-                        }
-                        throw new UnexpectedValueException($id);
+            ->willReturnCallback(
+                function ($id) use ($site, $errorHandler) {
+                    if ($id === 'site') {
+                        return $site;
                     }
-                )
+                    if ($id === 'errorHandler') {
+                        return $errorHandler;
+                    }
+                    throw new UnexpectedValueException($id);
+                }
             );
         return $serviceManager;
     }

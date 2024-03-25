@@ -13,8 +13,8 @@ use Morpho\Fs\Exception;
 use Morpho\Fs\Exception as FsException;
 use Morpho\Fs\File;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
-use Throwable;
 
 use function basename;
 use function copy;
@@ -32,8 +32,17 @@ use function touch;
 use function uniqid;
 
 class FileTest extends TestCase {
+    private $oldErrorHandler;
+
     protected function setUp(): void {
         parent::setUp();
+    }
+
+    protected function tearDown(): void {
+        parent::tearDown();
+        if ($this->oldErrorHandler) {
+            restore_error_handler();
+        }
     }
 
     public function testInheritance() {
@@ -97,11 +106,11 @@ class FileTest extends TestCase {
         $this->assertFileDoesNotExist($targetFilePath);
     }
 
-    public function testDeleteNonExistentFileThrowsException() {
+    public function testDelete_NonExistentFileThrowsException() {
         $nonExistingFilePath = $this->tmpDirPath() . '/' . md5(uniqid()) . '.php';
         $exceptionMessage = 'testDeleteNonExistentFileThrowsExceptionOK';
         $this->expectException(RuntimeException::class, $exceptionMessage);
-        set_error_handler(
+        $this->oldErrorHandler = set_error_handler(
             function ($severity, $message, $filePath, $lineNo) use ($nonExistingFilePath, $exceptionMessage) {
                 if (!(error_reporting() & $severity)) {
                     return;
@@ -250,9 +259,7 @@ class FileTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataWrite_ModeConfOption
-     */
+    #[DataProvider('dataWrite_ModeConfOption')]
     public function testWrite_ModeConf(int $mode) {
         $tmpDirPath = $this->createTmpDir();
         $filePath = $tmpDirPath . '/' . __FUNCTION__ . '.txt';

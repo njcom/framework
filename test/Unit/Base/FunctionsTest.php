@@ -18,6 +18,7 @@ use SplStack;
 use stdClass;
 use Stringable;
 use UnexpectedValueException;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 use function call_user_func;
 use function count;
@@ -97,9 +98,7 @@ class FunctionsTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataAll_CommonCases
-     */
+    #[DataProvider('dataAll_CommonCases')]
     public function testAll_CommonCases(bool $expected, callable $predicate, mixed $list) {
         $this->assertSame($expected, all($predicate, $list));
     }
@@ -117,9 +116,7 @@ class FunctionsTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataAll_StringAndStringable_Utf8String
-     */
+    #[DataProvider('dataAll_StringAndStringable_Utf8String')]
     public function testAll_StringAndStringable_Utf8String($s) {
         $called = [];
         $this->assertTrue(
@@ -179,9 +176,7 @@ class FunctionsTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataToIt
-     */
+    #[DataProvider('dataToIt')]
     public function testToIt($expected, $it) {
         $this->assertSame($expected, toIt($it));
     }
@@ -194,9 +189,7 @@ class FunctionsTest extends TestCase {
         yield ["\r"];   // old Mac
     }
 
-    /**
-     * @dataProvider dataLines
-     */
+    #[DataProvider('dataLines')]
     public function testLines($sep) {
         $this->assertSame([], lines(''));
         $this->assertSame([], lines("$sep"));
@@ -482,9 +475,7 @@ class FunctionsTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider dataCompose_InvokableClassWithClosure
-     */
+    #[DataProvider('dataCompose_InvokableClassWithClosure')]
     public function testCompose_InvokableWithClosure($expected, $f, $g) {
         $this->assertSame($expected, compose($f, $g)('test'));
     }
@@ -493,9 +484,7 @@ class FunctionsTest extends TestCase {
         return self::dataQ_("'");
     }
 
-    /**
-     * @dataProvider dataQ
-     */
+    #[DataProvider('dataQ')]
     public function testQ($expected, $actual) {
         $this->assertSame($expected, q($actual));
     }
@@ -504,9 +493,7 @@ class FunctionsTest extends TestCase {
         return self::dataQ_('"');
     }
 
-    /**
-     * @dataProvider dataQQ
-     */
+    #[DataProvider('dataQQ')]
     public function testQQ($expected, $actual) {
         $this->assertSame($expected, qq($actual));
     }
@@ -647,9 +634,8 @@ class FunctionsTest extends TestCase {
 
     /**
      * Modified version of the testOperator() from the https://github.com/nikic/iter
-     * @Copyright (c) 2013 by Nikita Popov.
-     * @dataProvider dataOp
      */
+    #[DataProvider('dataOp')]
     public function testOp($op, $a, $b, $result) {
         $fn1 = op($op);
         $fn2 = op($op, $b);
@@ -952,9 +938,7 @@ OUT;
         ];
     }
 
-    /**
-     * @dataProvider dataIsSubset
-     */
+    #[DataProvider('dataIsSubset')]
     public function testIsSubset($expected, $a, $b) {
         $this->assertSame($expected, isSubset($a, $b));
     }
@@ -984,9 +968,7 @@ OUT;
         ];
     }
 
-    /**
-     * @dataProvider dataSetsEqual
-     */
+    #[DataProvider('dataSetsEqual')]
     public function testSetsEqual($a, $b, $expected) {
         $this->assertEquals($expected, setsEqual($a, $b));
     }
@@ -1250,9 +1232,7 @@ OUT;
         ];
     }
 
-    /**
-     * @dataProvider dataSymDiff_UnionResult
-     */
+    #[DataProvider('dataSymDiff_UnionResult')]
     public function testSymDiff_UnionResult(array $expected, array $a, array $b) {
         $this->assertSame($expected, symDiff($a, $b));
     }
@@ -1344,9 +1324,7 @@ OUT;
         ];
     }
 
-    /**
-     * @dataProvider dataPermutations
-     */
+    #[DataProvider('dataPermutations')]
     public function testPermutations(array $input, array $expected) {
         $this->assertSame($expected, permutations($input));
     }
@@ -1477,9 +1455,7 @@ OUT;
         ];
     }
 
-    /**
-     * @dataProvider dataMerge
-     */
+    #[DataProvider('dataMerge')]
     public function testMerge(array $a, array $b, bool $resetIntKeys, array $expected) {
         $this->assertEquals($expected, merge($a, $b, $resetIntKeys));
     }

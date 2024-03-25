@@ -15,7 +15,7 @@ use function restore_exception_handler;
 use function set_error_handler;
 use function set_exception_handler;
 
-abstract class BaseErrorHandlerTest extends TestCase {
+abstract class BaseErrorHandler extends TestCase {
     protected $prevErrorHandler;
     protected $prevExceptionHandler;
 

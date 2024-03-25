@@ -65,8 +65,11 @@ abstract class Path {
      * @TODO   optimize
      */
     public static function removeDotSegments(string $path): string {
-        $result = '';
+        if (!str_contains($path, '.')) {
+            return $path;
+        }
 
+        $result = '';
         while ($path) {
             if ($path == '..' || $path == '.') {
                 break;
