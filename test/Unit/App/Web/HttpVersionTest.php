@@ -11,6 +11,7 @@ use Morpho\Testing\TestCase;
 
 class HttpVersionTest extends TestCase {
     public function testIsValid() {
+        $this->assertFalse(HttpVersion::isValid(''));
         $this->assertFalse(HttpVersion::isValid('some-invalid-value'));
         $this->assertTrue(HttpVersion::isValid('2'));
         $this->assertFalse(HttpVersion::isValid('2.0'));

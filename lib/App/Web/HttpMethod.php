@@ -23,11 +23,6 @@ enum HttpMethod: string {
     case Patch = 'PATCH';
 
     public static function isValid(string $httpMethod): bool {
-        // @todo
-        return true;
-        dt();
-        foreach (self::cases() as $case) {
-            d($case);
-        }
+        return in_array($httpMethod, array_column(self::cases(), 'value'), true);
     }
 }

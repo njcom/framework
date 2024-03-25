@@ -6,7 +6,7 @@ enum HttpVersion: string {
     case V2 = '2';
     case V3 = '3';
 
-    public static function isValid(mixed $httpVersion): bool {
+    public static function isValid(string $httpVersion): bool {
         if (preg_match('~^(?P<major>\d)(?:\.(?P<minor>\d))?$~si', $httpVersion, $match)) {
             switch ($match['major']) {
                 case '1':
