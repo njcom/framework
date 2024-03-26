@@ -10,22 +10,16 @@ use Morpho\App\Web\Request;
 use Morpho\Uri\Uri;
 use Morpho\App\Web\View\UriProcessor;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\BackupGlobals;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+#[BackupGlobals(enabled: true)]
 class UriProcessorTest extends TestCase {
-    private array $serverVars;
-
     protected function setUp(): void {
         parent::setUp();
         $_GET = $_POST = $_REQUEST = $_COOKIE = [];
-        $this->serverVars = $_SERVER;
         $_SERVER['SCRIPT_NAME'] = '/index.php';
         $_SERVER['REQUEST_URI'] = '/';
-    }
-
-    protected function tearDown(): void {
-        parent::tearDown();
-        $_SERVER = $this->serverVars;
     }
 
     public static function dataProcessUrisInTags() {

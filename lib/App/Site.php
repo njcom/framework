@@ -6,16 +6,14 @@
  */
 namespace Morpho\App;
 
-use Throwable;
-
 class Site implements ISite {
-    protected string $name;
+    public readonly string $name;
 
-    protected string $moduleName;
+    public readonly string $moduleName;
+
+    public readonly string $hostName;
 
     protected array $allModulesConf;
-
-    private string $hostName;
 
     public function __construct(string $name, string $moduleName, array $allModulesConf, string $hostName) {
         $this->name = $name;
@@ -24,20 +22,8 @@ class Site implements ISite {
         $this->hostName = $hostName;
     }
 
-    public function name(): string {
-        return $this->name;
-    }
-
-    public function moduleName(): string {
-        return $this->moduleName;
-    }
-
     public function conf(): array {
         return $this->allModulesConf[$this->moduleName];
-    }
-
-    public function hostName(): string {
-        return $this->hostName;
     }
 
     public function backendModuleDirPath(): iterable {

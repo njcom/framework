@@ -10,38 +10,28 @@ use ArrayObject;
 use Morpho\App\ISite;
 use Morpho\App\Web\IRequest;
 use Morpho\App\Web\Request;
+use Morpho\Base\NotImplementedException;
 use Morpho\Uri\Uri;
 use Morpho\App\Web\View\RcProcessor;
 use Morpho\Testing\TestCase;
+use Override;
+use PHPUnit\Framework\Attributes\BackupGlobals;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 
 use const Morpho\App\FRONTEND_DIR_NAME;
 
+#[BackupGlobals(enabled: true)]
 class RcProcessorTest extends TestCase {
     private RcProcessor $processor;
     private string $baseUriPath;
 
     protected function setUp(): void {
         parent::setUp();
+        $_SERVER['SCRIPT_NAME'] = '/index.php';
+        $_SERVER['REQUEST_URI'] = '/';
         $this->baseUriPath = '/base/path';
         $this->processor = new RcProcessor($this->mkRequest('foo/bar'), $this->mkSiteStub('abc/efg'));
-    }
-
-    private function mkSiteStub(string $siteModuleName): ISite {
-        $site = $this->createStub(ISite::class);
-        $site->method('moduleName')
-            ->willReturn($siteModuleName);
-        $site->method('conf')
-            ->willReturn(
-                [
-                    'paths' => [
-                        'frontendModuleDirPath' => $this->getTestDirPath() . '/' . FRONTEND_DIR_NAME,
-                        'baseUriPath'           => $this->baseUriPath,
-                    ],
-                ]
-            );
-        return $site;
     }
 
     public function testHandlingOfScripts_InChildParentPages() {
@@ -52,7 +42,7 @@ is a child
 OUT;
 
         // processor should save child scripts
-        $this->assertMatchesRegularExpression('~^This\\s+?is a child$~', $this->processor->__invoke($childPage));
+        $this->assertMatchesRegularExpression('~^This\\s+is a child$~', $this->processor->__invoke($childPage));
 
         $parentPage = <<<OUT
 <body>
@@ -79,7 +69,7 @@ OUT;
     }
 
     private function escapeRe(array $parts): string {
-        return '~^' . implode('\s*?', array_map(fn ($s) => preg_quote($s), $parts)) . '$~s';
+        return '~^' . implode('\s*', array_map(preg_quote(...), $parts)) . '$~s';
     }
 
     public function testHandlingOfScripts_IndexAttribute() {
@@ -194,7 +184,7 @@ OUT;
                 '<script src="/blog/lib/app/cat/tail.js"></script>',
                 '<script>',
                 'define(["require", "exports", "blog/lib/app/cat/tail"], function (require, exports, module) {',
-                'module.main(window.app || {}, ' . json_encode((array) $jsConf, JSON_UNESCAPED_SLASHES) . ');',
+                'if (!window.app) window.app = {}; module.main(window.app, ' . json_encode((array)$jsConf, JSON_UNESCAPED_SLASHES) . ');',
                 '});',
                 '</script>',
                 '</body>',
@@ -251,5 +241,32 @@ OUT;
         $uri->path()->setBasePath($this->baseUriPath);
         $request->uri = $uri;
         return $request;
+    }
+
+    private function mkSiteStub(string $siteModuleName): ISite {
+        return new class ($siteModuleName, $this->getTestDirPath() . '/' . FRONTEND_DIR_NAME, $this->baseUriPath) implements ISite {
+            public function __construct(public readonly string $moduleName, private readonly string $frontendModuleDirPath, private readonly string $baseUriPath) {
+            }
+
+            #[Override]
+            public function conf(): array {
+                return [
+                    'paths' => [
+                        'frontendModuleDirPath' => $this->frontendModuleDirPath,
+                        'baseUriPath'           => $this->baseUriPath,
+                    ],
+                ];
+            }
+
+            #[Override]
+            public function moduleConf(string $moduleName): array {
+                throw new NotImplementedException();
+            }
+
+            #[Override]
+            public function backendModuleDirPath(): iterable {
+                throw new NotImplementedException();
+            }
+        };
     }
 }

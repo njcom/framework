@@ -86,7 +86,7 @@ class RcProcessor extends HtmlProcessor {
      */
     public function actionScripts(string $jsModuleId): array {
         $siteConf = $this->site->conf();
-        $shortModuleName = last($this->site->moduleName(), '/');
+        $shortModuleName = last($this->site->moduleName, '/');
         $fullJsModuleId = $shortModuleName . '/' . LIB_DIR_NAME . '/app/' . $jsModuleId;
         $relFilePath = $fullJsModuleId . '.js';
         $jsFilePath = $siteConf['paths']['frontendModuleDirPath'] . '/' . $relFilePath;

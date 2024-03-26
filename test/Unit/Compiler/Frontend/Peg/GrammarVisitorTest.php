@@ -13,6 +13,8 @@ use Morpho\Testing\TestCase;
  * Based on https://github.com/python/cpython/blob/3.12/Lib/test/test_peg_generator/test_pegen.py
  */
 class GrammarVisitorTest extends TestCase {
+    private GrammarVisitorTest\Visitor $visitor;
+
     protected function setUp(): void {
         parent::setUp();
         $this->visitor = new GrammarVisitorTest\Visitor();

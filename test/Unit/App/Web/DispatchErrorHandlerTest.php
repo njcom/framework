@@ -13,9 +13,11 @@ use Morpho\Base\IFn;
 use Morpho\Base\ServiceManager;
 use Morpho\Base\IHasServiceManager;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\BackupGlobals;
 use RuntimeException;
 use Throwable;
 
+#[BackupGlobals(enabled: true)]
 class DispatchErrorHandlerTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();

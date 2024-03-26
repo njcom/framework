@@ -9,10 +9,12 @@ namespace Morpho\Test\Unit\App\Web;
 use Morpho\App\Web\HostNameValidator;
 use Morpho\Testing\TestCase;
 
+use PHPUnit\Framework\Attributes\BackupGlobals;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 use function strtolower;
 
+#[BackupGlobals(enabled: true)]
 class HostNameValidatorTest extends TestCase {
     public static function dataCurrentHostName_ValidIps() {
         return [

@@ -10,16 +10,7 @@ namespace Morpho\App;
  * site: {conf, module[]}
  */
 interface ISite {
-    /**
-     * Returns site's name.
-     */
-    public function name(): string;
-
     public function conf(): array;
-
-    public function moduleName(): string;
-
-    public function hostName(): ?string;
 
     public function moduleConf(string $moduleName): array;
 

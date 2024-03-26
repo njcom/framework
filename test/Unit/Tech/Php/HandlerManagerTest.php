@@ -8,7 +8,7 @@ namespace Morpho\Test\Unit\Tech\Php;
 
 use InvalidArgumentException;
 use Morpho\Tech\Php\HandlerManager;
-use PHPUnit\Util\ErrorHandler as PHPUnitErrorHandler;
+use PHPUnit\Runner\ErrorHandler as PhpUnitErrorHandler;
 use RuntimeException;
 
 use function array_diff;
@@ -102,7 +102,7 @@ class HandlerManagerTest extends BaseErrorHandler {
         $handlers = HandlerManager::handlersOfType(HandlerManager::ERROR);
         $errorHandlers = [];
         foreach ($handlers as $handler) {
-            if ($handler instanceof PHPUnitErrorHandler) {
+            if ($handler instanceof PhpUnitErrorHandler) {
                 continue;
             }
             $errorHandlers[] = $handler;

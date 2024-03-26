@@ -13,32 +13,22 @@ use Morpho\App\Web\Request;
 use Morpho\Test\Unit\App\MessageTest;
 use Morpho\Uri\Uri;
 
+use PHPUnit\Framework\Attributes\BackupGlobals;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 use function rawurlencode;
 
+#[BackupGlobals(enabled: true)]
 class RequestTest extends MessageTest {
     private IRequest $request;
-    private array $serverVars;
 
     protected function setUp(): void {
         parent::setUp();
         $_GET = $_POST = $_REQUEST = $_COOKIE = [];
-        $this->serverVars = $_SERVER;
         $_SERVER['SCRIPT_NAME'] = '/index.php';
         $_SERVER['REQUEST_URI'] = '/';
         $this->request = new Request();
     }
-
-    protected function tearDown(): void {
-        parent::tearDown();
-        $_SERVER = $this->serverVars;
-    }
-
-/*    public function testResponse_ReturnsTheSameInstance() {
-        $response = $this->request->response();
-        $this->assertSame($response, $this->request->response());
-    }*/
 
     public function testIsAjax_BoolAccessor() {
         $this->checkBoolAccessor([$this->request, 'isAjax'], false);

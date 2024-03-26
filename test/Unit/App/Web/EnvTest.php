@@ -9,8 +9,10 @@ namespace Morpho\Test\Unit\App\Web;
 use Morpho\App\Web\Env;
 use Morpho\App\Web\HttpVersion;
 use Morpho\Testing\TestCase;
+use PHPUnit\Framework\Attributes\BackupGlobals;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+#[BackupGlobals(enabled: true)]
 class EnvTest extends TestCase {
     public static function dataHttpVersion(): iterable {
         yield [
