@@ -1,6 +1,6 @@
 # njcom/framework
 
-Cybernetic framework for self-learning.
+Cybernetic framework for self-learning and self-development.
 
 ## Current status
 
