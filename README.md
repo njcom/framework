@@ -4,8 +4,8 @@ Cybernetic framework for self-learning and self-development.
 
 ## Current status
 
-1. Not ready (WIP). API is not stable:<br>[![.github/workflows/test.yml](https://github.com/morpho-os/framework/actions/workflows/test.yml/badge.svg)](https://github.com/morpho-os/framework/actions/workflows/test.yml)
-2. [Project tasks](https://github.com/njcom/framework/projects/3)
+1. Not ready (WIP). API is not stable:<p>[![.github/workflows/test.yml](https://github.com/morpho-os/framework/actions/workflows/test.yml/badge.svg)](https://github.com/morpho-os/framework/actions/workflows/test.yml)</p>
+3. [Project tasks](https://github.com/njcom/framework/projects/3)
 
 ## Used technologies
 
